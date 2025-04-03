@@ -1,0 +1,7 @@
+<Solution>
+    <Project Path="GraphlessDB/GraphlessDB.csproj" />
+    <Project Path="GraphlessDB.Analyzers/GraphlessDB.Analyzers.csproj" />
+    <Project Path="GraphlessDB.DynamoDB/GraphlessDB.DynamoDB.csproj" />
+    <Project Path="GraphlessDB.DynamoDB.Tests/GraphlessDB.DynamoDB.Tests.csproj" />
+    <Project Path="GraphlessDB.Tests/GraphlessDB.Tests.csproj" />
+</Solution>
