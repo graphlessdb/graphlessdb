@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
+using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory

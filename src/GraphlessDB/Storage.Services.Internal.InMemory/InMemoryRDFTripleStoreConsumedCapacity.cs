@@ -6,7 +6,7 @@
  *
  */
 
-using System.Threading;
+using GraphlessDB.Threading;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory
 {

@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
 
 namespace GraphlessDB.DynamoDB.Transactions.Storage
@@ -374,7 +375,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Storage
             }
             catch (FormatException ex)
             {
-                throw new InvalidOperationException("Excpected valid date attribute, was: " + attributeValue.N, ex);
+                throw new InvalidOperationException("Expected valid date attribute, was: " + attributeValue.N, ex);
             }
         }
 

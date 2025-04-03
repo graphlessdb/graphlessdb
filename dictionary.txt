@@ -3,6 +3,7 @@ DBRDF
 Destash
 IRDF
 Nerdbank
+netstandard
 Paginators
 Pushdown
 Roslynator

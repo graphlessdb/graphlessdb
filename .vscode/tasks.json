@@ -16,7 +16,7 @@
       "type": "shell",
       "args": [
         "build",
-        "src/GraphlessDB.slnx",
+        "src/GraphlessDB.sln",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],

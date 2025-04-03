@@ -8,7 +8,7 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Threading;
+using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory
