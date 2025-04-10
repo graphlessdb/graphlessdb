@@ -522,13 +522,20 @@ namespace GraphlessDB.Query.Services.Internal
             //     return entityOrder;
             // }
 
-            return new NodeOrder(source
+            var orderItems = source
                 .GetType()
                 .GetProperties()
                 .Select(p => new { p.Name, Value = (OrderDirection?)p.GetValue(source) })
                 .Where(v => v.Value != null)
                 .Select(v => new OrderItem(v.Name, v.Value ?? throw new GraphlessDBOperationException("Expected value")))
-                .SingleOrDefault());
+                .ToList();
+
+            if (orderItems.Count > 1)
+            {
+                throw new GraphlessDBOperationException("Multiple order clauses not supported");
+            }
+
+            return new NodeOrder(orderItems.SingleOrDefault());
         }
     }
 }

@@ -7,6 +7,8 @@
  */
 
 using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,37 +23,37 @@ namespace GraphlessDB.Query.Services.Internal
             bool consistentRead,
             CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-            var entityFilter = GraphNodeFilterService.AsEntityFilter(filter);
-            if (entityFilter.ValueFilterItems.Count > 1 || entityFilter.EdgeFilterItems.Count > 0)
-            {
-                throw new NotSupportedException("Filter with more than one filter item not supported");
-            }
+            // await Task.CompletedTask;
+            // var entityFilter = GraphNodeFilterService.AsEntityFilter(filter);
+            // if (entityFilter.ValueFilterItems.Count > 1 || entityFilter.EdgeFilterItems.Count > 0)
+            // {
+            //     throw new NotSupportedException("Filter with more than one filter item not supported");
+            // }
 
-            return connection;
-            // var filteredEdges = await Task.WhenAll(connection
-            //     .Edges
-            //     .Select(async edge =>
-            //     {
-            //         return new
-            //         {
-            //             edge,
-            //             match = await source.IsFilterMatchAsync(edge.Node, filter, consistentRead, cancellationToken)
-            //         };
-            //     }));
+            // return connection;
+            var filteredEdges = await Task.WhenAll(connection
+                .Edges
+                .Select(async edge =>
+                {
+                    return new
+                    {
+                        edge,
+                        match = await source.IsFilterMatchAsync(edge.Node, filter, consistentRead, cancellationToken)
+                    };
+                }));
 
-            // var edges = filteredEdges
-            //     .Where(e => e.match)
-            //     .Select(e => e.edge)
-            //     .ToImmutableList();
+            var edges = filteredEdges
+                .Where(e => e.match)
+                .Select(e => e.edge)
+                .ToImmutableList();
 
-            // return new Connection<RelayEdge<INode>, INode>(
-            //     edges,
-            //     new PageInfo(
-            //         connection.Edges.Count > edges.Count || connection.PageInfo.HasNextPage,
-            //         connection.PageInfo.HasPreviousPage,
-            //         edges.Select(e => e.Cursor).FirstOrDefault() ?? connection.PageInfo.StartCursor,
-            //         edges.Select(e => e.Cursor).LastOrDefault() ?? connection.PageInfo.EndCursor));
+            return new Connection<RelayEdge<INode>, INode>(
+                edges,
+                new PageInfo(
+                    connection.Edges.Count > edges.Count || connection.PageInfo.HasNextPage,
+                    connection.PageInfo.HasPreviousPage,
+                    edges.Select(e => e.Cursor).FirstOrDefault() ?? connection.PageInfo.StartCursor,
+                    edges.Select(e => e.Cursor).LastOrDefault() ?? connection.PageInfo.EndCursor));
         }
     }
 }

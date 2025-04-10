@@ -1049,6 +1049,68 @@ namespace GraphlessDB.Tests
         }
 
         [TestMethod]
+        public async Task ThrowsWhenUsingMultipleOrderingAsync()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = GetServiceProvider();
+
+            var user00 = User.New("User00");
+            var user01 = User.New("User01");
+            var user02 = User.New("User02");
+            var user10 = User.New("User10");
+            var user11 = User.New("User11");
+
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(ImmutableList.Create<IEntity>(user00, user01, user02, user10, user11))
+                .ExecuteAsync(cancellationToken);
+
+            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(
+                async () => await services
+                    .CreateScope()
+                    .GraphDB()
+                    .Graph<TestGraph>()
+                    .Users(new UserOrder { Id = OrderDirection.Asc, Username = OrderDirection.Asc, })
+                    .GetAsync(true, ConnectionArguments.GetFirst(2), 1, 1, cancellationToken));
+        }
+
+        [TestMethod]
+        public async Task CanOrderAndFilterOnDifferentPropertiesAsync()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = GetServiceProvider();
+
+            var user00 = User.New("User00");
+            var user01 = User.New("User01");
+            var user02 = User.New("User02");
+            var user10 = User.New("User10");
+            var user11 = User.New("User11");
+
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(ImmutableList.Create<IEntity>(user00, user01, user02, user10, user11))
+                .ExecuteAsync(cancellationToken);
+
+            var users = await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Users(
+                    new UserOrder { Username = OrderDirection.Asc, },
+                    new UserFilter { Id = new IdFilter { Eq = user02.Id } })
+                .GetAsync(true, ConnectionArguments.GetFirst(2), 1, 1, cancellationToken);
+
+            Assert.AreEqual(1, users.Edges.Count);
+            Assert.AreEqual("User02", users.Edges[0].Node.Username);
+        }
+
+        [TestMethod]
         public async Task CanPageThroughEdgeTraversalAsync()
         {
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
