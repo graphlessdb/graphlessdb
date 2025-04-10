@@ -701,12 +701,12 @@ namespace GraphlessDB.Storage.Services.DynamoDB
                 : new RDFTripleStoreConsumedCapacity(value.CapacityUnits, value.ReadCapacityUnits, value.WriteCapacityUnits);
         }
 
-        private Task<BatchGetItemResponse> BatchGetItemAsync(
+        private async Task<BatchGetItemResponse> BatchGetItemAsync(
             BatchGetItemRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                return client.BatchGetItemAsync(request, cancellationToken);
+                return await client.BatchGetItemAsync(request, cancellationToken);
             }
             catch (InternalServerErrorException ex)
             {
@@ -726,12 +726,12 @@ namespace GraphlessDB.Storage.Services.DynamoDB
             }
         }
 
-        private Task<BatchWriteItemResponse> BatchWriteItemAsync(
+        private async Task<BatchWriteItemResponse> BatchWriteItemAsync(
             BatchWriteItemRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                return client.BatchWriteItemAsync(request, cancellationToken);
+                return await client.BatchWriteItemAsync(request, cancellationToken);
             }
             catch (InternalServerErrorException ex)
             {
@@ -755,12 +755,12 @@ namespace GraphlessDB.Storage.Services.DynamoDB
             }
         }
 
-        private Task<TransactWriteItemsResponse> TransactWriteItemsAsync(
+        private async Task<TransactWriteItemsResponse> TransactWriteItemsAsync(
             TransactWriteItemsRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                return client.TransactWriteItemsAsync(request, cancellationToken);
+                return await client.TransactWriteItemsAsync(request, cancellationToken);
             }
             catch (IdempotentParameterMismatchException ex)
             {
@@ -797,12 +797,12 @@ namespace GraphlessDB.Storage.Services.DynamoDB
             }
         }
 
-        private Task<ScanResponse> ScanAsync(
+        private async Task<ScanResponse> ScanAsync(
             ScanRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                return client.ScanAsync(request, cancellationToken);
+                return await client.ScanAsync(request, cancellationToken);
             }
             catch (InternalServerErrorException ex)
             {
@@ -822,11 +822,11 @@ namespace GraphlessDB.Storage.Services.DynamoDB
             }
         }
 
-        private Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken)
+        private async Task<QueryResponse> QueryAsync(QueryRequest request, CancellationToken cancellationToken)
         {
             try
             {
-                return client.QueryAsync(request, cancellationToken);
+                return await client.QueryAsync(request, cancellationToken);
             }
             catch (InternalServerErrorException ex)
             {
