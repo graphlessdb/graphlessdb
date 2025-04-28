@@ -19,6 +19,17 @@ namespace GraphlessDB
             return globalId.ToString();
         }
 
+        public static string ParseId<T>(string value)
+        {
+            var (typeName, id) = Parse(value);
+            if (typeName != typeof(T).Name)
+            {
+                throw new ArgumentException("Global id type mismatch");
+            }
+
+            return id;
+        }
+
         public static GlobalId Parse(string value)
         {
             var parts = Encoding.UTF8.GetString(Convert.FromBase64String(value)).Split('#');
