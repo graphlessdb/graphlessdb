@@ -29,9 +29,9 @@ namespace GraphlessDB
             return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBGraphOptions(source, configureOptions);
         }
 
-        public static IServiceCollection AddGraphlessDBTypeMapperOptions(this IServiceCollection source, Action<GraphDBAssemblyTypeMapperOptions> configureOptions)
+        public static IServiceCollection AddGraphEntityTypeNativeServiceOptions(this IServiceCollection source, Action<GraphEntityTypeNativeServiceOptions> configureOptions)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBTypeMapperOptions(source, configureOptions);
+            return DependencyInjection.ServiceCollectionExtensions.AddGraphEntityTypeNativeServiceOptions(source, configureOptions);
         }
 
         public static IServiceCollection AddGraphlessDBEntitySerializerOptions(this IServiceCollection source, Action<GraphEntitySerializationServiceOptions> configureOptions)

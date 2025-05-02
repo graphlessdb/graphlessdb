@@ -18,27 +18,33 @@ namespace GraphlessDB.Graph.Services.Internal
     {
         public IEdge DeserializeEdge(string value, Type type)
         {
-            return (IEdge?)JsonSerializer.Deserialize(value, type, GetJsonContext()) ?? throw new GraphlessDBOperationException("Failed to deserialize edge");
+            return (IEdge?)JsonSerializer.Deserialize(value, type, GetJsonContext(type)) ?? throw new GraphlessDBOperationException("Failed to deserialize edge");
         }
 
         public INode DeserializeNode(string value, Type type)
         {
-            return (INode?)JsonSerializer.Deserialize(value, type, GetJsonContext()) ?? throw new GraphlessDBOperationException("Failed to deserialize node");
+            return (INode?)JsonSerializer.Deserialize(value, type, GetJsonContext(type)) ?? throw new GraphlessDBOperationException("Failed to deserialize node");
         }
 
         public string SerializeNode(INode node, Type type)
         {
-            return JsonSerializer.Serialize(node, type, GetJsonContext());
+            return JsonSerializer.Serialize(node, type, GetJsonContext(type));
         }
 
         public string SerializeEdge(IEdge edge, Type type)
         {
-            return JsonSerializer.Serialize(edge, type, GetJsonContext());
+            return JsonSerializer.Serialize(edge, type, GetJsonContext(type));
         }
 
-        private JsonSerializerContext GetJsonContext()
+        private JsonSerializerContext GetJsonContext(Type type)
         {
-            return options.Value.JsonContext ?? throw new GraphlessDBOperationException("EntitySerializerOptions.JsonContext was not set");
+            var o = options.Value;
+            if (o.JsonContextOverrides.TryGetValue(type, out var overrideJsonContext))
+            {
+                return overrideJsonContext;
+            }
+
+            return o.JsonContext ?? throw new GraphlessDBOperationException("EntitySerializerOptions.JsonContext was not set");
         }
     }
 }

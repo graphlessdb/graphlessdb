@@ -6,12 +6,21 @@
  *
  */
 
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace GraphlessDB.Storage
 {
     public sealed class GraphEntitySerializationServiceOptions
     {
+        public GraphEntitySerializationServiceOptions()
+        {
+            JsonContextOverrides = new Dictionary<Type, JsonSerializerContext>();
+        }
+
         public JsonSerializerContext? JsonContext { get; set; }
+
+        public Dictionary<Type, JsonSerializerContext> JsonContextOverrides { get; set; }
     }
 }

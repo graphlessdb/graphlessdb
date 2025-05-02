@@ -43,7 +43,7 @@ namespace GraphlessDB.DependencyInjection
                 .AddScoped<IGraphHouseKeepingService, GraphHouseKeepingService>()
                 .AddScoped<IRDFTripleFactory, RDFTripleFactory>()
                 .AddScoped<IGraphPartitionService, GraphPartitionService>()
-                .AddScoped<IGraphEntityTypeService, GraphEntityTypeService>()
+                .AddScoped<IGraphEntityTypeService, GraphEntityTypeNativeService>()
                 .AddScoped<IMemoryCache, ConcurrentMemoryCache>()
                 .AddScoped<IRDFTripleStoreConsumedCapacity, InMemoryRDFTripleStoreConsumedCapacity>()
                 .AddScoped<IGraphQueryExecutionService, GraphQueryExecutionService>()
@@ -102,20 +102,11 @@ namespace GraphlessDB.DependencyInjection
             return source;
         }
 
-        public static IServiceCollection AddGraphlessDBTypeMapperOptions(this IServiceCollection source, Action<GraphDBAssemblyTypeMapperOptions> configureOptions)
+        public static IServiceCollection AddGraphEntityTypeNativeServiceOptions(this IServiceCollection source, Action<GraphEntityTypeNativeServiceOptions> configureOptions)
         {
             source
-                .AddOptions<GraphDBAssemblyTypeMapperOptions>()
-                .Configure(configureOptions)
-                .Validate(options =>
-                {
-                    if (string.IsNullOrWhiteSpace(options.AssemblyName) ||
-                        string.IsNullOrWhiteSpace(options.Namespace))
-                    {
-                        return false;
-                    }
-                    return true;
-                });
+                .AddOptions<GraphEntityTypeNativeServiceOptions>()
+                .Configure(configureOptions);
 
             return source;
         }

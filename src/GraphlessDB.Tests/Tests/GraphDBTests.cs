@@ -2467,10 +2467,14 @@ namespace GraphlessDB.Tests
                     o.GraphName = "a";
                     o.PartitionCount = 1;
                 })
-                .AddGraphlessDBTypeMapperOptions(o =>
+                .AddGraphEntityTypeNativeServiceOptions(o =>
                 {
-                    o.AssemblyName = "GraphlessDB.Tests";
-                    o.Namespace = "GraphlessDB.Tests";
+                    o.TypeMappings.Add(nameof(Car), typeof(Car));
+                    o.TypeMappings.Add(nameof(Manufacturer), typeof(Manufacturer));
+                    o.TypeMappings.Add(nameof(ManufacturerMakesCarEdge), typeof(ManufacturerMakesCarEdge));
+                    o.TypeMappings.Add(nameof(User), typeof(User));
+                    o.TypeMappings.Add(nameof(UserLikesUserEdge), typeof(UserLikesUserEdge));
+                    o.TypeMappings.Add(nameof(UserOwnsCarEdge), typeof(UserOwnsCarEdge));
                 })
                 .AddGraphlessDBEntitySerializerOptions(o =>
                 {
