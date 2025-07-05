@@ -10,8 +10,6 @@ using System;
 
 namespace GraphlessDB.Graph
 {
-    // NOTE If EndOfData is set it signifies that this is the last node
-    //      It must be a unique string so that no two EndOfData nodes are equivalent
     public sealed record CursorNode(
         HasTypeCursor? HasType,
         HasPropCursor? HasProp,
@@ -23,13 +21,14 @@ namespace GraphlessDB.Graph
         string? EndOfData)
     {
         public static readonly CursorNode Empty = new(null, null, null, null, null, null, null, null);
+        public static readonly CursorNode EndOfDataNode = new(null, null, null, null, null, null, null, Guid.Empty.ToString());
 
         public static CursorNode CreateEndOfData()
         {
-            return Empty with
-            {
-                EndOfData = Guid.NewGuid().ToString()
-            };
+            // NOTE If EndOfData is set it signifies that this is the last node.
+            // DISCUSSION If its unique then "FromCursorExclusive" when rehydrated doesn't work.
+            //            Setting back to static single value to see if there are any issues with that.
+            return EndOfDataNode;
         }
     }
 }
