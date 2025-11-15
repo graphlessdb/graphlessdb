@@ -9,6 +9,7 @@ Whilst carrying out this request, keep a running list of instances where your un
 - Test method naming convention: PascalCase without underscores (e.g., CanGetDateTimePropertyAsString not Can_Get_DateTime_Property_As_String)
 - Helper methods in test classes should be static when possible to follow project conventions
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
+- Manual mock classes are preferred over Moq framework in this project
 
 ## Request
 
