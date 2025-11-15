@@ -12,4 +12,4 @@ Whilst carrying out this request, keep a running list of instances where your un
 
 ## Request
 
-Run get-least-covered-file.sh and read its output to get the name of a file which requires unit testing to increase its code coverage.  Then determine and implement any missing unit tests for that file. You should iterate using new output from get-file-coverage.sh until the nonCovered lines has reached 0.  Once complete run save-solution-coverage.sh.
+Run get-least-covered-files.sh and read the first item from its array output to get the name of a file which requires unit testing to increase its code coverage.  Then determine and implement any missing unit tests for that file. You should iterate using new output from get-file-coverage.sh until the nonCovered lines has reached 0.  Once complete run save-solution-coverage.sh.
