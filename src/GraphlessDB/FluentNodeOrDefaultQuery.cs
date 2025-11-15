@@ -206,10 +206,10 @@ namespace GraphlessDB
         }
 
         public FluentEdgeConnectionQuery<TGraph, TEdge, TNode, TNode> InAndOutToEdges<TEdge>(
-           Func<EdgeConnectionOptions, EdgeConnectionOptions>? configure = null)
+           Func<ToEdgeConnectionOptions, ToEdgeConnectionOptions>? configure = null)
            where TEdge : IEdge
         {
-            var options = EdgeConnectionOptions.Default;
+            var options = ToEdgeConnectionOptions.Default;
             if (configure != null)
             {
                 options = configure(options);
