@@ -161,7 +161,7 @@ if [ -n "$TEST_FILE" ]; then
 fi
 
 # Create temporary coverage directory
-COVERAGE_DIR="$REPO_ROOT/coverage/${PROJECT_NAME}.Tests"
+COVERAGE_DIR="$REPO_ROOT/.coverage/${PROJECT_NAME}.Tests"
 rm -rf "$COVERAGE_DIR"
 mkdir -p "$COVERAGE_DIR"
 

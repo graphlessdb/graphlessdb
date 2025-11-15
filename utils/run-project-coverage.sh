@@ -1,9 +1,8 @@
 #!/bin/zsh
 
-# Run code coverage for a single project and return JSON array of file coverage
+# Run code coverage for a single project and return JSON-formatted results
 # Usage: ./run-project-coverage.sh <project-path> [limit]
-# Output: JSON array with format [{ name: "ClassName", path: "relative/path", lines: {covered: 123, notCovered: 123} }]
-# Ordered by notCovered (descending)
+# Output: JSON array of files ordered by notCovered lines (descending)
 
 set -e
 
@@ -11,129 +10,131 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Parse arguments
-PROJECT_PATH="$1"
-LIMIT="${2:-5}"  # Default limit is 5
-
-if [ -z "$PROJECT_PATH" ]; then
+# Validate arguments
+if [ $# -lt 1 ]; then
     echo "Error: Project path is required" >&2
     echo "Usage: $0 <project-path> [limit]" >&2
     exit 1
 fi
 
-# Convert to absolute path if relative
-if [[ "$PROJECT_PATH" != /* ]]; then
-    PROJECT_PATH="$REPO_ROOT/$PROJECT_PATH"
-fi
+PROJECT_PATH="$1"
+LIMIT="${2:-5}"
 
-# Check if project file exists
-if [ ! -f "$PROJECT_PATH" ]; then
+# Validate project path
+if [ ! -f "$REPO_ROOT/$PROJECT_PATH" ]; then
     echo "Error: Project file not found: $PROJECT_PATH" >&2
     exit 1
 fi
 
-# Get project name
+# Check if it's a test project
 PROJECT_NAME=$(basename "$PROJECT_PATH" .csproj)
+if [[ ! "$PROJECT_NAME" =~ \.Tests$ ]]; then
+    echo "Error: Project is not a test project: $PROJECT_NAME" >&2
+    exit 1
+fi
 
-# Create temporary coverage directory
-COVERAGE_DIR="$REPO_ROOT/coverage/$PROJECT_NAME"
-rm -rf "$COVERAGE_DIR"
+# Create unique coverage directory
+TIMESTAMP=$(date +%s)
+UNIQUE_ID="${PROJECT_NAME}_${TIMESTAMP}_$$"
+COVERAGE_DIR="$REPO_ROOT/.coverage/$UNIQUE_ID"
 mkdir -p "$COVERAGE_DIR"
 
-# Run tests with code coverage silently
-cd "$REPO_ROOT/src"
+# Run tests with code coverage
+cd "$REPO_ROOT"
 dotnet test "$PROJECT_PATH" \
     --configuration Release \
     --collect:"XPlat Code Coverage" \
     --results-directory:"$COVERAGE_DIR" \
-    --verbosity quiet \
+    --verbosity:quiet \
     --nologo \
-    > /dev/null 2>&1
+    2>&1 | grep -v "^Test run for" | grep -v "^Microsoft" | grep -v "^VSTest" | grep -v "^Starting test" | grep -v "^A total of" | grep -v "^Passed!" | grep -v "^Attachments:" | grep -v "^  /" || true
 
-# Find the coverage.cobertura.xml file
+# Find the coverage XML file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -1)
 
-if [ -z "$COVERAGE_FILE" ]; then
-    echo "Error: No coverage file found" >&2
+if [ ! -f "$COVERAGE_FILE" ]; then
+    echo "Error: Coverage file not found" >&2
+    rm -rf "$COVERAGE_DIR"
     exit 1
 fi
 
-# Parse the coverage XML and generate JSON using Python
-python3 - "$COVERAGE_FILE" "$LIMIT" "$REPO_ROOT" <<'PYTHON_SCRIPT'
+# Parse the coverage XML file and generate JSON output using Python
+RESULT=$(python3 - "$COVERAGE_FILE" "$REPO_ROOT" "$LIMIT" <<'PYTHON_SCRIPT'
 import sys
 import xml.etree.ElementTree as ET
 import json
-import os
+from pathlib import Path
 
 coverage_file = sys.argv[1]
-limit = int(sys.argv[2])
-repo_root = sys.argv[3]
+repo_root = sys.argv[2]
+limit = int(sys.argv[3])
 
-# Parse the coverage XML
+# Parse the XML file
 tree = ET.parse(coverage_file)
 root = tree.getroot()
 
-# Get source directories from the coverage file
-sources = []
-for source in root.findall('.//source'):
-    sources.append(source.text)
+# Extract source path prefix
+sources = root.findall('.//source')
+source_prefix = sources[0].text if sources else ""
 
-# Extract coverage data for each class
+# Collect coverage data for each class
 results = []
 
-for package in root.findall('.//package'):
-    for cls in package.findall('.//class'):
-        class_name = cls.get('name', '')
-        filename = cls.get('filename', '')
+for cls in root.findall('.//class'):
+    class_name = cls.get('name')
+    filename = cls.get('filename')
 
-        # Skip if no filename
-        if not filename:
-            continue
+    if not filename:
+        continue
 
-        # Count covered and not covered lines
-        covered = 0
-        not_covered = 0
+    # Calculate full path relative to repo root
+    if source_prefix and not filename.startswith('/'):
+        full_path = str(Path(source_prefix) / filename)
+    else:
+        full_path = filename
 
-        for line in cls.findall('.//line'):
-            hits = int(line.get('hits', '0'))
-            if hits > 0:
-                covered += 1
-            else:
-                not_covered += 1
+    # Make path relative to repo root
+    try:
+        rel_path = str(Path(full_path).relative_to(repo_root))
+    except ValueError:
+        # If path is not relative to repo_root, use as-is
+        rel_path = full_path
 
-        # Construct full path from source directories
-        full_path = None
-        for source in sources:
-            candidate = os.path.join(source, filename)
-            if os.path.exists(candidate):
-                full_path = candidate
-                break
+    # Count covered and not covered lines
+    lines = cls.findall('.//line')
+    covered = 0
+    not_covered = 0
 
-        if not full_path:
-            # If not found in sources, try as-is
-            full_path = filename
-
-        # Make path relative to repo root
-        if full_path.startswith(repo_root + '/'):
-            relative_path = full_path[len(repo_root) + 1:]
+    for line in lines:
+        hits = int(line.get('hits', 0))
+        if hits > 0:
+            covered += 1
         else:
-            relative_path = filename
+            not_covered += 1
 
-        results.append({
-            'name': class_name,
-            'path': relative_path,
-            'lines': {
-                'covered': covered,
-                'notCovered': not_covered
-            }
-        })
+    results.append({
+        'name': class_name,
+        'path': rel_path,
+        'lines': {
+            'covered': covered,
+            'notCovered': not_covered
+        }
+    })
 
-# Sort by notCovered (descending)
-results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+# Sort by notCovered (descending), then by name for consistency
+results.sort(key=lambda x: (-x['lines']['notCovered'], x['name']))
 
 # Apply limit
 results = results[:limit]
 
 # Output JSON
 print(json.dumps(results, indent=2))
+
 PYTHON_SCRIPT
+)
+
+# Clean up coverage directory
+rm -rf "$COVERAGE_DIR"
+
+# Output the result
+echo "$RESULT"
