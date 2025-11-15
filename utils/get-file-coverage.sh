@@ -1,277 +1,196 @@
-#!/bin/zsh
+#!/bin/bash
 
-# Get code coverage for a specific file
-#
-# This script takes a file path as input, finds its corresponding test file (if any),
-# runs code coverage for the test project, and returns coverage information in JSON format.
-#
+# Get coverage for a specific file
 # Usage: ./get-file-coverage.sh <file-path>
-#
-# Arguments:
-#   file-path: Path to the target source file (can be relative or absolute)
-#              Compatible with output from get-least-covered-file.sh
-#
-# Output: JSON with format:
-#   {
-#     "target": { "name": "ClassName", "path": "relative/path/to/file.cs" },
-#     "test": { "name": "ClassNameTests", "path": "relative/path/to/test.cs" },
-#     "lines": { "covered": 123, "notCovered": 456 }
-#   }
-#
-# Notes:
-#   - test field will be null if no corresponding test file is found
-#   - lines field will be null if the file is not found in the coverage report
-#   - Errors are returned as JSON with an "error" field
+# Output: JSON object with target file, test file, and coverage information
 
 set -e
 
 # Get the script directory and repository root
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Parse arguments
-TARGET_FILE="$1"
-
-if [ -z "$TARGET_FILE" ]; then
-    echo '{"error":"Target file path is required"}' >&2
+# Validate arguments
+if [ $# -lt 1 ]; then
+    echo "Error: File path is required" >&2
+    echo "Usage: $0 <file-path>" >&2
     exit 1
 fi
+
+TARGET_FILE="$1"
 
 # Convert to absolute path if relative
 if [[ "$TARGET_FILE" != /* ]]; then
     TARGET_FILE="$REPO_ROOT/$TARGET_FILE"
 fi
 
-# Check if target file exists
+# Validate target file exists
 if [ ! -f "$TARGET_FILE" ]; then
-    echo "{\"error\":\"Target file not found: $TARGET_FILE\"}" >&2
+    echo "Error: Target file not found: $TARGET_FILE" >&2
     exit 1
 fi
 
-# Get the relative path from repo root
-if [[ "$TARGET_FILE" == "$REPO_ROOT/"* ]]; then
-    RELATIVE_PATH="${TARGET_FILE#$REPO_ROOT/}"
-else
-    RELATIVE_PATH="$TARGET_FILE"
-fi
-
-# Extract target file information
+# Get the target file name and path relative to repo root
 TARGET_NAME=$(basename "$TARGET_FILE" .cs)
-TARGET_DIR=$(dirname "$TARGET_FILE")
+TARGET_REL_PATH=$(realpath --relative-to="$REPO_ROOT" "$TARGET_FILE" 2>/dev/null || python3 -c "import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$TARGET_FILE" "$REPO_ROOT")
 
-# Determine the project the target file belongs to
-# Navigate up from the file to find the .csproj file
-CURRENT_DIR="$TARGET_DIR"
-PROJECT_FILE=""
-while [ "$CURRENT_DIR" != "$REPO_ROOT" ] && [ "$CURRENT_DIR" != "/" ]; do
-    CSPROJ_FILES=("$CURRENT_DIR"/*.csproj(N))
-    if [ ${#CSPROJ_FILES[@]} -gt 0 ]; then
-        PROJECT_FILE="${CSPROJ_FILES[1]}"
-        break
-    fi
-    CURRENT_DIR=$(dirname "$CURRENT_DIR")
-done
-
-if [ -z "$PROJECT_FILE" ]; then
-    echo "{\"error\":\"Could not find project file for target\"}" >&2
-    exit 1
+# Determine the project name from the target file path
+# Pattern: src/ProjectName/...
+PROJECT_NAME=""
+if [[ "$TARGET_REL_PATH" =~ ^src/([^/]+)/ ]]; then
+    PROJECT_NAME="${BASH_REMATCH[1]}"
 fi
 
-# Get project name
-PROJECT_NAME=$(basename "$PROJECT_FILE" .csproj)
-
-# Check if this is already a test project
-if [[ "$PROJECT_NAME" == *".Tests" ]]; then
-    echo "{\"error\":\"Target file is in a test project, not a source file\"}" >&2
+if [ -z "$PROJECT_NAME" ]; then
+    echo "Error: Could not determine project name from path: $TARGET_REL_PATH" >&2
     exit 1
 fi
 
 # Find the corresponding test project
-TEST_PROJECT_FILE="$REPO_ROOT/src/${PROJECT_NAME}.Tests/${PROJECT_NAME}.Tests.csproj"
+TEST_PROJECT_NAME="${PROJECT_NAME}.Tests"
+TEST_PROJECT_PATH="$REPO_ROOT/src/$TEST_PROJECT_NAME/${TEST_PROJECT_NAME}.csproj"
 
-if [ ! -f "$TEST_PROJECT_FILE" ]; then
-    echo "{\"error\":\"No test project found for $PROJECT_NAME\",\"target\":{\"name\":\"$TARGET_NAME\",\"path\":\"$RELATIVE_PATH\"},\"test\":null,\"lines\":null}" >&2
-    exit 1
+if [ ! -f "$TEST_PROJECT_PATH" ]; then
+    # No test project found - return result with no test file and zero coverage
+    echo "{\"target\":{\"name\":\"$TARGET_NAME\",\"path\":\"$TARGET_REL_PATH\"},\"test\":{\"name\":\"\",\"path\":\"\"},\"lines\":{\"covered\":0,\"notCovered\":0}}"
+    exit 0
 fi
 
-# Determine the relative path of the target file within its project
-PROJECT_DIR=$(dirname "$PROJECT_FILE")
-if [[ "$TARGET_FILE" == "$PROJECT_DIR/"* ]]; then
-    FILE_RELATIVE_TO_PROJECT="${TARGET_FILE#$PROJECT_DIR/}"
-else
-    FILE_RELATIVE_TO_PROJECT="$TARGET_NAME.cs"
-fi
-
-# Extract the directory path within the project (if any)
-FILE_DIR_IN_PROJECT=$(dirname "$FILE_RELATIVE_TO_PROJECT")
-if [ "$FILE_DIR_IN_PROJECT" = "." ]; then
-    FILE_DIR_IN_PROJECT=""
-fi
-
-# Try to find corresponding test file
-# Common patterns:
-# 1. Same subdirectory structure with .Tests suffix: Graph.Services.Internal -> Graph.Services.Internal.Tests
-# 2. In a Tests/ subdirectory
-# 3. At the root of the test project
-# 4. Anywhere in the test project with matching name
-TEST_FILE_PATTERNS=()
-
-# Pattern 1: If file is in a subdirectory, try subdirectory.Tests pattern
-if [ -n "$FILE_DIR_IN_PROJECT" ]; then
-    TEST_DIR="${FILE_DIR_IN_PROJECT}.Tests"
-    TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/${TEST_DIR}/${TARGET_NAME}Tests.cs")
-fi
-
-# Pattern 2: Same subdirectory structure in Tests/ folder
-if [ -n "$FILE_DIR_IN_PROJECT" ]; then
-    TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/Tests/${FILE_DIR_IN_PROJECT}/${TARGET_NAME}Tests.cs")
-fi
-
-# Pattern 3: Direct mapping to same path
-TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/${FILE_RELATIVE_TO_PROJECT%.cs}Tests.cs")
-
-# Pattern 4: In Tests/ subdirectory
-TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/Tests/${TARGET_NAME}Tests.cs")
-
-# Pattern 5: At root of test project
-TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/${TARGET_NAME}Tests.cs")
-
-# Pattern 6: Search anywhere in test project (last resort, glob pattern)
-TEST_FILE_PATTERNS+=("$REPO_ROOT/src/${PROJECT_NAME}.Tests/**/${TARGET_NAME}Tests.cs"(N))
-
+# Look for the test file
+# Common patterns: <ClassName>Tests.cs, <ClassName>Test.cs
 TEST_FILE=""
-TEST_FILE_RELATIVE=""
-for pattern in "${TEST_FILE_PATTERNS[@]}"; do
-    # Expand glob patterns
-    matches=($~pattern)
-    if [ ${#matches[@]} -gt 0 ] && [ -f "${matches[1]}" ]; then
-        TEST_FILE="${matches[1]}"
-        if [[ "$TEST_FILE" == "$REPO_ROOT/"* ]]; then
-            TEST_FILE_RELATIVE="${TEST_FILE#$REPO_ROOT/}"
-        else
-            TEST_FILE_RELATIVE="$TEST_FILE"
-        fi
+TEST_FILE_REL_PATH=""
+
+# Search for test files matching the pattern
+for pattern in "${TARGET_NAME}Tests.cs" "${TARGET_NAME}Test.cs"; do
+    FOUND_FILE=$(find "$REPO_ROOT/src/$TEST_PROJECT_NAME" -name "$pattern" -type f 2>/dev/null | head -1)
+    if [ -n "$FOUND_FILE" ]; then
+        TEST_FILE="$FOUND_FILE"
+        TEST_FILE_REL_PATH=$(realpath --relative-to="$REPO_ROOT" "$TEST_FILE" 2>/dev/null || python3 -c "import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$TEST_FILE" "$REPO_ROOT")
         break
     fi
 done
 
-TEST_NAME=""
-if [ -n "$TEST_FILE" ]; then
-    TEST_NAME=$(basename "$TEST_FILE" .cs)
+# If no test file found, return result with empty test info
+if [ -z "$TEST_FILE" ]; then
+    echo "{\"target\":{\"name\":\"$TARGET_NAME\",\"path\":\"$TARGET_REL_PATH\"},\"test\":{\"name\":\"\",\"path\":\"\"},\"lines\":{\"covered\":0,\"notCovered\":0}}"
+    exit 0
 fi
 
-# Create temporary coverage directory
-COVERAGE_DIR="$REPO_ROOT/.coverage/${PROJECT_NAME}.Tests"
-rm -rf "$COVERAGE_DIR"
+# Create unique coverage directory
+TIMESTAMP=$(date +%s)
+UNIQUE_ID="${TEST_PROJECT_NAME}_${TARGET_NAME}_${TIMESTAMP}_$$"
+COVERAGE_DIR="$REPO_ROOT/.coverage/$UNIQUE_ID"
 mkdir -p "$COVERAGE_DIR"
 
-# Run tests with code coverage silently
-cd "$REPO_ROOT/src"
-dotnet test "$TEST_PROJECT_FILE" \
+# Get test file name without extension
+TEST_NAME=$(basename "$TEST_FILE" .cs)
+
+# Run tests with code coverage, filtering to just the specific test class
+cd "$REPO_ROOT"
+dotnet test "$TEST_PROJECT_PATH" \
+    --filter "FullyQualifiedName~${TEST_NAME}" \
     --configuration Release \
     --collect:"XPlat Code Coverage" \
     --results-directory:"$COVERAGE_DIR" \
-    --verbosity quiet \
+    --verbosity:quiet \
     --nologo \
-    > /dev/null 2>&1
+    2>&1 | grep -v "^Test run for" | grep -v "^Microsoft" | grep -v "^VSTest" | grep -v "^Starting test" | grep -v "^A total of" | grep -v "^Passed!" | grep -v "^Attachments:" | grep -v "^  /" || true
 
-# Find the coverage.cobertura.xml file
+# Find the coverage XML file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -1)
 
-if [ -z "$COVERAGE_FILE" ]; then
-    echo "{\"error\":\"No coverage file generated\"}" >&2
-    exit 1
+if [ ! -f "$COVERAGE_FILE" ]; then
+    # No coverage file - return result with test file but zero coverage
+    rm -rf "$COVERAGE_DIR"
+    echo "{\"target\":{\"name\":\"$TARGET_NAME\",\"path\":\"$TARGET_REL_PATH\"},\"test\":{\"name\":\"$TEST_NAME\",\"path\":\"$TEST_FILE_REL_PATH\"},\"lines\":{\"covered\":0,\"notCovered\":0}}"
+    exit 0
 fi
 
-# Parse the coverage XML and extract data for the specific file using Python
-python3 - "$COVERAGE_FILE" "$RELATIVE_PATH" "$TARGET_NAME" "$TEST_FILE_RELATIVE" "$TEST_NAME" "$REPO_ROOT" <<'PYTHON_SCRIPT'
+# Parse the coverage XML file and extract coverage for the specific target file
+RESULT=$(python3 - "$COVERAGE_FILE" "$REPO_ROOT" "$TARGET_REL_PATH" "$TARGET_NAME" "$TEST_NAME" "$TEST_FILE_REL_PATH" <<'PYTHON_SCRIPT'
 import sys
 import xml.etree.ElementTree as ET
 import json
-import os
+from pathlib import Path
 
 coverage_file = sys.argv[1]
-target_path = sys.argv[2]
-target_name = sys.argv[3]
-test_path = sys.argv[4] if sys.argv[4] else None
-test_name = sys.argv[5] if sys.argv[5] else None
-repo_root = sys.argv[6]
+repo_root = sys.argv[2]
+target_rel_path = sys.argv[3]
+target_name = sys.argv[4]
+test_name = sys.argv[5]
+test_file_rel_path = sys.argv[6]
 
-# Parse the coverage XML
+# Parse the XML file
 tree = ET.parse(coverage_file)
 root = tree.getroot()
 
-# Get source directories from the coverage file
-sources = []
-for source in root.findall('.//source'):
-    sources.append(source.text)
+# Extract source path prefix
+sources = root.findall('.//source')
+source_prefix = sources[0].text if sources else ""
 
-# Find the matching class in the coverage report
-found = False
+# Find coverage data for the specific target file
 covered = 0
 not_covered = 0
+found_class = False
 
-for package in root.findall('.//package'):
-    for cls in package.findall('.//class'):
-        class_name = cls.get('name', '')
-        filename = cls.get('filename', '')
+for cls in root.findall('.//class'):
+    class_name = cls.get('name')
+    filename = cls.get('filename')
 
-        # Skip if no filename
-        if not filename:
-            continue
+    if not filename:
+        continue
 
-        # Construct full path from source directories
-        full_path = None
-        for source in sources:
-            candidate = os.path.join(source, filename)
-            if os.path.exists(candidate):
-                full_path = candidate
-                break
+    # Calculate full path relative to repo root
+    if source_prefix and not filename.startswith('/'):
+        full_path = str(Path(source_prefix) / filename)
+    else:
+        full_path = filename
 
-        if not full_path:
-            full_path = filename
+    # Make path relative to repo root
+    try:
+        rel_path = str(Path(full_path).relative_to(repo_root))
+    except ValueError:
+        # If path is not relative to repo_root, use as-is
+        rel_path = full_path
 
-        # Make path relative to repo root
-        if full_path.startswith(repo_root + '/'):
-            relative_path = full_path[len(repo_root) + 1:]
-        else:
-            relative_path = filename
+    # Check if this is our target file (compare normalized paths)
+    if Path(rel_path) == Path(target_rel_path):
+        found_class = True
+        # Count covered and not covered lines
+        lines = cls.findall('.//line')
 
-        # Check if this matches our target file
-        if relative_path == target_path or class_name == target_name:
-            found = True
+        for line in lines:
+            hits = int(line.get('hits', 0))
+            if hits > 0:
+                covered += 1
+            else:
+                not_covered += 1
 
-            # Count covered and not covered lines
-            for line in cls.findall('.//line'):
-                hits = int(line.get('hits', '0'))
-                if hits > 0:
-                    covered += 1
-                else:
-                    not_covered += 1
-
-            break
-
-    if found:
-        break
-
-# Build result
+# Build result JSON
 result = {
     'target': {
         'name': target_name,
-        'path': target_path
+        'path': target_rel_path
     },
     'test': {
         'name': test_name,
-        'path': test_path
-    } if test_name and test_path else None,
+        'path': test_file_rel_path
+    },
     'lines': {
         'covered': covered,
         'notCovered': not_covered
-    } if found else None
+    }
 }
 
-if not found:
-    result['error'] = 'Target file not found in coverage report'
+# Output JSON
+print(json.dumps(result))
 
-print(json.dumps(result, indent=2))
 PYTHON_SCRIPT
+)
+
+# Clean up coverage directory
+rm -rf "$COVERAGE_DIR"
+
+# Output the result
+echo "$RESULT"
