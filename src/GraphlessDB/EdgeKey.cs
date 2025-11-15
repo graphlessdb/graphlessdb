@@ -66,12 +66,12 @@ namespace GraphlessDB
 
         public static bool operator ==([AllowNull] EdgeKey left, [AllowNull] EdgeKey right)
         {
-            if (left == null && right == null)
+            if (left is null && right is null)
             {
                 return true;
             }
 
-            if (left == null || right == null)
+            if (left is null || right is null)
             {
                 return false;
             }
@@ -81,12 +81,12 @@ namespace GraphlessDB
 
         public static bool operator !=([AllowNull] EdgeKey left, [AllowNull] EdgeKey right)
         {
-            if (left == null && right == null)
+            if (left is null && right is null)
             {
                 return false;
             }
 
-            if (left == null || right == null)
+            if (left is null || right is null)
             {
                 return true;
             }
