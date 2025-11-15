@@ -1,112 +1,139 @@
-#!/bin/bash
+#!/bin/zsh
 
-# Run code coverage for a specific project and return JSON with per-class coverage
+# Run code coverage for a single project and return JSON array of file coverage
+# Usage: ./run-project-coverage.sh <project-path> [limit]
+# Output: JSON array with format [{ name: "ClassName", path: "relative/path", lines: {covered: 123, notCovered: 123} }]
+# Ordered by notCovered (descending)
 
 set -e
 
-# Default limit
-LIMIT=5
+# Get the script directory and repository root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Check if project path is provided
-if [ $# -eq 0 ]; then
+# Parse arguments
+PROJECT_PATH="$1"
+LIMIT="${2:-5}"  # Default limit is 5
+
+if [ -z "$PROJECT_PATH" ]; then
+    echo "Error: Project path is required" >&2
     echo "Usage: $0 <project-path> [limit]" >&2
-    echo "Example: $0 GraphlessDB.Tests/GraphlessDB.Tests.csproj 10" >&2
     exit 1
 fi
 
-PROJECT_PATH="$1"
-
-# Parse optional limit parameter
-if [ $# -ge 2 ]; then
-    LIMIT="$2"
+# Convert to absolute path if relative
+if [[ "$PROJECT_PATH" != /* ]]; then
+    PROJECT_PATH="$REPO_ROOT/$PROJECT_PATH"
 fi
 
-# Get the directory of this script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Check if project file exists
+if [ ! -f "$PROJECT_PATH" ]; then
+    echo "Error: Project file not found: $PROJECT_PATH" >&2
+    exit 1
+fi
 
-# Extract project name from path
+# Get project name
 PROJECT_NAME=$(basename "$PROJECT_PATH" .csproj)
 
-# Change to the src directory
-cd "$PROJECT_ROOT/src"
-
-# Create coverage directory
-COVERAGE_DIR="$PROJECT_ROOT/coverage/$PROJECT_NAME"
+# Create temporary coverage directory
+COVERAGE_DIR="$REPO_ROOT/coverage/$PROJECT_NAME"
+rm -rf "$COVERAGE_DIR"
 mkdir -p "$COVERAGE_DIR"
 
-# Run tests with code coverage
+# Run tests with code coverage silently
+cd "$REPO_ROOT/src"
 dotnet test "$PROJECT_PATH" \
     --configuration Release \
     --collect:"XPlat Code Coverage" \
     --results-directory:"$COVERAGE_DIR" \
-    --verbosity quiet > /dev/null 2>&1
+    --verbosity quiet \
+    --nologo \
+    > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -1)
 
 if [ -z "$COVERAGE_FILE" ]; then
-    echo "[]"
-    exit 0
+    echo "Error: No coverage file found" >&2
+    exit 1
 fi
 
-# Export the coverage file path and limit for the Python script
-export COVERAGE_FILE
-export LIMIT
-
-# Parse the coverage XML and generate JSON output
-python3 <<'EOF'
+# Parse the coverage XML and generate JSON using Python
+python3 - "$COVERAGE_FILE" "$LIMIT" "$REPO_ROOT" <<'PYTHON_SCRIPT'
+import sys
 import xml.etree.ElementTree as ET
 import json
-import sys
 import os
 
-coverage_file = os.environ.get('COVERAGE_FILE')
-limit = int(os.environ.get('LIMIT', '5'))
+coverage_file = sys.argv[1]
+limit = int(sys.argv[2])
+repo_root = sys.argv[3]
 
-try:
-    tree = ET.parse(coverage_file)
-    root = tree.getroot()
+# Parse the coverage XML
+tree = ET.parse(coverage_file)
+root = tree.getroot()
 
-    results = []
+# Get source directories from the coverage file
+sources = []
+for source in root.findall('.//source'):
+    sources.append(source.text)
 
-    # Iterate through all classes in the coverage report
-    for package in root.findall('.//package'):
-        for class_elem in package.findall('.//class'):
-            class_name = class_elem.get('name', '')
+# Extract coverage data for each class
+results = []
 
-            # Count covered and not covered lines
-            covered = 0
-            not_covered = 0
+for package in root.findall('.//package'):
+    for cls in package.findall('.//class'):
+        class_name = cls.get('name', '')
+        filename = cls.get('filename', '')
 
-            for line in class_elem.findall('.//lines/line'):
-                hits = int(line.get('hits', '0'))
-                if hits > 0:
-                    covered += 1
-                else:
-                    not_covered += 1
+        # Skip if no filename
+        if not filename:
+            continue
 
-            # Only include classes that have lines
-            if covered > 0 or not_covered > 0:
-                results.append({
-                    'name': class_name,
-                    'lines': {
-                        'covered': covered,
-                        'notCovered': not_covered
-                    }
-                })
+        # Count covered and not covered lines
+        covered = 0
+        not_covered = 0
 
-    # Sort by notCovered descending (highest first)
-    results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+        for line in cls.findall('.//line'):
+            hits = int(line.get('hits', '0'))
+            if hits > 0:
+                covered += 1
+            else:
+                not_covered += 1
 
-    # Apply limit
-    results = results[:limit]
+        # Construct full path from source directories
+        full_path = None
+        for source in sources:
+            candidate = os.path.join(source, filename)
+            if os.path.exists(candidate):
+                full_path = candidate
+                break
 
-    # Output JSON
-    print(json.dumps(results, indent=2))
+        if not full_path:
+            # If not found in sources, try as-is
+            full_path = filename
 
-except Exception as e:
-    # In case of error, output empty array
-    print('[]')
-    sys.exit(0)
-EOF
+        # Make path relative to repo root
+        if full_path.startswith(repo_root + '/'):
+            relative_path = full_path[len(repo_root) + 1:]
+        else:
+            relative_path = filename
+
+        results.append({
+            'name': class_name,
+            'path': relative_path,
+            'lines': {
+                'covered': covered,
+                'notCovered': not_covered
+            }
+        })
+
+# Sort by notCovered (descending)
+results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+
+# Apply limit
+results = results[:limit]
+
+# Output JSON
+print(json.dumps(results, indent=2))
+PYTHON_SCRIPT
