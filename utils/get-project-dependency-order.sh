@@ -1,96 +1,98 @@
 #!/bin/zsh
 
-# Script to return project folders in dependency order (leaf nodes first)
-# Analyzes .csproj files to determine the dependency graph
+# This script analyzes .NET project dependencies and returns them in dependency order
+# Output: JSON array with format [{name: "", path: "", isTestProject: true}]
+# Order: Leaf nodes (fewest dependees) first, root nodes (most dependees) last
 
 set -e
 
-# Get the directory where the script is located
-SCRIPT_DIR="${0:A:h}"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-SRC_DIR="$PROJECT_ROOT/src"
+# Get the script directory and repository root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+cd "$REPO_ROOT"
+
+# Use Python to parse projects and calculate dependency order
+python3 - <<'PYTHON_SCRIPT'
+import os
+import re
+import json
+from pathlib import Path
+from collections import defaultdict, deque
 
 # Find all .csproj files
-typeset -A dependencies
-typeset -A projects
-typeset -A depths
-all_projects=()
+project_files = []
+for root, dirs, files in os.walk("src"):
+    for file in files:
+        if file.endswith(".csproj"):
+            project_files.append(os.path.join(root, file))
 
-# Read all project files
-while IFS= read -r -d '' csproj_file; do
-    project_dir=$(dirname "$csproj_file")
-    project_name=$(basename "$project_dir")
+# Parse project information
+projects = {}
+dependencies = defaultdict(list)
 
-    all_projects+=("$project_name")
-    projects["$project_name"]="$project_dir"
+for proj_path in sorted(project_files):
+    with open(proj_path, 'r') as f:
+        content = f.read()
 
-    # Extract ProjectReference dependencies using grep and sed
-    deps=()
-    while IFS= read -r dep_name; do
-        [[ -n "$dep_name" ]] && deps+=("$dep_name")
-    done < <(grep 'ProjectReference' "$csproj_file" 2>/dev/null | grep -o 'Include="\.\.[^"]*' | sed 's|Include="\.\.[/\\]||' | sed 's|[/\\].*||' || true)
+    # Get project name
+    proj_name = os.path.basename(proj_path).replace('.csproj', '')
 
-    # Store dependencies as comma-separated string
-    dependencies["$project_name"]=$(IFS=,; echo "${deps[*]}")
-done < <(find "$SRC_DIR" -name "*.csproj" -print0)
+    # Check if it's a test project
+    is_test = (
+        '.Tests' in proj_name or
+        'Microsoft.NET.Test.Sdk' in content or
+        'Sdk="Microsoft.NET.Test.Sdk"' in content
+    )
 
-# Function to calculate dependency depth (number of dependees)
-calculate_depth() {
-    local project=$1
-    local visited=$2
+    projects[proj_name] = {
+        'name': proj_name,
+        'path': proj_path,
+        'isTestProject': is_test
+    }
 
-    # Check for circular dependency
-    if [[ $visited == *",$project,"* ]]; then
-        echo 0
-        return
-    fi
+    # Extract ProjectReference dependencies
+    proj_refs = re.findall(r'<ProjectReference\s+Include="([^"]+)"', content)
+    for ref_path in proj_refs:
+        # Get just the project name from the reference (handle both / and \ separators)
+        dep_name = ref_path.replace('\\', '/').split('/')[-1].replace('.csproj', '')
+        dependencies[proj_name].append(dep_name)
 
-    # Access global dependencies array - need quotes around subscript in zsh
-    local deps_str="${dependencies["$project"]}"
-    if [[ -z "$deps_str" ]]; then
-        echo 0
-        return
-    fi
+# Topological sort using Kahn's algorithm
+# Calculate in-degrees (number of dependencies each project has)
+in_degree = {name: 0 for name in projects}
+for proj_name, deps in dependencies.items():
+    in_degree[proj_name] = len(deps)
 
-    local max_depth=0
-    # Split on comma using zsh parameter expansion
-    local dep_array=("${(@s:,:)deps_str}")
-    for dep in "${dep_array[@]}"; do
-        if [[ -n "$dep" ]]; then
-            local dep_depth=$(calculate_depth "$dep" "$visited,$project,")
-            if (( dep_depth >= max_depth )); then
-                max_depth=$((dep_depth + 1))
-            fi
-        fi
-    done
+# Build reverse dependency graph (dependency -> dependents)
+dependents = defaultdict(list)
+for proj_name, deps in dependencies.items():
+    for dep in deps:
+        dependents[dep].append(proj_name)
 
-    echo $max_depth
-}
+# Queue of nodes with no dependencies
+queue = deque([name for name, degree in in_degree.items() if degree == 0])
+result = []
 
-# Calculate depths for all projects
-for project in "${all_projects[@]}"; do
-    depth=$(calculate_depth "$project" ",")
-    depths[$project]=$depth
-done
+while queue:
+    current = queue.popleft()
+    result.append(current)
 
-# Sort projects by depth (ascending)
-sorted_projects=()
-while IFS= read -r line; do
-    project=$(echo "$line" | cut -d' ' -f2)
-    sorted_projects+=("$project")
-done < <(for project in "${all_projects[@]}"; do
-    echo "${depths[$project]} $project"
-done | sort -n)
+    # Process all dependents
+    for dependent in dependents[current]:
+        in_degree[dependent] -= 1
+        if in_degree[dependent] == 0:
+            queue.append(dependent)
 
-# Output as JSON array
-echo -n "["
-first=true
-for project in "${sorted_projects[@]}"; do
-    if [ "$first" = true ]; then
-        first=false
-    else
-        echo -n ","
-    fi
-    echo -n "\"$project\""
-done
-echo "]"
+# Generate JSON output
+output = []
+for proj_name in result:
+    proj_info = projects[proj_name]
+    output.append({
+        'name': proj_info['name'],
+        'path': proj_info['path'],
+        'isTestProject': proj_info['isTestProject']
+    })
+
+print(json.dumps(output, indent=2))
+PYTHON_SCRIPT
