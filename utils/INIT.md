@@ -1,6 +1,4 @@
-# Agent Notes
-
-## Agent commands to setup deterministic utility scripts
+# Prompts to initialise utils
 
 - Create a utility script (called run-tests.sh) in ./utils which can run all unit tests
 - Create a utility script (called run-coverage.sh) in ./utils which can run code coverage using all unit tests, run and validate that the script creates output describing the current coverage.
@@ -8,7 +6,3 @@
 - Create a utility script (called run-project-coverage.sh) which runs code coverage for all the unit tests within a single project, it should return a simple JSON parsable array.  The array item should be in the format { name: "MyName", path: "", lines: {covered: 123, notCovered: 123 } }.  The "name" should be the name of the class, the "path" should be the full file path relative to root.  The array should be ordered so that items with larger notCovered appear at the start.  The script should accept an optional limit parameter which reduces the final array output length to that size, the default limit value should be 5.  The script should accept the full project filepath relative to the root.  Ensure that the output "path" from the get-project-dependency-order.sh script works as the input to this script.
 - Create a utility script (called get-least-covered-file.sh) which runs the get-project-dependency-order.sh script, iterates over the returned project list items which are not test projects, and runs the run-project-coverage.sh script on each item one at a time.  After getting the response from run-project-coverage.sh it should check the "notCovered" value of the first item in the array. If the value is non zero it should a JSON object in the format { filePath: "./folder/file.ext" } and exit the script, the filePath should be relative to the root folder.  If the "notCovered" value is zero then it should carry on iterating through the projects.  Do not return any other output from the script other than the result it one is found.  Verify that the script generates the correct output. Only use the utils scripts I've mentioned here for this task.
 - Create a utility script (called get-file-coverage.sh) which takes the filepath of a file as input.  That argument is the target file to be covered.  There may or may not be an associated test file dedicated to providing unit testing and coverage to that target file.  If a unit test file is found then code coverage should be run just for that target file and the response returned.  The output should be in JSON format as follows: { target: { name: "", path: "" }, test: { name: "", path: "" }, lines: {covered: 123, notCovered: 123 } }.  When generating the script ensure that a filepath extracted from the output of get-least-covered-file.sh script can be used as input to this script.
-
-## Agent commands
-
-- Run get-least-covered-file.sh to get the name of a file which requires unit testing to increase its code coverage.  Then determine and implement any missing unit tests for that file. You should iterate using get-file-coverage.sh until the  nonCovered lines has reached 0.
