@@ -149,9 +149,14 @@ for cls in root.findall('.//class'):
     # Normalize paths for comparison
     normalized_filename = os.path.normpath(filename)
     normalized_target = os.path.normpath(target_file)
+    target_basename = os.path.basename(target_file)
 
     # Check if this is our target file
-    if normalized_filename == normalized_target or filename.endswith('/' + os.path.basename(target_file)):
+    # Coverage XML may contain just the filename, relative path, or full path
+    if (normalized_filename == normalized_target or
+        filename == target_basename or
+        filename.endswith('/' + target_basename) or
+        filename.endswith('\\' + target_basename)):
         found = True
 
         # Count covered and not covered lines
