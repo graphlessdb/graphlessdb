@@ -1,6 +1,6 @@
 # Agent Notes
 
-## Setting up intstruction
+## Agent commands to setup deterministic utility scripts
 
 - Create a utility script (called run-tests.sh) in ./utils which can run all unit tests
 - Create a utility script (called run-coverage.sh) in ./utils which can run code coverage using all unit tests, run and validate that the script creates output describing the current coverage.
@@ -9,6 +9,6 @@
 - Create a utility script (called get-least-covered-file.sh) which runs the get-project-dependency-order.sh script, iterates over the returned project list items and runs the run-project-coverage.sh script on each item one at a time.  After getting the response from run-project-coverage.sh it should check the "notCovered" value of the first item in the array. If the value is non zero it should return the "name" value and exit the script.  If the "notCovered" value is zero then it should carry on iterating through the projects.  Do not return any other output from the script other than the result it one is found.  Verify that the script generates the correct output.
 - Create a utility script (called get-file-coverage.sh) which takes the name of a file as input.  That argument is the target file to be covered.  There may or may not be an associated test file dedicated to providing unit testing and coverage to that target file.  If a unit test file is found then code coverage should be run just for that target file and the response returned.  The output should be in JSON format as follows: { file: "TargetFileName", test: "UnitTestFileName", coverageOutput: "..." }.  When generating the script you may use the get-least-covered-file.sh script to determine a suitable target file.
 
-## Scratch Instruction
+## Agent commands
 
-- Run get-least-covered-file.sh to get the name of a file which requires unit testing to increase its code coverage.
+- Run get-least-covered-file.sh to get the name of a file which requires unit testing to increase its code coverage.  Then determine and implement any missing unit tests for that file. You should iterate using get-file-coverage.sh until the  nonCovered lines has reached 0.
