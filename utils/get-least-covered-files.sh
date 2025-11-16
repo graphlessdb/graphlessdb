@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-# Get the least covered files across all non-test projects
+# Find the least covered files across all non-test projects
 # Usage: ./get-least-covered-files.sh [limit]
 # Output: JSON array of files ordered by notCovered lines (descending)
 
@@ -10,80 +10,115 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Get limit parameter (default: 5)
+# Parse arguments
 LIMIT="${1:-5}"
 
 # Get project dependency order
 PROJECTS_JSON=$("$SCRIPT_DIR/get-project-dependency-order.sh")
 
-# Initialize results array
-ALL_RESULTS=()
-
-# Parse projects and process each non-test project
-python3 <<PYTHON_SCRIPT
+# Parse projects and collect least covered files using a temporary Python script
+TEMP_SCRIPT=$(mktemp)
+cat > "$TEMP_SCRIPT" <<'EOF'
 import sys
 import json
 import subprocess
+import os
 
-projects_json = '''$PROJECTS_JSON'''
-script_dir = "$SCRIPT_DIR"
-limit = $LIMIT
+limit = int(sys.argv[1])
+script_dir = sys.argv[2]
 
-# Parse projects
+# Read projects from stdin
+projects_json = sys.stdin.read()
 projects = json.loads(projects_json)
 
-# Filter non-test projects
-non_test_projects = [p for p in projects if p.get('isTestProject') is False]
+# Collect all least covered files from non-test projects
+all_files = []
 
-# Collect all results
-all_results = []
+for project in projects:
+    # Skip test projects
+    if project['isTestProject']:
+        continue
 
-for project in non_test_projects:
     project_path = project['path']
 
-    # Find the test project for this project
-    # Convention: Project.Tests for Project
-    test_project_name = project['name'] + '.Tests'
-    test_project = next((p for p in projects if p['name'] == test_project_name), None)
+    # Try to get coverage for this project
+    # We need to find the corresponding test project
+    project_name = project['name']
+    test_project_name = f"{project_name}.Tests"
+
+    # Find the test project in the list
+    test_project = None
+    for p in projects:
+        if p['name'] == test_project_name and p['isTestProject']:
+            test_project = p
+            break
 
     if not test_project:
-        # No test project found, skip
+        # No test project found, skip this project
         continue
 
     # Run coverage for the test project
     try:
         result = subprocess.run(
-            [f"{script_dir}/run-project-coverage.sh", test_project['path'], str(limit)],
+            [f"{script_dir}/run-project-coverage.sh", test_project['path'], "1000"],
             capture_output=True,
             text=True,
             check=True
         )
 
-        # Parse the JSON output
-        coverage_data = json.loads(result.stdout)
+        files = json.loads(result.stdout)
 
-        # Filter items with notCovered > 0
-        for item in coverage_data:
-            if item['lines']['notCovered'] > 0:
-                all_results.append(item)
+        # Filter files based on criteria
+        for file in files:
+            not_covered = file['lines']['notCovered']
+            covered = file['lines']['covered']
+            path = file['path']
 
-                # Check if we've hit the limit
-                if len(all_results) >= limit:
-                    break
+            # Skip if notCovered is 0
+            if not_covered == 0:
+                continue
 
-        # Exit early if we've hit the limit
-        if len(all_results) >= limit:
+            # Skip if path contains /obj/
+            if '/obj/' in path:
+                continue
+
+            # Calculate coverage ratio
+            total_lines = covered + not_covered
+            if total_lines > 0:
+                coverage_ratio = covered / total_lines
+
+                # Skip if coverage is >= 80%
+                if coverage_ratio >= 0.8:
+                    continue
+
+            # Add to results
+            all_files.append(file)
+
+            # Check if we've reached the limit
+            if len(all_files) >= limit:
+                break
+
+        # Break out of project loop if we've reached the limit
+        if len(all_files) >= limit:
             break
 
     except subprocess.CalledProcessError:
-        # Test project execution failed, skip
-        continue
-    except json.JSONDecodeError:
-        # Invalid JSON output, skip
+        # If coverage fails for this project, continue to next
         continue
 
-# Truncate to limit and output
-all_results = all_results[:limit]
-print(json.dumps(all_results, indent=2))
+# Sort all files by notCovered (descending)
+all_files.sort(key=lambda x: (-x['lines']['notCovered'], x['name']))
 
-PYTHON_SCRIPT
+# Truncate to limit
+all_files = all_files[:limit]
+
+# Output JSON
+print(json.dumps(all_files, indent=2))
+
+EOF
+
+# Run the Python script
+echo "$PROJECTS_JSON" | python3 "$TEMP_SCRIPT" "$LIMIT" "$SCRIPT_DIR"
+
+# Clean up
+rm -f "$TEMP_SCRIPT"
