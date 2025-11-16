@@ -65,30 +65,32 @@ namespace GraphlessDB.Tests
             return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         }
 
-        private static FluentEdgeFromRelayEdgeQuery CreateNonGenericQuery(IGraphQueryExecutionService service, string key, string typeName, string inId, string outId)
+        private static FluentEdgeFromRelayEdgeQuery CreateNonGenericQuery(IGraphQueryExecutionService service, UserLikesUserEdge edge)
         {
+            var rootKey = "root";
             var query = ImmutableTree<string, GraphQueryNode>.Empty
-                .AddNode(key, new GraphQueryNode(new EdgeOrDefaultByIdQuery(typeName, inId, outId, false, null)));
+                .AddNode(rootKey, new GraphQueryNode(new EdgeOrDefaultByIdQuery(nameof(UserLikesUserEdge), edge.InId, edge.OutId, false, null)));
 
             return new FluentEdgeFromRelayEdgeQuery(
                 service,
                 query,
-                key);
+                rootKey);
         }
 
-        private static FluentEdgeFromRelayEdgeQuery<UserLikesUserEdge> CreateGenericQuery(IGraphQueryExecutionService service, string key, string typeName, string inId, string outId)
+        private static FluentEdgeFromRelayEdgeQuery<UserLikesUserEdge> CreateGenericQuery(IGraphQueryExecutionService service, UserLikesUserEdge edge)
         {
+            var rootKey = "root";
             var query = ImmutableTree<string, GraphQueryNode>.Empty
-                .AddNode(key, new GraphQueryNode(new EdgeOrDefaultByIdQuery(typeName, inId, outId, false, null)));
+                .AddNode(rootKey, new GraphQueryNode(new EdgeOrDefaultByIdQuery(nameof(UserLikesUserEdge), edge.InId, edge.OutId, false, null)));
 
             return new FluentEdgeFromRelayEdgeQuery<UserLikesUserEdge>(
                 service,
                 query,
-                key);
+                rootKey);
         }
 
         [TestMethod]
-        public async Task GetAsyncReturnsEdge()
+        public async Task NonGenericGetAsyncWithConfigureReturnsEdge()
         {
             // Init
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -109,38 +111,7 @@ namespace GraphlessDB.Tests
             // Get
             using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var query = CreateNonGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), edge.InId, edge.OutId);
-
-            var result = await query.GetAsync(q => q, cancellationToken);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(edge.InId, result.InId);
-            Assert.AreEqual(edge.OutId, result.OutId);
-        }
-
-        [TestMethod]
-        public async Task GetAsyncWithConfigureFuncReturnsEdge()
-        {
-            // Init
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
-            var services = GetServiceProvider();
-            var user1 = User.New("user1");
-            var user2 = User.New("user2");
-            var edge = UserLikesUserEdge.New(user1, user2);
-
-            // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
-                .ExecuteAsync(cancellationToken);
-
-            // Get
-            using var scope = services.CreateScope();
-            var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var query = CreateNonGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), edge.InId, edge.OutId);
+            var query = CreateNonGenericQuery(graphQueryService, edge);
 
             var result = await query.GetAsync(q => q.WithConsistentRead(true), cancellationToken);
 
@@ -150,26 +121,29 @@ namespace GraphlessDB.Tests
         }
 
         [TestMethod]
-        public async Task GetAsyncThrowsWhenEdgeNotFound()
+        public async Task NonGenericGetAsyncThrowsWhenEdgeNotFound()
         {
             // Init
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
 
-            // Get
+            // Get without adding
             using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var nonExistentInId = GlobalId.Get<User>(Guid.NewGuid().ToString());
-            var nonExistentOutId = GlobalId.Get<User>(Guid.NewGuid().ToString());
-            var query = CreateNonGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), nonExistentInId, nonExistentOutId);
+            var query = CreateNonGenericQuery(graphQueryService, edge);
 
-            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(
-                async () => await query.GetAsync(q => q, cancellationToken));
+            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(async () =>
+            {
+                await query.GetAsync(q => q.WithConsistentRead(true), cancellationToken);
+            });
         }
 
         [TestMethod]
-        public async Task GenericGetAsyncReturnsEdge()
+        public async Task GenericGetAsyncWithConfigureReturnsEdge()
         {
             // Init
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -190,38 +164,7 @@ namespace GraphlessDB.Tests
             // Get
             using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var query = CreateGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), edge.InId, edge.OutId);
-
-            var result = await query.GetAsync(q => q, cancellationToken);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(edge.InId, result.InId);
-            Assert.AreEqual(edge.OutId, result.OutId);
-        }
-
-        [TestMethod]
-        public async Task GenericGetAsyncWithConfigureFuncReturnsEdge()
-        {
-            // Init
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
-            var services = GetServiceProvider();
-            var user1 = User.New("user1");
-            var user2 = User.New("user2");
-            var edge = UserLikesUserEdge.New(user1, user2);
-
-            // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
-                .ExecuteAsync(cancellationToken);
-
-            // Get
-            using var scope = services.CreateScope();
-            var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var query = CreateGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), edge.InId, edge.OutId);
+            var query = CreateGenericQuery(graphQueryService, edge);
 
             var result = await query.GetAsync(q => q.WithConsistentRead(true), cancellationToken);
 
@@ -237,16 +180,19 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
 
-            // Get
+            // Get without adding
             using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
-            var nonExistentInId = GlobalId.Get<User>(Guid.NewGuid().ToString());
-            var nonExistentOutId = GlobalId.Get<User>(Guid.NewGuid().ToString());
-            var query = CreateGenericQuery(graphQueryService, "root", nameof(UserLikesUserEdge), nonExistentInId, nonExistentOutId);
+            var query = CreateGenericQuery(graphQueryService, edge);
 
-            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(
-                async () => await query.GetAsync(q => q, cancellationToken));
+            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(async () =>
+            {
+                await query.GetAsync(q => q.WithConsistentRead(true), cancellationToken);
+            });
         }
     }
 }
