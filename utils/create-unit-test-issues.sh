@@ -1,52 +1,42 @@
 #!/bin/bash
 
-# Script to create GitHub issues for files with least test coverage
+# Create GitHub issues for least covered files
 # Usage: ./create-unit-test-issues.sh [limit]
 
 set -e
 
-# Get the script directory and project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIMIT=${1:-10}
 
-# Default limit is 10
-LIMIT="${1:-10}"
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-echo "Getting least covered files with limit: $LIMIT"
+# Get least covered files
+FILES_JSON=$("$(dirname "$0")/get-least-covered-files.sh" "$LIMIT")
 
-# Run get-least-covered-files.sh to get the files
-COVERAGE_DATA=$("$SCRIPT_DIR/get-least-covered-files.sh" "$LIMIT")
+# Create issues using gh CLI
+echo "$FILES_JSON" | python3 - <<'PYTHON_SCRIPT'
+import sys
+import json
+import subprocess
 
-# Check if we got any data
-if [ -z "$COVERAGE_DATA" ] || [ "$COVERAGE_DATA" = "[]" ]; then
-    echo "No files found that need coverage improvement"
-    exit 0
-fi
+files_json = sys.stdin.read()
+files = json.loads(files_json)
 
-# Parse the JSON array and create issues for each item
-echo "$COVERAGE_DATA" | jq -c '.[]' | while read -r item; do
-    # Extract the name property
-    NAME=$(echo "$item" | jq -r '.name')
+for file_info in files:
+    name = file_info['name']
+    title = f"Create unit tests for {name}"
+    body = json.dumps(file_info, indent=2)
 
-    # Use the entire JSON object as the description
-    DESCRIPTION="$item"
-
-    # Create the issue title
-    TITLE="Create unit tests for $NAME"
-
-    echo "Creating issue: $TITLE"
-
-    # Create the GitHub issue
-    gh issue create \
-        --title "$TITLE" \
-        --body "$DESCRIPTION" \
-        --repo graphlessdb/graphlessdb
-
-    if [ $? -eq 0 ]; then
-        echo "✓ Created issue for $NAME"
-    else
-        echo "✗ Failed to create issue for $NAME"
-    fi
-done
-
-echo "Completed creating GitHub issues"
+    # Create GitHub issue
+    try:
+        result = subprocess.run(
+            ['gh', 'issue', 'create', '--title', title, '--body', body],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(f"Created issue: {title}")
+        print(f"  URL: {result.stdout.strip()}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error creating issue for {name}: {e.stderr}")
+PYTHON_SCRIPT

@@ -1,48 +1,101 @@
 #!/bin/bash
 
-# Script to find a GitHub issue with status "Todo" and update it to "In Progress"
-# Usage: ./begin-issue.sh
+# Find a GitHub issue with status "Todo" and update it to "In Progress"
+# Returns the issue number
 
 set -e
 
-# Get the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-# Project and field IDs
+# Get project ID
 PROJECT_ID="PVT_kwDODEiIac4BIN8m"
-STATUS_FIELD_ID="PVTSSF_lADODEiIac4BIN8mzg4vkfc"
-IN_PROGRESS_OPTION_ID="47fc9ee4"
 
-echo "Searching for issues with status 'Todo'..."
+# Find issues with Todo status using gh api
+TODO_ISSUES=$(gh api graphql -f query='
+{
+  node(id: "'$PROJECT_ID'") {
+    ... on ProjectV2 {
+      items(first: 100) {
+        nodes {
+          id
+          content {
+            ... on Issue {
+              number
+              title
+            }
+          }
+          fieldValues(first: 10) {
+            nodes {
+              ... on ProjectV2ItemFieldSingleSelectValue {
+                name
+                field {
+                  ... on ProjectV2SingleSelectField {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+' --jq '.data.node.items.nodes[] | select(.fieldValues.nodes[] | select(.field.name == "Status" and .name == "Todo")) | {itemId: .id, issueNumber: .content.number}' 2>/dev/null || echo "{}")
 
-# Get project items with status "Todo" from project #1
-PROJECT_ITEMS=$(gh project item-list 1 --owner graphlessdb --format json --limit 100)
+# Extract first issue
+ITEM_ID=$(echo "$TODO_ISSUES" | head -n 1 | jq -r '.itemId')
+ISSUE_NUM=$(echo "$TODO_ISSUES" | head -n 1 | jq -r '.issueNumber')
 
-# Extract the first item with status "Todo" and get its issue number
-ITEM_DATA=$(echo "$PROJECT_ITEMS" | jq -r '.items[] | select(.status == "Todo") | {number: .content.number, id: .id} | @json' | head -n 1)
-
-# Check if we found an item
-if [ -z "$ITEM_DATA" ]; then
-    echo "No issues found with status 'Todo'"
-    exit 1
+if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" == "null" ]; then
+  echo "No issues found with status 'Todo'"
+  exit 1
 fi
 
-# Extract issue number and item ID
-ISSUE_NUMBER=$(echo "$ITEM_DATA" | jq -r '.number')
-ITEM_ID=$(echo "$ITEM_DATA" | jq -r '.id')
+# Get the Status field ID
+FIELD_ID=$(gh api graphql -f query='
+{
+  node(id: "'$PROJECT_ID'") {
+    ... on ProjectV2 {
+      fields(first: 20) {
+        nodes {
+          ... on ProjectV2SingleSelectField {
+            id
+            name
+            options {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+' --jq '.data.node.fields.nodes[] | select(.name == "Status") | {fieldId: .id, inProgressId: (.options[] | select(.name == "In Progress") | .id)}')
 
-echo "Found issue #$ISSUE_NUMBER with status 'Todo'"
+STATUS_FIELD_ID=$(echo "$FIELD_ID" | jq -r '.fieldId')
+IN_PROGRESS_OPTION_ID=$(echo "$FIELD_ID" | jq -r '.inProgressId')
 
-# Update the project item status to "In Progress"
-echo "Updating issue #$ISSUE_NUMBER to 'In Progress'..."
+# Update status to "In Progress"
+gh api graphql -f query='
+mutation {
+  updateProjectV2ItemFieldValue(
+    input: {
+      projectId: "'$PROJECT_ID'"
+      itemId: "'$ITEM_ID'"
+      fieldId: "'$STATUS_FIELD_ID'"
+      value: {
+        singleSelectOptionId: "'$IN_PROGRESS_OPTION_ID'"
+      }
+    }
+  ) {
+    projectV2Item {
+      id
+    }
+  }
+}
+' > /dev/null 2>&1 || echo "Warning: Could not update status" >&2
 
-gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" --field-id "$STATUS_FIELD_ID" --single-select-option-id "$IN_PROGRESS_OPTION_ID"
-
-if [ $? -eq 0 ]; then
-    echo "✓ Successfully updated issue #$ISSUE_NUMBER to 'In Progress'"
-    echo "$ISSUE_NUMBER"
-else
-    echo "✗ Failed to update issue #$ISSUE_NUMBER"
-    exit 1
-fi
+echo "Issue #$ISSUE_NUM"

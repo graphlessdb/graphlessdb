@@ -1,160 +1,101 @@
-#!/bin/zsh
+#!/bin/bash
 
-# Get the least covered files across all projects
+# Get least covered files across all non-test projects
 # Usage: ./get-least-covered-files.sh [limit]
-# Output: JSON array of files ordered by notCovered lines (descending)
 
 set -e
 
-# Get the script directory and repository root
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LIMIT=${1:-5}
 
-# Default limit
-LIMIT="${1:-5}"
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-# Get project dependency order and pipe to Python script
-"$SCRIPT_DIR/get-project-dependency-order.sh" | python3 -c '
+# Get project list using get-project-dependency-order.sh
+PROJECTS_JSON=$("$(dirname "$0")/get-project-dependency-order.sh")
+
+# Save to temp file for Python script
+TEMP_PROJECTS=$(mktemp)
+echo "$PROJECTS_JSON" > "$TEMP_PROJECTS"
+
+# Parse projects and run coverage for non-test projects
+python3 - "$TEMP_PROJECTS" "$LIMIT" <<'PYTHON_SCRIPT'
 import sys
 import json
 import subprocess
-import re
+import os
 
-def main():
-    if len(sys.argv) < 3:
-        print("Error: Missing arguments", file=sys.stderr)
-        sys.exit(1)
+projects_file = sys.argv[1]
+limit = int(sys.argv[2])
 
-    projects_json = sys.stdin.read()
-    script_dir = sys.argv[1]
-    limit = int(sys.argv[2])
+with open(projects_file, 'r') as f:
+    projects_json = f.read()
 
-    projects = json.loads(projects_json)
+projects = json.loads(projects_json)
 
-    # Patterns to identify compiler-generated classes
-    COMPILER_GENERATED_PATTERNS = [
-        r"^<.*>",  # Starts with angle bracket (e.g., <>c__DisplayClass)
-        r"__DisplayClass",  # Display classes
-        r"__StaticArrayInit",  # Static array initializers
-        r"\+<>c$",  # Nested compiler-generated closure classes
-        r"\+<.*>d__\d+$",  # Async state machines
-        r"/<.*>d__\d+$",  # Iterator state machines
-        r"^Program\$<.*>$",  # Top-level statement classes
-        r"\$<.*>$",  # Other compiler-generated classes
-    ]
+all_results = []
 
-    # Patterns to identify compiler-generated file paths
-    COMPILER_GENERATED_PATH_PATTERNS = [
-        r"/obj/",  # Files in obj directory (build artifacts)
-        r"/bin/",  # Files in bin directory (build artifacts)
-        r"\.g\.cs$",  # Generated source files (.g.cs extension)
-        r"\.Designer\.cs$",  # Designer-generated files
-        r"\.AssemblyInfo\.cs$",  # Assembly info files
-        r"\.AssemblyAttributes\.cs$",  # Assembly attribute files
-    ]
+for project in projects:
+    # Only process test projects (they test the non-test projects)
+    if not project['isTestProject']:
+        continue
 
-    def is_compiler_generated(class_name, file_path=""):
-        """Check if a class name or file path matches compiler-generated patterns"""
-        # Check class name patterns
-        for pattern in COMPILER_GENERATED_PATTERNS:
-            if re.search(pattern, class_name):
-                return True
+    project_path = project['path']
 
-        # Check file path patterns
-        for pattern in COMPILER_GENERATED_PATH_PATTERNS:
-            if re.search(pattern, file_path):
-                return True
+    # Run coverage for this test project
+    try:
+        result = subprocess.run(
+            ['./utils/run-project-coverage.sh', project_path, '1000'],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
 
-        return False
+        if result.returncode == 0:
+            files = json.loads(result.stdout)
 
-    def should_include(item):
-        """Determine if an item should be included in results"""
-        not_covered = item["lines"]["notCovered"]
-        covered = item["lines"]["covered"]
+            # Filter files
+            for file_info in files:
+                not_covered = file_info['lines']['notCovered']
+                covered = file_info['lines']['covered']
+                total = covered + not_covered
 
-        # Filter out items with notCovered = 0
-        if not_covered == 0:
-            return False
+                # Skip if no uncovered lines
+                if not_covered == 0:
+                    continue
 
-        # Filter out compiler-generated classes
-        if is_compiler_generated(item["name"], item.get("path", "")):
-            return False
+                # Skip if coverage ratio >= 0.8 (80%)
+                if total > 0 and (covered / total) >= 0.8:
+                    continue
 
-        # Calculate coverage ratio
-        total_lines = covered + not_covered
-        if total_lines == 0:
-            return False
+                # Skip compiler-generated files
+                path = file_info['path']
+                if '/obj/' in path or '\\obj\\' in path:
+                    continue
+                if '.g.cs' in path or 'Generated' in path or '.Designer.' in path:
+                    continue
 
-        coverage_ratio = covered / total_lines
+                all_results.append(file_info)
 
-        # Filter out items with >= 80% coverage
-        if coverage_ratio >= 0.8:
-            return False
+                # Early exit if we have enough results
+                if len(all_results) >= limit:
+                    break
 
-        return True
+        # Early exit if we have enough results
+        if len(all_results) >= limit:
+            break
 
-    # Collect results from all non-test projects
-    all_results = []
+    except Exception as e:
+        # Continue to next project on error
+        continue
 
-    for project in projects:
-        # Skip test projects
-        if project["isTestProject"]:
-            continue
+# Sort by notCovered descending
+all_results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
 
-        # Find corresponding test project
-        project_name = project["name"]
-        test_project_name = f"{project_name}.Tests"
+# Limit results
+all_results = all_results[:limit]
 
-        # Look for the test project in the projects list
-        test_project = None
-        for p in projects:
-            if p["name"] == test_project_name and p["isTestProject"]:
-                test_project = p
-                break
+print(json.dumps(all_results, indent=2))
+PYTHON_SCRIPT
 
-        # Skip if no test project found
-        if not test_project:
-            continue
-
-        # Run coverage for the test project
-        try:
-            result = subprocess.run(
-                [f"{script_dir}/run-project-coverage.sh", test_project["path"], "1000"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-
-            coverage_data = json.loads(result.stdout)
-
-            # Filter and append results
-            for item in coverage_data:
-                if should_include(item):
-                    all_results.append(item)
-
-                    # Check if we have reached the limit
-                    if len(all_results) >= limit:
-                        break
-
-            # Check if we have reached the limit
-            if len(all_results) >= limit:
-                break
-
-        except subprocess.CalledProcessError:
-            # Skip projects that fail to run coverage
-            continue
-        except json.JSONDecodeError:
-            # Skip projects with invalid JSON output
-            continue
-
-    # Sort by notCovered (descending), then by name for consistency
-    all_results.sort(key=lambda x: (-x["lines"]["notCovered"], x["name"]))
-
-    # Truncate to limit
-    all_results = all_results[:limit]
-
-    # Output JSON
-    print(json.dumps(all_results, indent=2))
-
-main()
-' "$SCRIPT_DIR" "$LIMIT"
+# Clean up temp file
+rm -f "$TEMP_PROJECTS"

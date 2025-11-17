@@ -1,98 +1,71 @@
-#!/bin/zsh
+#!/bin/bash
 
-# This script analyzes .NET project dependencies and returns them in dependency order
-# Output: JSON array with format [{name: "", path: "", isTestProject: true}]
-# Order: Leaf nodes (fewest dependees) first, root nodes (most dependees) last
+# Returns JSON array of projects ordered by dependency (leaf nodes first)
+# Format: [{name: "", path: "", isTestProject: true}, ...]
 
 set -e
 
-# Get the script directory and repository root
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-cd "$REPO_ROOT"
+# Create temporary files to store project info
+TEMP_DIR=$(mktemp -d)
+PROJ_INFO="$TEMP_DIR/projects.txt"
 
-# Use Python to parse projects and calculate dependency order
-python3 - <<'PYTHON_SCRIPT'
-import os
-import re
-import json
-from pathlib import Path
-from collections import defaultdict, deque
+# Find all csproj files and gather info
+find src -name "*.csproj" -type f | while IFS= read -r proj; do
+  # Get project name (without path and extension)
+  proj_name=$(basename "$proj" .csproj)
 
-# Find all .csproj files
-project_files = []
-for root, dirs, files in os.walk("src"):
-    for file in files:
-        if file.endswith(".csproj"):
-            project_files.append(os.path.join(root, file))
+  # Check if it's a test project
+  if [[ "$proj_name" == *"Tests"* ]] || grep -q "Microsoft.NET.Test.Sdk" "$proj"; then
+    is_test="true"
+  else
+    is_test="false"
+  fi
 
-# Parse project information
-projects = {}
-dependencies = defaultdict(list)
+  # Extract project references (dependencies)
+  deps=$(grep -o '<ProjectReference Include="[^"]*"' "$proj" 2>/dev/null | grep -o '"[^"]*"' | tr -d '"' | xargs -I {} basename {} .csproj | tr '\n' ',' | sed 's/,$//' || echo "")
 
-for proj_path in sorted(project_files):
-    with open(proj_path, 'r') as f:
-        content = f.read()
+  # Store: name|path|isTest|dependencies
+  echo "$proj_name|$proj|$is_test|$deps" >> "$PROJ_INFO"
+done
 
-    # Get project name
-    proj_name = os.path.basename(proj_path).replace('.csproj', '')
+# Function to count dependees for a project
+count_dependees() {
+  local target=$1
+  local count=0
 
-    # Check if it's a test project
-    is_test = (
-        '.Tests' in proj_name or
-        'Microsoft.NET.Test.Sdk' in content or
-        'Sdk="Microsoft.NET.Test.Sdk"' in content
-    )
+  while IFS='|' read -r name path is_test deps; do
+    if [[ ",$deps," == *",$target,"* ]]; then
+      ((count++))
+    fi
+  done < "$PROJ_INFO"
 
-    projects[proj_name] = {
-        'name': proj_name,
-        'path': proj_path,
-        'isTestProject': is_test
-    }
+  echo $count
+}
 
-    # Extract ProjectReference dependencies
-    proj_refs = re.findall(r'<ProjectReference\s+Include="([^"]+)"', content)
-    for ref_path in proj_refs:
-        # Get just the project name from the reference (handle both / and \ separators)
-        dep_name = ref_path.replace('\\', '/').split('/')[-1].replace('.csproj', '')
-        dependencies[proj_name].append(dep_name)
+# Build list with dependee counts
+PROJ_WITH_COUNTS="$TEMP_DIR/with_counts.txt"
+while IFS='|' read -r name path is_test deps; do
+  count=$(count_dependees "$name")
+  echo "$count|$name|$path|$is_test" >> "$PROJ_WITH_COUNTS"
+done < "$PROJ_INFO"
 
-# Topological sort using Kahn's algorithm
-# Calculate in-degrees (number of dependencies each project has)
-in_degree = {name: 0 for name in projects}
-for proj_name, deps in dependencies.items():
-    in_degree[proj_name] = len(deps)
+# Sort by count and build JSON
+echo "["
+first=true
+sort -n "$PROJ_WITH_COUNTS" | while IFS='|' read -r count name path is_test; do
+  if [ "$first" = true ]; then
+    first=false
+  else
+    echo ","
+  fi
 
-# Build reverse dependency graph (dependency -> dependents)
-dependents = defaultdict(list)
-for proj_name, deps in dependencies.items():
-    for dep in deps:
-        dependents[dep].append(proj_name)
+  echo -n "  {\"name\": \"$name\", \"path\": \"$path\", \"isTestProject\": $is_test}"
+done
+echo ""
+echo "]"
 
-# Queue of nodes with no dependencies
-queue = deque([name for name, degree in in_degree.items() if degree == 0])
-result = []
-
-while queue:
-    current = queue.popleft()
-    result.append(current)
-
-    # Process all dependents
-    for dependent in dependents[current]:
-        in_degree[dependent] -= 1
-        if in_degree[dependent] == 0:
-            queue.append(dependent)
-
-# Generate JSON output
-output = []
-for proj_name in result:
-    proj_info = projects[proj_name]
-    output.append({
-        'name': proj_info['name'],
-        'path': proj_info['path'],
-        'isTestProject': proj_info['isTestProject']
-    })
-
-print(json.dumps(output, indent=2))
-PYTHON_SCRIPT
+# Clean up
+rm -rf "$TEMP_DIR"

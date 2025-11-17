@@ -1,81 +1,53 @@
-#!/bin/zsh
+#!/bin/bash
 
-# Run code coverage for a single project and return file-level coverage data
+# Run code coverage for a single project
 # Usage: ./run-project-coverage.sh <project-path> [limit]
-# Arguments:
-#   project-path: Full project filepath relative to root (e.g., "src/GraphlessDB.Tests/GraphlessDB.Tests.csproj")
-#   limit: Optional, number of results to return (default: 5)
-# Output: JSON array with format [{ name: "ClassName", path: "path/to/file", lines: {covered: 123, notCovered: 123} }]
+# Output: JSON array of files with coverage info
 
 set -e
 
-# Get the script directory and repository root
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-# Parse arguments
-if [ -z "$1" ]; then
-    echo "Error: Project path is required" >&2
-    echo "Usage: $0 <project-path> [limit]" >&2
-    exit 1
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <project-path> [limit]"
+  exit 1
 fi
 
-PROJECT_PATH="$1"
-LIMIT="${2:-5}"
+PROJECT_PATH=$1
+LIMIT=${2:-5}
 
-# Ensure we're on the main branch with latest source
-cd "$REPO_ROOT"
-git checkout main > /dev/null 2>&1
-git pull > /dev/null 2>&1
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-# Verify project file exists
-FULL_PROJECT_PATH="$REPO_ROOT/$PROJECT_PATH"
-if [ ! -f "$FULL_PROJECT_PATH" ]; then
-    echo "Error: Project file not found: $PROJECT_PATH" >&2
-    exit 1
-fi
+# Ensure we're on main branch with latest code
+git checkout main > /dev/null 2>&1 || true
+git pull > /dev/null 2>&1 || true
 
 # Build the entire solution first
-cd "$REPO_ROOT/src"
-dotnet build GraphlessDB.sln --configuration Release --verbosity:quiet --nologo > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln --verbosity quiet > /dev/null 2>&1
 
 # Create unique coverage directory
-TIMESTAMP=$(date +%s)
-UNIQUE_ID="project_$(basename "$PROJECT_PATH" .csproj)_${TIMESTAMP}_$$"
-COVERAGE_DIR="$REPO_ROOT/.coverage/$UNIQUE_ID"
+COVERAGE_DIR=".coverage/project-$(date +%s)"
 mkdir -p "$COVERAGE_DIR"
 
-# Function to clean up on exit
-cleanup() {
-    if [ -d "$COVERAGE_DIR" ]; then
-        rm -rf "$COVERAGE_DIR"
-    fi
-}
+# Run tests with coverage for the specific project
+dotnet test "$PROJECT_PATH" \
+  --collect:"XPlat Code Coverage" \
+  --results-directory "$COVERAGE_DIR" \
+  --no-build \
+  --verbosity quiet \
+  > /dev/null 2>&1
 
-# Set trap to cleanup on exit or error
-trap cleanup EXIT INT TERM
-
-# Run tests with code coverage for the specific project
-dotnet test "$FULL_PROJECT_PATH" \
-    --configuration Release \
-    --collect:"XPlat Code Coverage" \
-    --results-directory:"$COVERAGE_DIR" \
-    --settings:"$REPO_ROOT/src/settings.runsettings" \
-    --verbosity:quiet \
-    --nologo \
-    --no-build \
-    > /dev/null 2>&1
-
-# Find the coverage XML file
-COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -1)
+# Find the coverage.cobertura.xml file
+COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
 
 if [ -z "$COVERAGE_FILE" ]; then
-    echo "Error: No coverage file found" >&2
-    exit 1
+  echo "[]"
+  rm -rf "$COVERAGE_DIR"
+  exit 0
 fi
 
-# Parse the coverage XML and generate JSON output
-python3 - "$COVERAGE_FILE" "$LIMIT" "$REPO_ROOT" <<'PYTHON_SCRIPT'
+# Parse coverage XML and extract file-level coverage
+# Using Python for more reliable XML parsing
+python3 - "$COVERAGE_FILE" "$LIMIT" <<'PYTHON_SCRIPT'
 import sys
 import xml.etree.ElementTree as ET
 import json
@@ -83,87 +55,60 @@ import os
 
 coverage_file = sys.argv[1]
 limit = int(sys.argv[2])
-repo_root = sys.argv[3]
 
-# Parse the XML file
 tree = ET.parse(coverage_file)
 root = tree.getroot()
 
-# Get source paths from the coverage file
-source_paths = []
-sources = root.findall('.//sources/source')
-for source in sources:
-    source_path = source.text
-    if source_path:
-        source_paths.append(source_path)
+results = []
 
-# Extract file-level coverage data
-file_coverage = []
-
-# Navigate through packages -> classes
-packages = root.findall('.//package')
-for package in packages:
-    classes = package.findall('.//class')
-    for cls in classes:
+# Iterate through all classes in the coverage report
+for package in root.findall('.//package'):
+    for cls in package.findall('.//class'):
         filename = cls.get('filename', '')
         class_name = cls.get('name', '')
 
-        # Get line coverage
+        # Normalize path to be relative from project root
+        # Handle cases where it might be absolute or partially qualified
+        if 'graphlessdb/src/' in filename:
+            # Extract from src/ onwards
+            filename = 'src/' + filename.split('graphlessdb/src/', 1)[1]
+        elif filename.startswith('/'):
+            # If absolute path, try to make it relative
+            filename = os.path.relpath(filename, os.getcwd())
+
+        # Skip compiler-generated classes and files
+        if '<' in class_name or '>' in class_name or class_name.startswith('__'):
+            continue
+        if '/obj/' in filename or '\\obj\\' in filename:
+            continue
+        if '.g.cs' in filename or 'Generated' in filename:
+            continue
+
+        # Calculate line coverage
         lines = cls.findall('.//line')
-        covered = 0
-        not_covered = 0
+        covered = sum(1 for line in lines if int(line.get('hits', 0)) > 0)
+        not_covered = sum(1 for line in lines if int(line.get('hits', 0)) == 0)
 
-        for line in lines:
-            hits = int(line.get('hits', '0'))
-            if hits > 0:
-                covered += 1
-            else:
-                not_covered += 1
+        if covered + not_covered == 0:
+            continue
 
-        # Convert to absolute path if needed, then to relative
-        absolute_path = filename
-
-        # If filename is relative, try to combine it with source paths
-        if not filename.startswith('/'):
-            for source_path in source_paths:
-                potential_path = os.path.join(source_path, filename)
-                if os.path.exists(potential_path):
-                    absolute_path = potential_path
-                    break
-
-        # Convert absolute path to relative path
-        relative_path = filename
-        if absolute_path.startswith(repo_root):
-            relative_path = os.path.relpath(absolute_path, repo_root)
-        elif absolute_path.startswith('/'):
-            # Try to make it relative anyway
-            try:
-                relative_path = os.path.relpath(absolute_path, repo_root)
-            except:
-                relative_path = filename
-
-        # Normalize the path separators
-        relative_path = relative_path.replace('\\', '/')
-
-        # Extract just the class name (without namespace)
-        simple_class_name = class_name.split('.')[-1] if class_name else os.path.basename(filename).replace('.cs', '')
-
-        file_coverage.append({
-            'name': simple_class_name,
-            'path': relative_path,
+        results.append({
+            'name': class_name,
+            'path': filename,
             'lines': {
                 'covered': covered,
                 'notCovered': not_covered
             }
         })
 
-# Sort by notCovered (descending)
-file_coverage.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+# Sort by notCovered descending
+results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
 
-# Limit the results
-file_coverage = file_coverage[:limit]
+# Limit results
+results = results[:limit]
 
-# Output JSON
-print(json.dumps(file_coverage, indent=2))
-
+print(json.dumps(results, indent=2))
 PYTHON_SCRIPT
+
+# Clean up coverage files
+rm -rf "$COVERAGE_DIR"
