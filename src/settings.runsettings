@@ -2,7 +2,7 @@
 <RunSettings>
   <RunConfiguration>
     <MaxCpuCount>1</MaxCpuCount>
-    <ResultsDirectory>./bin/test/results</ResultsDirectory>
+    <!-- <ResultsDirectory>./bin/test/results</ResultsDirectory> -->
   </RunConfiguration>
   <LoggerRunSettings>
     <Loggers>
@@ -15,8 +15,21 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
                     <!-- <Exclude>[*]*</Exclude>-->
-                    <ExcludeByFile>**/*.g.cs</ExcludeByFile> 
+                    <ExcludeByFile>**/*.g.cs</ExcludeByFile>
                     <Include>[GraphlessDB]*,[GraphlessDB.DynamoDB]*</Include>
+                    <Functions>
+                      <Exclude>
+                        <Function>*c__DisplayClass*</Function>
+                      </Exclude>
+                    </Functions>
+                    <Attributes>
+                      <Exclude>
+                        <Attribute>^System\.Diagnostics\.DebuggerHiddenAttribute$</Attribute>
+                        <Attribute>^System\.Diagnostics\.DebuggerNonUserCodeAttribute$</Attribute>
+                        <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+                        <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+                      </Exclude>
+                    </Attributes>
                 </Configuration>
             </DataCollector>
         </DataCollectors>

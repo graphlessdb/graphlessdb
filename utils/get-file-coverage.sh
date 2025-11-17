@@ -5,6 +5,9 @@
 
 set -e
 
+# Disable MSBuild node reuse to prevent hanging processes
+export MSBUILDDISABLENODEREUSE=1
+
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <file-path>"
   exit 1
@@ -60,6 +63,9 @@ if [ -z "$TEST_PROJECT" ]; then
   exit 0
 fi
 
+# Build the solution first
+dotnet build src/GraphlessDB.sln --verbosity quiet > /dev/null 2>&1
+
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/file-$(date +%s)"
 mkdir -p "$COVERAGE_DIR"
@@ -67,7 +73,9 @@ mkdir -p "$COVERAGE_DIR"
 # Run tests with coverage for the test project
 dotnet test "$TEST_PROJECT" \
   --collect:"XPlat Code Coverage" \
+  --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
+  --no-build \
   --verbosity quiet \
   > /dev/null 2>&1
 

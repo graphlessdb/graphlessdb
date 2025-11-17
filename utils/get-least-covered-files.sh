@@ -2,100 +2,109 @@
 
 # Get least covered files across all non-test projects
 # Usage: ./get-least-covered-files.sh [limit]
+# Output: JSON array of files with coverage info, sorted by notCovered descending
 
 set -e
 
-LIMIT=${1:-5}
+LIMIT=${1:-10}
 
 # Navigate to project root
-cd "$(dirname "$0")/.."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
-# Get project list using get-project-dependency-order.sh
-PROJECTS_JSON=$("$(dirname "$0")/get-project-dependency-order.sh")
-
-# Save to temp file for Python script
-TEMP_PROJECTS=$(mktemp)
-echo "$PROJECTS_JSON" > "$TEMP_PROJECTS"
-
-# Parse projects and run coverage for non-test projects
-python3 - "$TEMP_PROJECTS" "$LIMIT" <<'PYTHON_SCRIPT'
+# Pass script dir and limit to Python script
+python3 - "$LIMIT" "$SCRIPT_DIR" "$PROJECT_ROOT" <<'PYTHON_SCRIPT'
 import sys
 import json
 import subprocess
+import re
 import os
 
-projects_file = sys.argv[1]
-limit = int(sys.argv[2])
+limit = int(sys.argv[1])
+script_dir = sys.argv[2]
+project_root = sys.argv[3]
 
-with open(projects_file, 'r') as f:
-    projects_json = f.read()
+# Get project dependency order
+result = subprocess.run(
+    [os.path.join(script_dir, 'get-project-dependency-order.sh')],
+    capture_output=True,
+    text=True,
+    check=True,
+    cwd=project_root
+)
+projects = json.loads(result.stdout)
 
-projects = json.loads(projects_json)
+# Filter out test projects
+non_test_projects = [p for p in projects if not p.get('isTestProject', False)]
 
 all_results = []
 
-for project in projects:
-    # Only process test projects (they test the non-test projects)
-    if not project['isTestProject']:
-        continue
-
+# Process each non-test project
+for project in non_test_projects:
     project_path = project['path']
 
-    # Run coverage for this test project
     try:
+        # Run coverage for this project (no limit on individual project results)
         result = subprocess.run(
-            ['./utils/run-project-coverage.sh', project_path, '1000'],
+            [os.path.join(script_dir, 'run-project-coverage.sh'), project_path, '999999'],
             capture_output=True,
             text=True,
-            timeout=300
+            check=True,
+            cwd=project_root
         )
 
-        if result.returncode == 0:
-            files = json.loads(result.stdout)
+        coverage_data = json.loads(result.stdout)
 
-            # Filter files
-            for file_info in files:
-                not_covered = file_info['lines']['notCovered']
-                covered = file_info['lines']['covered']
-                total = covered + not_covered
+        # Filter results
+        for item in coverage_data:
+            not_covered = item['lines']['notCovered']
+            covered = item['lines']['covered']
 
-                # Skip if no uncovered lines
-                if not_covered == 0:
+            # Skip items with 0 notCovered
+            if not_covered == 0:
+                continue
+
+            # Skip compiler-generated classes
+            # Patterns: contains <>, starts with <, contains anonymous types like <>c, <>9, etc.
+            class_name = item['name']
+            if '<' in class_name or '>' in class_name:
+                continue
+            if class_name.startswith('__'):
+                continue
+            if re.search(r'<>.*__', class_name):
+                continue
+            if 'DisplayClass' in class_name:
+                continue
+            if class_name.endswith('__c'):
+                continue
+
+            # Skip files with ≥80% coverage
+            total_lines = covered + not_covered
+            if total_lines > 0:
+                coverage_ratio = covered / total_lines
+                if coverage_ratio >= 0.8:
                     continue
 
-                # Skip if coverage ratio >= 0.8 (80%)
-                if total > 0 and (covered / total) >= 0.8:
-                    continue
+            all_results.append(item)
 
-                # Skip compiler-generated files
-                path = file_info['path']
-                if '/obj/' in path or '\\obj\\' in path:
-                    continue
-                if '.g.cs' in path or 'Generated' in path or '.Designer.' in path:
-                    continue
-
-                all_results.append(file_info)
-
-                # Early exit if we have enough results
-                if len(all_results) >= limit:
-                    break
-
-        # Early exit if we have enough results
-        if len(all_results) >= limit:
-            break
-
-    except Exception as e:
-        # Continue to next project on error
+    except subprocess.CalledProcessError:
+        # If coverage fails for a project, skip it
         continue
+    except json.JSONDecodeError:
+        # If output is not valid JSON, skip it
+        continue
+
+    # Stop if we have enough results
+    if len(all_results) >= limit:
+        break
 
 # Sort by notCovered descending
 all_results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
 
-# Limit results
+# Truncate to limit
 all_results = all_results[:limit]
 
+# Output in the same format as run-project-coverage.sh
 print(json.dumps(all_results, indent=2))
 PYTHON_SCRIPT
-
-# Clean up temp file
-rm -f "$TEMP_PROJECTS"

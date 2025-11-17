@@ -1,113 +1,153 @@
 #!/bin/bash
 
-# Run code coverage for a single project
-# Usage: ./run-project-coverage.sh <project-path> [limit]
-# Output: JSON array of files with coverage info
+# Run code coverage for all unit tests within a single project
+# Outputs JSON array of classes with low coverage (< 0.9)
+# Format: [{ name: "ClassName", path: "path/to/file.cs", lines: { coverageRatio: 0.5, covered: 10, notCovered: 10 } }, ...]
 
 set -e
 
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <project-path> [limit]"
-  exit 1
-fi
-
-PROJECT_PATH=$1
-LIMIT=${2:-5}
+# Disable MSBuild node reuse to prevent hanging processes
+export MSBUILDDISABLENODEREUSE=1
 
 # Navigate to project root
 cd "$(dirname "$0")/.."
 
-# Ensure we're on main branch with latest code
-git checkout main > /dev/null 2>&1 || true
-git pull > /dev/null 2>&1 || true
+# Parameters
+PROJECT_PATH=$1
+LIMIT=${2:-5}
 
-# Build the entire solution first
-dotnet build src/GraphlessDB.sln --verbosity quiet > /dev/null 2>&1
+if [ -z "$PROJECT_PATH" ]; then
+  echo "Error: Project path is required"
+  echo "Usage: $0 <project_path> [limit]"
+  exit 1
+fi
 
 # Create unique coverage directory
-COVERAGE_DIR=".coverage/project-$(date +%s)"
+COVERAGE_DIR=".coverage/project-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
+# Build the solution first
+dotnet build src/GraphlessDB.sln --configuration Debug > /dev/null 2>&1
+
 # Run tests with coverage for the specific project
-dotnet test "$PROJECT_PATH" \
+dotnet test src/GraphlessDB.sln \
   --collect:"XPlat Code Coverage" \
+  --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
-  --no-build \
   --verbosity quiet \
+  --no-build \
   > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
 
 if [ -z "$COVERAGE_FILE" ]; then
-  echo "[]"
+  echo "Error: Coverage file not found"
   rm -rf "$COVERAGE_DIR"
-  exit 0
+  exit 1
 fi
 
-# Parse coverage XML and extract file-level coverage
-# Using Python for more reliable XML parsing
-python3 - "$COVERAGE_FILE" "$LIMIT" <<'PYTHON_SCRIPT'
-import sys
+# Export variables for Python script
+export COVERAGE_FILE
+export PROJECT_PATH
+export LIMIT
+
+# Parse the coverage XML and extract class-level data
+# We'll use python3 for easier XML parsing
+python3 << 'PYTHON_SCRIPT'
 import xml.etree.ElementTree as ET
 import json
+import sys
 import os
 
-coverage_file = sys.argv[1]
-limit = int(sys.argv[2])
+# Read the coverage file path from environment
+coverage_file = os.environ.get('COVERAGE_FILE')
+project_path = os.environ.get('PROJECT_PATH')
+limit = int(os.environ.get('LIMIT', 5))
 
+# Parse the XML
 tree = ET.parse(coverage_file)
 root = tree.getroot()
 
-results = []
+# Extract project name from path
+project_name = os.path.basename(project_path).replace('.csproj', '')
 
-# Iterate through all classes in the coverage report
+# Find all classes and their coverage
+classes_data = []
+
+# Navigate through packages -> classes
 for package in root.findall('.//package'):
     for cls in package.findall('.//class'):
         filename = cls.get('filename', '')
-        class_name = cls.get('name', '')
+        classname = cls.get('name', '')
 
-        # Normalize path to be relative from project root
-        # Handle cases where it might be absolute or partially qualified
-        if 'graphlessdb/src/' in filename:
-            # Extract from src/ onwards
-            filename = 'src/' + filename.split('graphlessdb/src/', 1)[1]
-        elif filename.startswith('/'):
-            # If absolute path, try to make it relative
-            filename = os.path.relpath(filename, os.getcwd())
-
-        # Skip compiler-generated classes and files
-        if '<' in class_name or '>' in class_name or class_name.startswith('__'):
-            continue
-        if '/obj/' in filename or '\\obj\\' in filename:
-            continue
-        if '.g.cs' in filename or 'Generated' in filename:
+        # Skip if not in the target project
+        if project_name not in filename:
             continue
 
-        # Calculate line coverage
-        lines = cls.findall('.//line')
-        covered = sum(1 for line in lines if int(line.get('hits', 0)) > 0)
-        not_covered = sum(1 for line in lines if int(line.get('hits', 0)) == 0)
-
-        if covered + not_covered == 0:
+        # Skip compiler-generated classes (lambdas, async state machines, display classes, etc.)
+        simple_classname = classname.split('.')[-1]
+        if '<' in simple_classname or '>' in simple_classname:
             continue
 
-        results.append({
-            'name': class_name,
-            'path': filename,
+        # Calculate coverage from lines
+        covered = 0
+        not_covered = 0
+
+        for line in cls.findall('.//line'):
+            hits = int(line.get('hits', 0))
+            if hits > 0:
+                covered += 1
+            else:
+                not_covered += 1
+
+        total = covered + not_covered
+        if total == 0:
+            continue
+
+        coverage_ratio = covered / total
+
+        # Filter out items with coverage > 0.9
+        if coverage_ratio > 0.9:
+            continue
+
+        # Get relative path from root
+        root_dir = os.getcwd()
+
+        # Handle absolute paths
+        if filename.startswith(root_dir):
+            relative_path = filename[len(root_dir)+1:]
+        # Handle paths that already start with src/
+        elif filename.startswith('src/'):
+            relative_path = filename
+        # Try to extract the src/... portion from the path
+        elif 'src/' in filename:
+            src_index = filename.index('src/')
+            relative_path = filename[src_index:]
+        # If no src/ in path, it might be a relative path from project, prepend src/
+        else:
+            # Path is like "GraphlessDB.DynamoDB/..." so prepend "src/"
+            relative_path = 'src/' + filename
+
+        classes_data.append({
+            'name': simple_classname,
+            'path': relative_path,
             'lines': {
+                'coverageRatio': round(coverage_ratio, 4),
                 'covered': covered,
                 'notCovered': not_covered
             }
         })
 
-# Sort by notCovered descending
-results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+# Sort by coverageRatio (ascending)
+classes_data.sort(key=lambda x: x['lines']['coverageRatio'])
 
-# Limit results
-results = results[:limit]
+# Limit the results
+classes_data = classes_data[:limit]
 
-print(json.dumps(results, indent=2))
+# Output JSON
+print(json.dumps(classes_data, indent=2))
+
 PYTHON_SCRIPT
 
 # Clean up coverage files

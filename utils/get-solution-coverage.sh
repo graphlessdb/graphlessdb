@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Run code coverage for all unit tests in the solution
-# Outputs JSON: { lineCoveragePercentage: X, branchCoveragePercentage: Y }
+# Outputs JSON: { "lineCoveragePercentage": X, "branchCoveragePercentage": Y }
 
 set -e
+
+# Disable MSBuild node reuse to prevent hanging processes
+export MSBUILDDISABLENODEREUSE=1
 
 # Navigate to project root
 cd "$(dirname "$0")/.."
@@ -12,11 +15,16 @@ cd "$(dirname "$0")/.."
 COVERAGE_DIR=".coverage/solution-$(date +%s)"
 mkdir -p "$COVERAGE_DIR"
 
+# Build the solution first
+dotnet build src/GraphlessDB.sln --configuration Debug > /dev/null 2>&1
+
 # Run tests with coverage
 dotnet test src/GraphlessDB.sln \
   --collect:"XPlat Code Coverage" \
+  --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
+  --no-build \
   > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
