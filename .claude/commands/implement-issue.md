@@ -1,4 +1,4 @@
-# add-unit-tests
+# Implement Issue
 
 ## Constant Context
 
@@ -13,4 +13,4 @@ Whilst carrying out this request, keep a running list of instances where your un
 
 ## Request
 
-Run begin-issue.sh which should put a GitHub issue into progress and return the issue id.  Start by creating a new git worktree for working on the issue with a name in the format "issue-{ISSUE_ID}".  Next, using the issue id read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage. Next, determine and implement any missing unit tests for that file. You should iterate using new output from get-file-coverage.sh until the nonCovered lines has reached 0.  Once complete create a PR so that the changes can be reviewed, run get-solution-coverage.sh and add the information to the PR and then finally clean up the local git worktree.
+Run ./utils/begin-issue.sh which should put a GitHub issue into progress and return the issue id.  Start by creating a new git worktree for working on the issue with a name in the format "issue-{ISSUE_ID}", make sure to set the cwd to the worktree folder.  Next, using the issue id read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage. Next, determine and implement any missing unit tests for that file. You should iterate using new output from ./utils/get-file-coverage.sh until the nonCovered lines has reached 0.  Once complete create a PR so that the changes can be reviewed, run ./utils/get-solution-coverage.sh and add the information to the PR and then finally clean up the local git worktree.
