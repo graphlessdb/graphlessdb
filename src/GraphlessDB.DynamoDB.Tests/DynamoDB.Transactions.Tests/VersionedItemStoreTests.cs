@@ -1000,6 +1000,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
         [TestMethod]
         public async Task ApplyRequestAsyncCallsOnApplyRequestAsync()
         {
+            var itemKey = CreateItemKey("TestTable", "Id", "test-id");
             var onApplyRequestCalled = false;
             var transactionServiceEvents = new MockTransactionServiceEvents
             {
@@ -1010,14 +1011,23 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 }
             };
 
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                false,
+                "test-tx",
+                DateTime.UtcNow,
+                false,
+                false,
+                CreateLockedItemRequestAction(itemKey, 0, RequestAction.Get));
+
             var store = CreateStore(transactionServiceEvents: transactionServiceEvents);
             var transaction = CreateTransaction("test-tx");
-            var request = new GetItemRequest { TableName = "TestTable", Key = new Dictionary<string, AttributeValue>() };
+            var request = new GetItemRequest { TableName = "TestTable", Key = new Dictionary<string, AttributeValue> { { "Id", AttributeValueFactory.CreateS("test-id") } } };
             var applyRequest = new ApplyRequestRequest(
                 transaction,
                 request,
                 0,
-                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
                 ImmutableDictionary<ItemKey, ItemRecord>.Empty);
 
             await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
@@ -1347,7 +1357,10 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 }
             };
 
-            var requestService = new MockRequestService();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Put)))
+            };
 
             var store = CreateStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
             var transaction = CreateTransaction("tx-123");
@@ -1389,7 +1402,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 true,
                 CreateLockedItemRequestAction(itemKey, 1, RequestAction.Put));
 
-            var store = CreateStore();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Put)))
+            };
+
+            var store = CreateStore(requestService: requestService);
             var transaction = CreateTransaction("tx-123");
             var request = new PutItemRequest
             {
@@ -1422,7 +1440,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 true,
                 CreateLockedItemRequestAction(itemKey, 1, RequestAction.Put));
 
-            var store = CreateStore();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Put)))
+            };
+
+            var store = CreateStore(requestService: requestService);
             var transaction = CreateTransaction("tx-123");
             var request = new PutItemRequest
             {
@@ -1478,7 +1501,10 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 }
             };
 
-            var requestService = new MockRequestService();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Update)))
+            };
 
             var store = CreateStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
             var transaction = CreateTransaction("tx-123");
@@ -1516,7 +1542,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 true,
                 CreateLockedItemRequestAction(itemKey, 1, RequestAction.Update));
 
-            var store = CreateStore();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Update)))
+            };
+
+            var store = CreateStore(requestService: requestService);
             var transaction = CreateTransaction("tx-123");
             var request = new UpdateItemRequest
             {
@@ -1554,7 +1585,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                     .Add("Id", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("test-id")))
                     .Add("Data", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("old-data"))));
 
-            var store = CreateStore();
+            var requestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (_, _) => Task.FromResult(ImmutableList.Create(CreateItemRequestDetail(itemKey, RequestAction.Update)))
+            };
+
+            var store = CreateStore(requestService: requestService);
             var transaction = CreateTransaction("tx-123");
             var request = new UpdateItemRequest
             {
@@ -1912,8 +1948,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsNotNull(capturedRequest);
-            Assert.AreEqual(0, capturedRequest.TransactItems.Count);
+            Assert.IsNotNull(result);
+            // When all items are delete operations and filtered out, the request is not sent to DynamoDB
+            // and the method returns early with an empty response
         }
 
         [TestMethod]

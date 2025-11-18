@@ -140,7 +140,7 @@ namespace GraphlessDB.Storage.Services.DynamoDB
                         .ToImmutableList();
 
                     var edgeCount = edgeRdfTriples.Count;
-                    switch (nodeInEdgeType.NodeOutCardinality)
+                    switch (nodeInEdgeType.NodeInCardinality)
                     {
                         case EdgeCardinality.ZeroOrOne:
                             if (edgeCount > 1)
@@ -187,7 +187,7 @@ namespace GraphlessDB.Storage.Services.DynamoDB
                         .ToImmutableList();
 
                     var edgeCount = edgeRdfTriples.Count;
-                    switch (nodeOutEdgeType.NodeInCardinality)
+                    switch (nodeOutEdgeType.NodeOutCardinality)
                     {
                         case EdgeCardinality.ZeroOrOne:
                             if (edgeCount > 1)
