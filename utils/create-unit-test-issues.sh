@@ -14,12 +14,12 @@ cd "$(dirname "$0")/.."
 FILES_JSON=$("$(dirname "$0")/get-least-covered-files.sh" "$LIMIT")
 
 # Create issues using gh CLI
-echo "$FILES_JSON" | python3 - <<'PYTHON_SCRIPT'
+python3 - "$FILES_JSON" <<'PYTHON_SCRIPT'
 import sys
 import json
 import subprocess
 
-files_json = sys.stdin.read()
+files_json = sys.argv[1]
 files = json.loads(files_json)
 
 for file_info in files:
