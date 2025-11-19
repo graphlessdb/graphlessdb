@@ -40,7 +40,7 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
         [TestMethod]
         public async Task CheckIntegrityAsyncIdentifiesOrphanedProperties()
         {
-            var orphanedProp = CreateRDFTriple("node1", "TestGraph#prop#prop1#node1", "value1");
+            var orphanedProp = CreateRDFTriple("node1", new HasProp("TestGraph", "TestNode", "prop1", "value1", "node1").ToString(), "value1");
             var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(orphanedProp));
 
             var report = await checker.CheckIntegrityAsync(CancellationToken.None);
@@ -66,7 +66,26 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
         public async Task CheckIntegrityAsyncDetectsInvalidNodeType()
         {
             var typeTriple = CreateRDFTriple("node1", new HasType("TestGraph", "InvalidNode", "node1").ToString(), "InvalidNode");
-            var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple));
+
+            var graphSettings = new GraphSettings("TestTable", "TestGraph", 1, "ByPredIndex", "ByObjIndex");
+            var graphSettingsService = new MockGraphSettingsService(graphSettings);
+            var keyService = new MockKeyService();
+            var mockClient = new MockDynamoDBClient(ImmutableList<RDFTriple>.Empty.Add(typeTriple));
+            var dataModelMapper = new MockDataModelMapper();
+
+            var graphSchema = new GraphSchema(
+                ImmutableList<string>.Empty.Add("TestNode"),
+                ImmutableHashSet<string>.Empty.Add("TestNode"),
+                ImmutableList<EdgeSchema>.Empty,
+                ImmutableDictionary<string, EdgeSchema>.Empty);
+            var graphSchemaService = new MockGraphSchemaService(graphSchema);
+
+            var checker = new AmazonDynamoDBRDFTripleIntegrityChecker(
+                graphSettingsService,
+                keyService,
+                mockClient,
+                dataModelMapper,
+                graphSchemaService);
 
             var report = await checker.CheckIntegrityAsync(CancellationToken.None);
 
@@ -80,7 +99,7 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
             var subject1 = "node1";
             var subject2 = "node2";
             var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
-            var inEdge = CreateRDFTriple(subject1, $"TestGraph#in#{subject1}#TestEdge#{subject2}", subject2);
+            var inEdge = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
             var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(inEdge));
 
             var report = await checker.CheckIntegrityAsync(CancellationToken.None);
@@ -94,7 +113,7 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
             var subject1 = "node1";
             var subject2 = "node2";
             var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
-            var outEdge = CreateRDFTriple(subject1, $"TestGraph#out#{subject1}#TestEdge#{subject2}", subject2);
+            var outEdge = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
             var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(outEdge));
 
             var report = await checker.CheckIntegrityAsync(CancellationToken.None);
@@ -111,8 +130,8 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
             var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
             var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "SourceNode", subject2).ToString(), "SourceNode");
             var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "SourceNode", subject3).ToString(), "SourceNode");
-            var inEdge1 = CreateRDFTriple(subject1, $"TestGraph#in#{subject1}#TestEdge#{subject2}", subject2);
-            var inEdge2 = CreateRDFTriple(subject1, $"TestGraph#in#{subject1}#TestEdge#{subject3}", subject3);
+            var inEdge1 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+            var inEdge2 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject3).ToString(), subject3);
 
             var triples = ImmutableList<RDFTriple>.Empty
                 .Add(typeTriple1)
@@ -166,9 +185,10 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
             var subject2 = "node2";
             var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
             var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
-            var outEdge = CreateRDFTriple(subject1, $"TestGraph#out#{subject1}#TestEdge#{subject2}", subject2);
+            var outEdge = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var inEdge = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
 
-            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple1).Add(typeTriple2).Add(outEdge);
+            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple1).Add(typeTriple2).Add(outEdge).Add(inEdge);
             var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.OneOrMany, "TestNode", EdgeCardinality.OneOrMany);
             var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
 
@@ -367,7 +387,10 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
             public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
             public Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
             public Task<BatchWriteItemResponse> BatchWriteItemAsync(Dictionary<string, List<WriteRequest>> requestItems, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
-            public Task<BatchWriteItemResponse> BatchWriteItemAsync(BatchWriteItemRequest request, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+            public Task<BatchWriteItemResponse> BatchWriteItemAsync(BatchWriteItemRequest request, CancellationToken cancellationToken = default)
+            {
+                return BatchWriteItemAsync(request, BatchWriteItemOptions.Default, cancellationToken);
+            }
             public Task<CreateBackupResponse> CreateBackupAsync(CreateBackupRequest request, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
             public Task<CreateGlobalTableResponse> CreateGlobalTableAsync(CreateGlobalTableRequest request, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
             public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
