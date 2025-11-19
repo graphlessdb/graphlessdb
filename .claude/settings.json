@@ -22,7 +22,13 @@
       "Bash(git cherry-pick:*)",
       "Bash(git show-ref:*)",
       "Bash(gh pr list:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(timeout:*)",
+      "Bash(./utils/create-unit-test-issues.sh:*)"
     ],
     "deny": [],
     "ask": []
