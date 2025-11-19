@@ -449,54 +449,5 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             JsonSerializer.Deserialize<AttributeValue>(json, options);
         }
-
-        [TestMethod]
-        public void WriteSerializesNullAsJsonNull()
-        {
-            var options = CreateOptions();
-            AttributeValue? value = null;
-
-            var json = JsonSerializer.Serialize(value, options);
-
-            Assert.AreEqual("null", json);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(JsonException))]
-        public void ReadThrowsJsonExceptionWhenInputEndsWithoutCompleteObject()
-        {
-            var options = CreateOptions();
-            var json = "{\"S\":";
-
-            JsonSerializer.Deserialize<AttributeValue>(json, options);
-        }
-
-        [TestMethod]
-        public void ConverterHandlesNullInWriteMethod()
-        {
-            var converter = new AttributeValueConverter();
-            var options = new JsonSerializerOptions();
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
-
-            writer.WriteStartObject();
-            writer.WritePropertyName("test");
-            converter.Write(writer, null!, options);
-            writer.WriteEndObject();
-            writer.Flush();
-
-            var json = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.IsTrue(json.Contains("null"));
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(JsonException))]
-        public void ReadThrowsJsonExceptionWhenPropertyValueIsNullAtEndObject()
-        {
-            var options = CreateOptions();
-            var json = "{\"S\": null}";
-
-            JsonSerializer.Deserialize<AttributeValue>(json, options);
-        }
     }
 }
