@@ -198,6 +198,373 @@ namespace GraphlessDB.Storage.Services.DynamoDB.Tests
         }
 
         [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsZeroOrOneCardinalityWithOneInEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "SourceNode", subject2).ToString(), "SourceNode");
+            var inEdge = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+            var outEdge = CreateRDFTriple(subject2, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject2).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(inEdge)
+                .Add(outEdge);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TestNode", EdgeCardinality.ZeroOrOne, "SourceNode", EdgeCardinality.ZeroOrOne);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsOneCardinalityWithExactlyOneInEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "SourceNode", subject2).ToString(), "SourceNode");
+            var inEdge = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+            var outEdge = CreateRDFTriple(subject2, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject2).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(inEdge)
+                .Add(outEdge);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TestNode", EdgeCardinality.One, "SourceNode", EdgeCardinality.One);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsOneOrManyCardinalityWithMultipleInEdges()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var subject3 = "node3";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "SourceNode", subject2).ToString(), "SourceNode");
+            var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "SourceNode", subject3).ToString(), "SourceNode");
+            var inEdge1 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+            var inEdge2 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject3).ToString(), subject3);
+            var outEdge1 = CreateRDFTriple(subject2, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject2).ToString(), subject1);
+            var outEdge2 = CreateRDFTriple(subject3, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject3).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(typeTriple3)
+                .Add(inEdge1)
+                .Add(inEdge2)
+                .Add(outEdge1)
+                .Add(outEdge2);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TestNode", EdgeCardinality.OneOrMany, "SourceNode", EdgeCardinality.OneOrMany);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsZeroOrOneCardinalityWithOneOutEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
+            var outEdge = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var inEdge = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(outEdge)
+                .Add(inEdge);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.ZeroOrOne, "TestNode", EdgeCardinality.ZeroOrOne);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsOneCardinalityWithExactlyOneOutEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
+            var outEdge = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var inEdge = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(outEdge)
+                .Add(inEdge);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.One, "TestNode", EdgeCardinality.One);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncAllowsOneOrManyCardinalityWithMultipleOutEdges()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var subject3 = "node3";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
+            var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "TargetNode", subject3).ToString(), "TargetNode");
+            var outEdge1 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var outEdge2 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject3, subject1).ToString(), subject3);
+            var inEdge1 = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
+            var inEdge2 = CreateRDFTriple(subject3, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject3, subject1).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(typeTriple3)
+                .Add(outEdge1)
+                .Add(outEdge2)
+                .Add(inEdge1)
+                .Add(inEdge2);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.OneOrMany, "TestNode", EdgeCardinality.OneOrMany);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.NodeIntegrityErrors.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooFewOutEdges()
+        {
+            var subject1 = "node1";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.One, "TestNode", EdgeCardinality.One);
+            var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple), ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too few")));
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooManyOutEdges()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var subject3 = "node3";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
+            var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "TargetNode", subject3).ToString(), "TargetNode");
+            var outEdge1 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var outEdge2 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject3, subject1).ToString(), subject3);
+            var inEdge1 = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
+            var inEdge2 = CreateRDFTriple(subject3, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject3, subject1).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(typeTriple3)
+                .Add(outEdge1)
+                .Add(outEdge2)
+                .Add(inEdge1)
+                .Add(inEdge2);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.ZeroOrOne, "TestNode", EdgeCardinality.ZeroOrOne);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too many")));
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsOrphanedInEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var inEdge = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+
+            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(inEdge);
+            var (checker, _) = CreateChecker(triples);
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.RdfTriplesWithNoMatchingLiveInstance.Count);
+            Assert.AreEqual(1, report.RdfTriplesWithNoMatchingTargetLiveInstance.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsOrphanedOutEdge()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var outEdge = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+
+            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(outEdge);
+            var (checker, _) = CreateChecker(triples);
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.RdfTriplesWithNoMatchingLiveInstance.Count);
+            Assert.AreEqual(1, report.RdfTriplesWithNoMatchingTargetLiveInstance.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsOrphanedInEdgeProp()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var inEdgeProp = CreateRDFTriple(subject1, new HasInEdgeProp("TestGraph", "TestNode", "TestEdge", "prop1", "value1", subject1, subject2).ToString(), "value1");
+
+            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(inEdgeProp);
+            var (checker, _) = CreateChecker(triples);
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.RdfTriplesWithNoMatchingLiveInstance.Count);
+            Assert.AreEqual(1, report.RdfTriplesWithNoMatchingTargetLiveInstance.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsOrphanedOutEdgeProp()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var outEdgeProp = CreateRDFTriple(subject1, new HasOutEdgeProp("TestGraph", "TestNode", "TestEdge", "prop1", "value1", subject2, subject1).ToString(), "value1");
+
+            var triples = ImmutableList<RDFTriple>.Empty.Add(typeTriple).Add(outEdgeProp);
+            var (checker, _) = CreateChecker(triples);
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, report.RdfTriplesWithNoMatchingLiveInstance.Count);
+            Assert.AreEqual(1, report.RdfTriplesWithNoMatchingTargetLiveInstance.Count);
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooManyInEdgesForOne()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var subject3 = "node3";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "SourceNode", subject2).ToString(), "SourceNode");
+            var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "SourceNode", subject3).ToString(), "SourceNode");
+            var inEdge1 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject2).ToString(), subject2);
+            var inEdge2 = CreateRDFTriple(subject1, new HasInEdge("TestGraph", "TestNode", "TestEdge", subject1, subject3).ToString(), subject3);
+            var outEdge1 = CreateRDFTriple(subject2, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject2).ToString(), subject1);
+            var outEdge2 = CreateRDFTriple(subject3, new HasOutEdge("TestGraph", "SourceNode", "TestEdge", subject1, subject3).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(typeTriple3)
+                .Add(inEdge1)
+                .Add(inEdge2)
+                .Add(outEdge1)
+                .Add(outEdge2);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TestNode", EdgeCardinality.One, "SourceNode", EdgeCardinality.One);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too many")));
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooFewInEdgesForOneOrMany()
+        {
+            var subject1 = "node1";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TestNode", EdgeCardinality.OneOrMany, "SourceNode", EdgeCardinality.OneOrMany);
+            var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple), ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too few")));
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooManyOutEdgesForOne()
+        {
+            var subject1 = "node1";
+            var subject2 = "node2";
+            var subject3 = "node3";
+            var typeTriple1 = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+            var typeTriple2 = CreateRDFTriple(subject2, new HasType("TestGraph", "TargetNode", subject2).ToString(), "TargetNode");
+            var typeTriple3 = CreateRDFTriple(subject3, new HasType("TestGraph", "TargetNode", subject3).ToString(), "TargetNode");
+            var outEdge1 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject2, subject1).ToString(), subject2);
+            var outEdge2 = CreateRDFTriple(subject1, new HasOutEdge("TestGraph", "TestNode", "TestEdge", subject3, subject1).ToString(), subject3);
+            var inEdge1 = CreateRDFTriple(subject2, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject2, subject1).ToString(), subject1);
+            var inEdge2 = CreateRDFTriple(subject3, new HasInEdge("TestGraph", "TargetNode", "TestEdge", subject3, subject1).ToString(), subject1);
+
+            var triples = ImmutableList<RDFTriple>.Empty
+                .Add(typeTriple1)
+                .Add(typeTriple2)
+                .Add(typeTriple3)
+                .Add(outEdge1)
+                .Add(outEdge2)
+                .Add(inEdge1)
+                .Add(inEdge2);
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.One, "TestNode", EdgeCardinality.One);
+            var (checker, _) = CreateChecker(triples, ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too many")));
+        }
+
+        [TestMethod]
+        public async Task CheckIntegrityAsyncDetectsCardinalityViolationTooFewOutEdgesForOneOrMany()
+        {
+            var subject1 = "node1";
+            var typeTriple = CreateRDFTriple(subject1, new HasType("TestGraph", "TestNode", subject1).ToString(), "TestNode");
+
+            var edgeSchema = new EdgeSchema("TestEdge", "TargetNode", EdgeCardinality.OneOrMany, "TestNode", EdgeCardinality.OneOrMany);
+            var (checker, _) = CreateChecker(ImmutableList<RDFTriple>.Empty.Add(typeTriple), ImmutableList<EdgeSchema>.Empty.Add(edgeSchema));
+
+            var report = await checker.CheckIntegrityAsync(CancellationToken.None);
+
+            Assert.AreEqual(1, report.NodeIntegrityErrors.Count);
+            Assert.IsTrue(report.NodeIntegrityErrors[0].Errors.Any(e => e.Message.Contains("Too few")));
+        }
+
+        [TestMethod]
         public async Task ClearAllDataAsyncRemovesAllItems()
         {
             var triple1 = CreateRDFTriple("node1", "pred1", "obj1");
