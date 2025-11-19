@@ -14,7 +14,9 @@
 - Helper methods in test classes should be static when possible to follow project conventions
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
 - Manual mock classes are preferred over Moq framework in this project
-- Before using dotnet clean, dotnet build or other dotnet commands ensure that "export MSBUILDDISABLENODEREUSE=1" is set because dotnet processes continue to run in the background even if they fail.
+- Use export MSBUILDDISABLENODEREUSE=1 before dotnet commands to prevent background processes.
+- Execute dotnet commands from the src directory where the solution file is located.
+- Coverage script requires positional argument: ./utils/get-file-coverage.sh "path/to/file".
 - Carry out a final review is issues which occurred during implementation of this request. Determine instances where your understanding of global project concepts / rules has changed due to compilation errors, unit testing errors, script or command invocation errors. Don't include instances where the learning includes references to particular classes or interfaces, but do include reference to predefined scripts and commands because they are likely reused often. Generally include items which could be useful to correct for future requests. If you were to be given your running list back to you again at the beginning of this request then you wouldn't have made as many incorrect assumptions. Output this list once the request has been completed successfully, the list should be extremely concise and be a single short line per item.
 
 ### Request
