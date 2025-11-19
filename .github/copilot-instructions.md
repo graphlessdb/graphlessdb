@@ -5,7 +5,7 @@
 ### Important
 
 - You will be working mainly within a git worktree, once the worktree is created, cwd into the worktree, change back out of the worktree directory at the end of the task. If the worktree already exists from a previous attempt, cwd into it directly.
-- Ensure that the worktree is created at a sibiling level to the main repository folder to avoid nested git repositories.
+- Ensure that the worktree is created at a sibiling level to the main repository folder to avoid nested git repositories. The worktree name should be in the format "issue-{ISSUE_ID}" and the folder name should be in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - get-file-coverage.sh: Use positional argument, not environment variable - ./utils/get-file-coverage.sh "path/to/file" not FILE_PATH="path"
   ./utils/get-file-coverage.sh
 - git worktree: Check for existing branches before creating - use `git worktree add <path> <existing-branch>` if branch exists, not -b flag
