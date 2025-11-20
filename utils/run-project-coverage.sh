@@ -27,7 +27,7 @@ COVERAGE_DIR=".coverage/project-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln  --nodereuse:false --configuration Debug > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln  --nodereuse:false --configuration Debug
 
 # Run tests with coverage for the specific project
 dotnet test src/GraphlessDB.sln \
@@ -37,7 +37,6 @@ dotnet test src/GraphlessDB.sln \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
   --no-build \
-  > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)

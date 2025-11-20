@@ -64,7 +64,7 @@ if [ -z "$TEST_PROJECT" ]; then
 fi
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln --nodereuse:false --verbosity quiet > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln --nodereuse:false --verbosity quiet
 
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/file-$(date +%s)"
@@ -78,7 +78,6 @@ dotnet test "$TEST_PROJECT" \
   --results-directory "$COVERAGE_DIR" \
   --no-build \
   --verbosity quiet \
-  > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
