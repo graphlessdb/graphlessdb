@@ -9,17 +9,21 @@ export MSBUILDDISABLENODEREUSE=1
 # Navigate to project root
 cd "$(dirname "$0")/.."
 
+# Shutdown any existing build servers to prevent hangs
+dotnet build-server shutdown > /dev/null 2>&1 || true
+
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/solution-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
 # Build the entire solution first
 echo "Building solution..." >&2
-dotnet build src/GraphlessDB.sln --nodereuse:false --configuration Debug --verbosity quiet > /dev/null 2>&1
+timeout 300 dotnet build src/GraphlessDB.sln --nodereuse:false --configuration Debug --verbosity quiet
 BUILD_EXIT=$?
 
 if [ $BUILD_EXIT -ne 0 ]; then
   echo "Error: Build failed with exit code $BUILD_EXIT" >&2
+  dotnet build-server shutdown > /dev/null 2>&1 || true
   rm -rf "$COVERAGE_DIR"
   exit 1
 fi
@@ -27,14 +31,16 @@ fi
 # Run all tests with coverage
 # Note: dotnet test sometimes returns non-zero exit even when tests pass
 echo "Running tests with code coverage..." >&2
-dotnet test src/GraphlessDB.sln \
+timeout 300 dotnet test src/GraphlessDB.sln \
   --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
-  --no-build \
-  > /dev/null 2>&1 || true
+  --no-build || true
+
+# Shutdown build server after tests
+dotnet build-server shutdown > /dev/null 2>&1 || true
 
 # Find all coverage.cobertura.xml files
 COVERAGE_FILES=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" -type f)

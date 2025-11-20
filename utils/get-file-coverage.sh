@@ -18,6 +18,9 @@ TARGET_FILE=$1
 # Navigate to project root
 cd "$(dirname "$0")/.."
 
+# Shutdown any existing build servers to prevent hangs
+dotnet build-server shutdown > /dev/null 2>&1 || true
+
 # Normalize the target file path (remove leading ./ and get absolute path if needed)
 if [[ "$TARGET_FILE" == /* ]]; then
   # Already absolute
@@ -63,22 +66,41 @@ if [ -z "$TEST_PROJECT" ]; then
   exit 0
 fi
 
-# Build the solution first
-dotnet build src/GraphlessDB.sln --nodereuse:false --verbosity quiet > /dev/null 2>&1
+# Build the solution first (with timeout)
+echo "Building solution..." >&2
+timeout 300 dotnet build src/GraphlessDB.sln --nodereuse:false --verbosity quiet
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+  echo "Build failed with exit code $BUILD_EXIT" >&2
+  dotnet build-server shutdown > /dev/null 2>&1 || true
+  exit 1
+fi
 
 # Create unique coverage directory
-COVERAGE_DIR=".coverage/file-$(date +%s)"
+COVERAGE_DIR=".coverage/file-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
-# Run tests with coverage for the test project
-dotnet test "$TEST_PROJECT" \
+# Run tests with coverage for the test project (with timeout)
+echo "Running tests with coverage..." >&2
+timeout 300 dotnet test "$TEST_PROJECT" \
   --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
   --no-build \
-  --verbosity quiet \
-  > /dev/null 2>&1
+  --verbosity quiet
+
+TEST_EXIT=$?
+
+# Shutdown build server after tests
+dotnet build-server shutdown > /dev/null 2>&1 || true
+
+if [ $TEST_EXIT -ne 0 ] && [ $TEST_EXIT -ne 124 ]; then
+  echo "Tests failed or timed out with exit code $TEST_EXIT" >&2
+  rm -rf "$COVERAGE_DIR"
+  exit 1
+fi
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
