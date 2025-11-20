@@ -10,7 +10,7 @@ This command describes how to implement a GitHub issue.
 
 ## Git Notes
 
-- You will be working mainly within a git worktree, once the worktree is created, cwd into the worktree, change back out of the worktree directory at the end of the task
+- You will be working mainly within a git worktree.  To do this you will need to cd into the worktree folder before each execution of a script and then you will need to cd back to the original folder to reset the pwd back to what it was before.
 - git worktree: Check for existing branches before creating - use ```git worktree add <path> <existing-branch>``` if branch exists, not -b flag
 
 ## GitHub Notes
