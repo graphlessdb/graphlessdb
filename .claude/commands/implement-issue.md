@@ -8,6 +8,7 @@
   ./utils/get-file-coverage.sh
 - git worktree: Check for existing branches before creating - use ```git worktree add <path> <existing-branch>``` if branch exists, not -b flag
 - gh pr create: Must execute from within the worktree directory
+- When creating the PR ensure that the branch can be merged back to main without conflicts by pulling latest from remote
 - Follow existing project naming conventions, use PascalCase without underscores for method names including test methods (e.g., CanGetDateTimePropertyAsString and not Can_Get_DateTime_Property_As_String)
 - Helper methods in test classes should be static when possible to follow project conventions
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
