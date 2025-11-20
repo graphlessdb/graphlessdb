@@ -2,6 +2,7 @@
 
 ## Important
 
+- You do NOT need to ask me to proceed at any stage.
 - You will be working mainly within a git worktree, once the worktree is created, cwd into the worktree, change back out of the worktree directory at the end of the task
 - get-file-coverage.sh: Use positional argument, not environment variable - ./utils/get-file-coverage.sh "path/to/file" not FILE_PATH="path"
   ./utils/get-file-coverage.sh
