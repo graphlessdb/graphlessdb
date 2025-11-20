@@ -1641,5 +1641,47 @@ namespace GraphlessDB.Storage.Services.Internal.InMemory.Tests
             Assert.IsTrue(response.Items.Count >= 1);
             Assert.AreEqual("b", response.Items[0].Predicate);
         }
+
+        [TestMethod]
+        public async Task IncrementAllEdgesVersionThrowsWhenVersionDetailIsNull()
+        {
+            var store = CreateStore();
+            var triple = CreateTriple("subject1", "predicate1", versionDetail: null);
+            var addRequest = new WriteRDFTriplesRequest(
+                "token1",
+                false,
+                [WriteRDFTriple.Create(new AddRDFTriple(TableName, triple))]);
+
+            await store.WriteRDFTriplesAsync(addRequest, CancellationToken.None);
+
+            var incrementRequest = new WriteRDFTriplesRequest(
+                "token2",
+                false,
+                [WriteRDFTriple.Create(new IncrementRDFTripleAllEdgesVersion(
+                    TableName,
+                    triple.AsKey(),
+                    new VersionDetailCondition(null, null)))]);
+
+            await Assert.ThrowsExceptionAsync<GraphlessDBOperationException>(async () =>
+            {
+                await store.WriteRDFTriplesAsync(incrementRequest, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public void ConstructorThrowsWhenEventReaderIsNull()
+        {
+            var graphOptions = Options.Create(new GraphOptions
+            {
+                TableName = TableName,
+                GraphName = GraphName,
+                PartitionCount = 1
+            });
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+            {
+                var _ = new InMemoryRDFTripleStore(graphOptions, null!);
+            });
+        }
     }
 }
