@@ -1171,6 +1171,58 @@ namespace GraphlessDB.Query.Services.Internal.Tests
             Assert.IsNull(result.Filter);
         }
 
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithStringFilterNoSupportedOperatorReturnsNull()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithStringProperty { StringProperty = new StringFilter { Ne = "test" } };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, null, CancellationToken.None);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithNonQueryableFilterPropertyReturnsNull()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(false);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilter { CreatedAt = new DateTimeFilter { Eq = new DateTime(2025, 1, 1) } };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, null, CancellationToken.None);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void TryGetPropertyOperatorWithUnsupportedFilterTypeThrowsNotSupportedException()
+        {
+            var unsupportedFilter = new UnsupportedFilter();
+            var method = typeof(GraphNodeFilterService).GetMethod(
+                "TryGetPropertyOperator",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+                null,
+                new[] { typeof(IValueFilter) },
+                null);
+
+            Assert.IsNotNull(method);
+            Assert.ThrowsException<System.Reflection.TargetInvocationException>(() =>
+            {
+                method.Invoke(null, new object[] { unsupportedFilter });
+            });
+        }
+
         private sealed class TestNodeFilter : INodeFilter
         {
             public DateTimeFilter? CreatedAt { get; set; }
@@ -1821,11 +1873,13 @@ namespace GraphlessDB.Query.Services.Internal.Tests
 
     internal sealed class TestNodeOrderWithIdProperty : INodeOrder
     {
+        public OrderDirection? CreatedAt { get; set; }
         public OrderDirection? Id { get; set; }
     }
 
     internal sealed class TestNodeOrderWithEnumProperty : INodeOrder
     {
+        public OrderDirection? CreatedAt { get; set; }
         public OrderDirection? EnumProperty { get; set; }
     }
 }
