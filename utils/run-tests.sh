@@ -8,4 +8,4 @@ set -e
 cd "$(dirname "$0")/../src"
 
 # Run all tests
-dotnet test GraphlessDB.sln --verbosity minimal
+dotnet test GraphlessDB.sln --nodereuse:false --verbosity minimal

@@ -27,10 +27,11 @@ COVERAGE_DIR=".coverage/project-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln --configuration Debug > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln  --nodereuse:false --configuration Debug > /dev/null 2>&1
 
 # Run tests with coverage for the specific project
 dotnet test src/GraphlessDB.sln \
+  --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \

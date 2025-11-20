@@ -29,7 +29,11 @@ This command describes how to implement a GitHub issue.
 - get-file-coverage.sh: Use positional argument, not environment variable - ./utils/get-file-coverage.sh "path/to/file" not FILE_PATH="path"
   ./utils/get-file-coverage.sh
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
-- Before using dotnet clean, dotnet build or other dotnet commands ensure that "export MSBUILDDISABLENODEREUSE=1" is set because dotnet processes continue to run in the background even if they fail.
+
+## Dotnet Notes
+
+- Ensure that "export MSBUILDDISABLENODEREUSE=1" is run before any using and dotnet commands to ensure the called process finishes.
+- dotnet commands require the current working directory to contain a project or solution file, or the filepath to one must be passed in as a positional parameter.  E.g. dotnet clean src/GraphlessDB.sln --nodereuse:false or dotnet build src/GraphlessDB.sln --nodereuse:false
 
 ## Implementation Steps
 
@@ -37,7 +41,7 @@ This command describes how to implement a GitHub issue.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.
 - Run ./utils/begin-issue.sh, it should put a GitHub issue into progress and return the issue id.
-- Create a new git worktree at a sibling level for working on the issue with a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
+- Create a new git worktree under the folder /tmp/claude/ for working on the issue, use a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - Use cwd to change the working directory to the worktree root folder.
 - Use the issue id to read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage.
 - Determine if the code under test is more suited to unit testing or integration testing.

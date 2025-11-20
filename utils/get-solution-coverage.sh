@@ -15,7 +15,7 @@ mkdir -p "$COVERAGE_DIR"
 
 # Build the entire solution first
 echo "Building solution..." >&2
-dotnet build src/GraphlessDB.sln --configuration Debug --verbosity quiet > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln --nodereuse:false --configuration Debug --verbosity quiet > /dev/null 2>&1
 BUILD_EXIT=$?
 
 if [ $BUILD_EXIT -ne 0 ]; then
@@ -28,6 +28,7 @@ fi
 # Note: dotnet test sometimes returns non-zero exit even when tests pass
 echo "Running tests with code coverage..." >&2
 dotnet test src/GraphlessDB.sln \
+  --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
