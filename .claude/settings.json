@@ -2,6 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(./utils/:*)",
+      "Bash(./utils/get-solution-coverage.sh:*)",
+      "Bash(./utils/begin-issue.sh:*)",
       "Bash(chmod:*)",
       "Bash(pkill:*)",
       "Bash(export MSBUILDDISABLENODEREUSE=1)",
@@ -27,7 +29,9 @@
       "Bash(gh pr checks:*)",
       "Bash(/dev/null)",
       "Bash(sort:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
