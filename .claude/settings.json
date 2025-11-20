@@ -36,7 +36,10 @@
       "Bash(sort:*)",
       "Bash(timeout:*)",
       "WebFetch(domain:api.github.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Read(/tmp/**)",
+      "Read",
+      "Write(/tmp/**)"
     ],
     "deny": [],
     "ask": []
