@@ -64,7 +64,7 @@ if [ -z "$TEST_PROJECT" ]; then
 fi
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln --nodereuse:false --verbosity quiet
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --verbosity quiet
 
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/file-$(date +%s)"

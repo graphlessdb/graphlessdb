@@ -15,7 +15,7 @@ mkdir -p "$COVERAGE_DIR"
 
 # Build the entire solution first
 echo "Building solution..." >&2
-dotnet build src/GraphlessDB.sln --nodereuse:false --configuration Debug --verbosity quiet
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug --verbosity quiet
 BUILD_EXIT=$?
 
 if [ $BUILD_EXIT -ne 0 ]; then

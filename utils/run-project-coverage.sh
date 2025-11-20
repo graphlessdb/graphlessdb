@@ -27,7 +27,7 @@ COVERAGE_DIR=".coverage/project-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln  --nodereuse:false --configuration Debug
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug
 
 # Run tests with coverage for the specific project
 dotnet test src/GraphlessDB.sln \
