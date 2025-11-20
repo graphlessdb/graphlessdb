@@ -2,8 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(./utils/:*)",
-      "Bash(./utils/get-solution-coverage.sh:*)",
       "Bash(./utils/begin-issue.sh:*)",
+      "Bash(./utils/create-unit-test-issues.sh:*)",
+      "Bash(./utils/get-file-coverage.sh:*)",
+      "Bash(./utils/get-least-covered-files.sh:*)",
+      "Bash(./utils/get-solution-coverage.sh:*)",
+      "Bash(./utils/get-project-coverage.sh:*)",
+      "Bash(./utils/run-tests.sh:*)",
       "Bash(chmod:*)",
       "Bash(pkill:*)",
       "Bash(export MSBUILDDISABLENODEREUSE=1)",
