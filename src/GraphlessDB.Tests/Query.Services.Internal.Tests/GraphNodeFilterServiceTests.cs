@@ -982,6 +982,247 @@ namespace GraphlessDB.Query.Services.Internal.Tests
             await Assert.ThrowsExceptionAsync<NotSupportedException>(() => service.IsFilterMatchAsync(node, filter, false, CancellationToken.None));
         }
 
+        [TestMethod]
+        public void AsEntityFilterWithNullFilterReturnsEmptyFilter()
+        {
+            var result = GraphNodeFilterService.AsEntityFilter(null);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.ValueFilterItems.Count);
+            Assert.AreEqual(0, result.EdgeFilterItems.Count);
+        }
+
+        [TestMethod]
+        public void AsEntityFilterWithValueFilterPropertyExtractsFilterItems()
+        {
+            var filter = new TestNodeFilter { CreatedAt = new DateTimeFilter { Eq = new DateTime(2025, 1, 1) } };
+            var result = GraphNodeFilterService.AsEntityFilter(filter);
+            Assert.AreEqual(1, result.ValueFilterItems.Count);
+            Assert.AreEqual("CreatedAt", result.ValueFilterItems[0].Name);
+        }
+
+        [TestMethod]
+        public void AsEntityFilterWithEdgeFilterPropertyExtractsEdgeFilterItems()
+        {
+            var filter = new TestNodeFilterWithEdgeFilter
+            {
+                TestEdge = new TestEdgeFilter
+                {
+                    NodeInFilter = new TestNodeFilter()
+                }
+            };
+            var result = GraphNodeFilterService.AsEntityFilter(filter);
+            Assert.AreEqual(1, result.EdgeFilterItems.Count);
+        }
+
+        [TestMethod]
+        public void AsOrderWithNullOrderReturnsEmptyOrder()
+        {
+            INodeOrder? nullOrder = null;
+            var result = typeof(GraphNodeFilterService)
+                .GetMethod("AsOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.Invoke(null, new object?[] { nullOrder });
+
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void AsOrderWithSingleOrderItemReturnsOrder()
+        {
+            var order = new TestNodeOrder { CreatedAt = OrderDirection.Asc };
+            var result = typeof(GraphNodeFilterService)
+                .GetMethod("AsOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                ?.Invoke(null, new object?[] { order });
+
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task IsFilterMatchAsyncWithNullPropertyValueForStringFilterReturnsFalse()
+        {
+            var service = CreateService();
+            var node = new TestNodeWithNullableString(
+                "test-id",
+                VersionDetail.New,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.MinValue,
+                null);
+
+            var filter = new TestNodeFilterWithStringProperty { StringProperty = new StringFilter { Eq = "test" } };
+            var result = await service.IsFilterMatchAsync(node, filter, false, CancellationToken.None);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsFilterMatchAsyncWithNullPropertyValueForIdFilterReturnsFalse()
+        {
+            var service = CreateService();
+            var node = new TestNodeWithNullableId(
+                "test-id",
+                VersionDetail.New,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.MinValue,
+                null);
+
+            var filter = new TestNodeFilterWithNullableIdProperty { NullableId = new IdFilter { Eq = "test" } };
+            var result = await service.IsFilterMatchAsync(node, filter, false, CancellationToken.None);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task IsFilterMatchAsyncWithNullPropertyValueForDateTimeFilterReturnsFalse()
+        {
+            var service = CreateService();
+            var node = new TestNodeWithNullableDateTime(
+                "test-id",
+                VersionDetail.New,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.MinValue,
+                null);
+
+            var filter = new TestNodeFilterWithNullableDateTimeProperty { NullableDateTime = new DateTimeFilter { Eq = DateTime.Now } };
+            var result = await service.IsFilterMatchAsync(node, filter, false, CancellationToken.None);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithQueryableIdFilterAndMatchingOrderReturnsDataWithFilter()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithIdProperty { Id = new IdFilter { Eq = "test-id" } };
+            var order = new TestNodeOrderWithIdProperty { Id = OrderDirection.Asc };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, order, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Order);
+            Assert.AreEqual("Id", result.Order.PropertyName);
+            Assert.IsNotNull(result.Filter);
+            Assert.AreEqual(PropertyOperator.Equals, result.Filter.PropertyOperator);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithQueryableEnumFilterAndMatchingOrderReturnsDataWithFilter()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithEnumProperty { EnumProperty = new EnumFilter { Eq = TestEnum.Value1 } };
+            var order = new TestNodeOrderWithEnumProperty { EnumProperty = OrderDirection.Asc };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, order, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Order);
+            Assert.AreEqual("EnumProperty", result.Order.PropertyName);
+            Assert.IsNotNull(result.Filter);
+            Assert.AreEqual(PropertyOperator.Equals, result.Filter.PropertyOperator);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithQueryableIdFilterNoEqReturnsOrderOnly()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithIdProperty { Id = new IdFilter { Ne = "test-id" } };
+            var order = new TestNodeOrderWithIdProperty { Id = OrderDirection.Asc };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, order, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Order);
+            Assert.IsNull(result.Filter);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithQueryableEnumFilterNoEqReturnsOrderOnly()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithEnumProperty { EnumProperty = new EnumFilter { In = new object[] { TestEnum.Value1 } } };
+            var order = new TestNodeOrderWithEnumProperty { EnumProperty = OrderDirection.Asc };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, order, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Order);
+            Assert.IsNull(result.Filter);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithStringFilterNoSupportedOperatorReturnsNull()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(true);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilterWithStringProperty { StringProperty = new StringFilter { Ne = "test" } };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, null, CancellationToken.None);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void TryGetNodePushdownQueryDataWithNonQueryableFilterPropertyReturnsNull()
+        {
+            var queryablePropertyService = new TestGraphQueryablePropertyService(false);
+            var service = new GraphNodeFilterService(
+                new EmptyGraphNodeFilterDataLayerService(),
+                new EmptyGraphQueryService(),
+                new GraphCursorSerializationService(),
+                queryablePropertyService,
+                new GraphSerializationService());
+
+            var filter = new TestNodeFilter { CreatedAt = new DateTimeFilter { Eq = new DateTime(2025, 1, 1) } };
+            var result = service.TryGetNodePushdownQueryData("TestType", filter, null, CancellationToken.None);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void TryGetPropertyOperatorWithUnsupportedFilterTypeThrowsNotSupportedException()
+        {
+            var unsupportedFilter = new UnsupportedFilter();
+            var method = typeof(GraphNodeFilterService).GetMethod(
+                "TryGetPropertyOperator",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+                null,
+                new[] { typeof(IValueFilter) },
+                null);
+
+            Assert.IsNotNull(method);
+            Assert.ThrowsException<System.Reflection.TargetInvocationException>(() =>
+            {
+                method.Invoke(null, new object[] { unsupportedFilter });
+            });
+        }
+
         private sealed class TestNodeFilter : INodeFilter
         {
             public DateTimeFilter? CreatedAt { get; set; }
@@ -1592,5 +1833,53 @@ namespace GraphlessDB.Query.Services.Internal.Tests
         {
             return false;
         }
+    }
+
+    internal sealed record TestNodeWithNullableString(
+        string Id,
+        VersionDetail Version,
+        DateTime CreatedAt,
+        DateTime UpdatedAt,
+        DateTime DeletedAt,
+        string? StringProperty) : INode(Id, Version, CreatedAt, UpdatedAt, DeletedAt);
+
+    internal sealed record TestNodeWithNullableId(
+        string Id,
+        VersionDetail Version,
+        DateTime CreatedAt,
+        DateTime UpdatedAt,
+        DateTime DeletedAt,
+        string? NullableId) : INode(Id, Version, CreatedAt, UpdatedAt, DeletedAt);
+
+    internal sealed record TestNodeWithNullableDateTime(
+        string Id,
+        VersionDetail Version,
+        DateTime CreatedAt,
+        DateTime UpdatedAt,
+        DateTime DeletedAt,
+        DateTime? NullableDateTime) : INode(Id, Version, CreatedAt, UpdatedAt, DeletedAt);
+
+    internal sealed class TestNodeFilterWithNullableIdProperty : INodeFilter
+    {
+        public DateTimeFilter? CreatedAt { get; set; }
+        public IdFilter? NullableId { get; set; }
+    }
+
+    internal sealed class TestNodeFilterWithNullableDateTimeProperty : INodeFilter
+    {
+        public DateTimeFilter? CreatedAt { get; set; }
+        public DateTimeFilter? NullableDateTime { get; set; }
+    }
+
+    internal sealed class TestNodeOrderWithIdProperty : INodeOrder
+    {
+        public OrderDirection? CreatedAt { get; set; }
+        public OrderDirection? Id { get; set; }
+    }
+
+    internal sealed class TestNodeOrderWithEnumProperty : INodeOrder
+    {
+        public OrderDirection? CreatedAt { get; set; }
+        public OrderDirection? EnumProperty { get; set; }
     }
 }

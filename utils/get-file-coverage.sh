@@ -64,7 +64,7 @@ if [ -z "$TEST_PROJECT" ]; then
 fi
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln --verbosity quiet > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --verbosity quiet
 
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/file-$(date +%s)"
@@ -72,12 +72,12 @@ mkdir -p "$COVERAGE_DIR"
 
 # Run tests with coverage for the test project
 dotnet test "$TEST_PROJECT" \
+  --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
   --no-build \
   --verbosity quiet \
-  > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
