@@ -100,6 +100,7 @@ fi
 export COVERAGE_DIR
 export LIMIT
 export REPO_ROOT
+export PROJECT_NAME
 
 # Parse all coverage files and extract per-file coverage data
 python3 << 'PYTHON_SCRIPT'
@@ -113,6 +114,7 @@ import glob
 coverage_dir = os.environ.get('COVERAGE_DIR', '.coverage')
 limit = int(os.environ.get('LIMIT', 5))
 repo_root = os.environ.get('REPO_ROOT', '')
+project_name = os.environ.get('PROJECT_NAME', '')
 
 # Find all coverage files
 coverage_files = glob.glob(f"{coverage_dir}/**/coverage.cobertura.xml", recursive=True)
@@ -121,8 +123,9 @@ if not coverage_files:
     print("Error: No coverage files found", file=sys.stderr)
     sys.exit(1)
 
-# Collect coverage data for all classes
-class_coverage = {}
+# Collect coverage data for all files
+# First pass: aggregate all classes per file per coverage file
+per_file_coverage = {}
 
 # Parse each coverage file
 for coverage_file in coverage_files:
@@ -137,6 +140,9 @@ for coverage_file in coverage_files:
             source_element = sources.find('source')
             if source_element is not None and source_element.text:
                 source_prefix = source_element.text
+
+        # Track coverage per file within this coverage file
+        file_coverage_in_this_run = {}
 
         # Navigate through packages -> classes
         packages = root.find('packages')
@@ -174,45 +180,60 @@ for coverage_file in coverage_files:
                 if total_lines == 0:
                     continue
 
-                coverage_ratio = covered / total_lines
-
                 # Construct full path from source prefix and filename
-                # The filename in the XML is relative to the source prefix
-                # The source prefix already ends with '/' so just concatenate
                 if source_prefix:
-                    # Normalize paths - source_prefix ends with /, filename is relative
                     full_path = source_prefix.rstrip('/') + '/' + filename
                 else:
                     full_path = filename
 
-                # Make path relative to repo root (add trailing slash to ensure proper matching)
+                # Make path relative to repo root
                 repo_root_with_slash = repo_root if repo_root.endswith('/') else repo_root + '/'
 
                 if full_path.startswith(repo_root_with_slash):
                     rel_path = full_path[len(repo_root_with_slash):]
                 else:
-                    # Fallback - just use the filename part
                     rel_path = filename
 
-                # Store or update coverage data (aggregate if same file appears in multiple coverage files)
-                if rel_path in class_coverage:
-                    existing = class_coverage[rel_path]
-                    existing['covered'] += covered
-                    existing['notCovered'] += not_covered
-                    total = existing['covered'] + existing['notCovered']
-                    existing['coverageRatio'] = existing['covered'] / total if total > 0 else 0
+                # Filter: only include files from the project being tested
+                # Check if the file path contains the project name directory
+                # For example, if testing GraphlessDB.DynamoDB, only include files from src/GraphlessDB.DynamoDB/
+                if project_name:
+                    expected_prefix = f"src/{project_name}/"
+                    if not rel_path.startswith(expected_prefix):
+                        continue
+
+                # Aggregate all classes for the same file within this coverage run
+                if rel_path in file_coverage_in_this_run:
+                    file_coverage_in_this_run[rel_path]['covered'] += covered
+                    file_coverage_in_this_run[rel_path]['notCovered'] += not_covered
                 else:
-                    class_coverage[rel_path] = {
+                    file_coverage_in_this_run[rel_path] = {
                         'name': classname,
                         'path': rel_path,
-                        'coverageRatio': coverage_ratio,
                         'covered': covered,
                         'notCovered': not_covered
                     }
 
+        # Now merge this coverage run's data into the overall results
+        # If we have multiple coverage files (duplicate runs), take the one with better coverage
+        for rel_path, data in file_coverage_in_this_run.items():
+            total = data['covered'] + data['notCovered']
+            coverage_ratio = data['covered'] / total if total > 0 else 0
+            data['coverageRatio'] = coverage_ratio
+
+            if rel_path in per_file_coverage:
+                # Compare with existing data and keep the better coverage
+                existing = per_file_coverage[rel_path]
+                if coverage_ratio > existing['coverageRatio']:
+                    per_file_coverage[rel_path] = data
+            else:
+                per_file_coverage[rel_path] = data
+
     except Exception as e:
         print(f"Error parsing {coverage_file}: {e}", file=sys.stderr)
         sys.exit(1)
+
+class_coverage = per_file_coverage
 
 # Filter out files with coverage >= 0.9
 filtered_coverage = [
