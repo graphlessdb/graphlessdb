@@ -53,10 +53,11 @@
       "Bash(/dev/null)",
       "Bash(sort:*)",
       "Bash(timeout:*)",
+      "Bash(find:*)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:github.com)",
       "Read(/tmp/**)",
-      "Read",
+      "Read(*)",
       "Write(/tmp/**)"
     ],
     "deny": [],
