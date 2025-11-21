@@ -16,7 +16,7 @@ TODO_ISSUES=$(gh api graphql -f query='
 {
   node(id: "'$PROJECT_ID'") {
     ... on ProjectV2 {
-      items(first: 100) {
+      items(last: 100) {
         nodes {
           id
           content {
