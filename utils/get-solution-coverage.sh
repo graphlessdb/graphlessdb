@@ -1,83 +1,97 @@
 #!/bin/bash
 
-# Get code coverage for the entire solution
-# Outputs JSON in format: { lineCoveragePercentage: <value>, branchCoveragePercentage: <value> }
+# Run code coverage for all unit tests in the solution
+# Outputs JSON in the format: { lineCoveragePercentage: 0, branchCoveragePercentage: 0 }
+
+set -e
 
 # Disable MSBuild node reuse to prevent hanging processes
 export MSBUILDDISABLENODEREUSE=1
 
 # Navigate to project root
-cd "$(dirname "$0")/.."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$REPO_ROOT"
 
 # Create unique coverage directory
 COVERAGE_DIR=".coverage/solution-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
-# Build the entire solution first
-echo "Building solution..." >&2
-dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug --verbosity quiet > /dev/null 2>&1
-BUILD_EXIT=$?
-
-if [ $BUILD_EXIT -ne 0 ]; then
-  echo "Error: Build failed with exit code $BUILD_EXIT" >&2
+# Cleanup function
+cleanup() {
   rm -rf "$COVERAGE_DIR"
-  exit 1
-fi
+}
 
-# Run all tests with coverage
-# Note: dotnet test sometimes returns non-zero exit even when tests pass
-echo "Running tests with code coverage..." >&2
-dotnet test src/GraphlessDB.sln \
+# Trap errors and cleanup
+trap cleanup EXIT
+
+# Build the solution first (suppress output unless there's an error)
+BUILD_OUTPUT=$(dotnet build src/GraphlessDB.sln \
+  --no-incremental \
+  -p:UseSharedCompilation=false \
+  -p:UseRazorBuildServer=false \
+  /nodeReuse:false \
+  --verbosity quiet 2>&1) || {
+  echo "$BUILD_OUTPUT" >&2
+  exit 1
+}
+
+# Run tests with coverage for the entire solution (suppress output unless there's an error)
+TEST_OUTPUT=$(dotnet test src/GraphlessDB.sln \
   --nodereuse:false \
   --collect:"XPlat Code Coverage" \
   --settings:"src/settings.runsettings" \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
-  --no-build \
-  > /dev/null 2>&1
+  --no-build 2>&1) || {
+  echo "$TEST_OUTPUT" >&2
+  exit 1
+}
 
 # Find all coverage.cobertura.xml files
-COVERAGE_FILES=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" -type f)
+COVERAGE_FILES=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml")
 
 if [ -z "$COVERAGE_FILES" ]; then
   echo "Error: No coverage files found" >&2
-  rm -rf "$COVERAGE_DIR"
   exit 1
 fi
 
-# Parse all coverage XML files and aggregate the results
-python3 - "$COVERAGE_FILES" <<'PYTHON_SCRIPT'
-import sys
+# Parse all coverage files and calculate total coverage
+python3 << 'PYTHON_SCRIPT'
 import xml.etree.ElementTree as ET
 import json
+import sys
+import os
+import glob
 
-# Get all coverage files from stdin (space-separated on single line)
-coverage_files_str = sys.argv[1]
-coverage_files = coverage_files_str.strip().split('\n')
+# Find all coverage files
+coverage_dir = os.environ.get('COVERAGE_DIR', '.coverage')
+coverage_files = glob.glob(f"{coverage_dir}/**/coverage.cobertura.xml", recursive=True)
 
-# Aggregate totals across all coverage files
+if not coverage_files:
+    print("Error: No coverage files found", file=sys.stderr)
+    sys.exit(1)
+
 total_lines_covered = 0
 total_lines_valid = 0
 total_branches_covered = 0
 total_branches_valid = 0
 
+# Parse each coverage file
 for coverage_file in coverage_files:
-    coverage_file = coverage_file.strip()
-    if not coverage_file:
-        continue
-
     try:
-        # Parse the XML
         tree = ET.parse(coverage_file)
         root = tree.getroot()
 
-        # Get the aggregated attributes from the root element
+        # Get the root coverage element which has line-rate and branch-rate attributes
+        line_rate = float(root.get('line-rate', 0))
+        branch_rate = float(root.get('branch-rate', 0))
         lines_covered = int(root.get('lines-covered', 0))
         lines_valid = int(root.get('lines-valid', 0))
         branches_covered = int(root.get('branches-covered', 0))
         branches_valid = int(root.get('branches-valid', 0))
 
-        # Add to totals
+        # Accumulate totals
         total_lines_covered += lines_covered
         total_lines_valid += lines_valid
         total_branches_covered += branches_covered
@@ -85,26 +99,25 @@ for coverage_file in coverage_files:
 
     except Exception as e:
         print(f"Error parsing {coverage_file}: {e}", file=sys.stderr)
-        continue
+        sys.exit(1)
 
 # Calculate percentages
 if total_lines_valid > 0:
-    line_coverage_pct = (total_lines_covered / total_lines_valid) * 100
+    line_coverage_percentage = round((total_lines_covered / total_lines_valid) * 100, 2)
 else:
-    line_coverage_pct = 0.0
+    line_coverage_percentage = 0
 
 if total_branches_valid > 0:
-    branch_coverage_pct = (total_branches_covered / total_branches_valid) * 100
+    branch_coverage_percentage = round((total_branches_covered / total_branches_valid) * 100, 2)
 else:
-    branch_coverage_pct = 0.0
+    branch_coverage_percentage = 0
 
-# Output JSON format
+# Output JSON
 result = {
-    "lineCoveragePercentage": round(line_coverage_pct, 2),
-    "branchCoveragePercentage": round(branch_coverage_pct, 2)
+    "lineCoveragePercentage": line_coverage_percentage,
+    "branchCoveragePercentage": branch_coverage_percentage
 }
-print(json.dumps(result))
-PYTHON_SCRIPT
 
-# Clean up coverage files
-rm -rf "$COVERAGE_DIR"
+print(json.dumps(result))
+
+PYTHON_SCRIPT
