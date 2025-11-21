@@ -1545,5 +1545,189 @@ namespace GraphlessDB.DynamoDB.Storage.Services.Tests
 
             await store.WriteRDFTriplesAsync(request, CancellationToken.None);
         }
+
+        [TestMethod]
+        public async Task TransactionCanceledWithDeleteOperationLogsCorrectly()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                transactWriteItemsHandler: (request, ct) =>
+                {
+                    var exception = new TransactionCanceledException("Transaction cancelled");
+                    exception.CancellationReasons = new List<CancellationReason>
+                    {
+                        new CancellationReason { Code = "ConditionalCheckFailed" }
+                    };
+                    throw exception;
+                });
+
+            var store = CreateStore(client);
+            var deleteRequest = WriteRDFTriple.Create(new DeleteRDFTriple(TableName, triple.AsKey(), new VersionDetailCondition(1, 0)));
+            var request = new WriteRDFTriplesRequest("token", false, [deleteRequest]);
+
+            await Assert.ThrowsExceptionAsync<GraphlessDBConcurrencyException>(async () =>
+            {
+                await store.WriteRDFTriplesAsync(request, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task TransactionCanceledWithUpdateOperationLogsCorrectly()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                transactWriteItemsHandler: (request, ct) =>
+                {
+                    var exception = new TransactionCanceledException("Transaction cancelled");
+                    exception.CancellationReasons = new List<CancellationReason>
+                    {
+                        new CancellationReason { Code = "ConditionalCheckFailed" }
+                    };
+                    throw exception;
+                });
+
+            var store = CreateStore(client);
+            var incrementRequest = WriteRDFTriple.Create(new IncrementRDFTripleAllEdgesVersion(TableName, triple.AsKey(), new VersionDetailCondition(1, 0)));
+            var request = new WriteRDFTriplesRequest("token", false, [incrementRequest]);
+
+            await Assert.ThrowsExceptionAsync<GraphlessDBConcurrencyException>(async () =>
+            {
+                await store.WriteRDFTriplesAsync(request, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task TransactionCanceledWithConditionCheckOperationLogsCorrectly()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                transactWriteItemsHandler: (request, ct) =>
+                {
+                    var exception = new TransactionCanceledException("Transaction cancelled");
+                    exception.CancellationReasons = new List<CancellationReason>
+                    {
+                        new CancellationReason { Code = "ConditionalCheckFailed" }
+                    };
+                    throw exception;
+                });
+
+            var store = CreateStore(client);
+            var checkRequest = WriteRDFTriple.Create(new CheckRDFTripleVersion(TableName, triple.AsKey(), new VersionDetailCondition(1, 0)));
+            var request = new WriteRDFTriplesRequest("token", false, [checkRequest]);
+
+            await Assert.ThrowsExceptionAsync<GraphlessDBConcurrencyException>(async () =>
+            {
+                await store.WriteRDFTriplesAsync(request, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task QueryRDFTriplesByPartitionAndPredicateAsyncWithExclusiveStartKey()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                queryHandler: (request, ct) =>
+                {
+                    Assert.IsNotNull(request.ExclusiveStartKey);
+                    Assert.IsTrue(request.IndexName.Contains("ByPredicate"));
+                    var response = new QueryResponse
+                    {
+                        Items = new List<Dictionary<string, AttributeValue>>
+                        {
+                            new Dictionary<string, AttributeValue>
+                            {
+                                { "Subject", AttributeValueFactory.CreateS(triple.Subject) },
+                                { "Predicate", AttributeValueFactory.CreateS(triple.Predicate) },
+                                { "IndexedObject", AttributeValueFactory.CreateS(triple.IndexedObject) },
+                                { "Object", AttributeValueFactory.CreateS(triple.Object) },
+                                { "Partition", AttributeValueFactory.CreateS(triple.Partition) }
+                            }
+                        },
+                        LastEvaluatedKey = new Dictionary<string, AttributeValue>(),
+                        ConsumedCapacity = new ConsumedCapacity()
+                    };
+                    return Task.FromResult(response);
+                });
+
+            var store = CreateStore(client);
+            var startKey = new RDFTripleKeyWithPartition("start-subject", "start-predicate", "partition");
+            var request = new QueryRDFTriplesByPartitionAndPredicateRequest(TableName, "test-partition", "test-predicate", startKey, true, 10, false, false);
+
+            var response = await store.QueryRDFTriplesByPartitionAndPredicateAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, response.Items.Count);
+        }
+
+        [TestMethod]
+        public async Task QueryRDFTriplesAsyncWithExclusiveStartKey()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                queryHandler: (request, ct) =>
+                {
+                    Assert.IsNotNull(request.ExclusiveStartKey);
+                    var response = new QueryResponse
+                    {
+                        Items = new List<Dictionary<string, AttributeValue>>
+                        {
+                            new Dictionary<string, AttributeValue>
+                            {
+                                { "Subject", AttributeValueFactory.CreateS(triple.Subject) },
+                                { "Predicate", AttributeValueFactory.CreateS(triple.Predicate) },
+                                { "IndexedObject", AttributeValueFactory.CreateS(triple.IndexedObject) },
+                                { "Object", AttributeValueFactory.CreateS(triple.Object) },
+                                { "Partition", AttributeValueFactory.CreateS(triple.Partition) }
+                            }
+                        },
+                        LastEvaluatedKey = new Dictionary<string, AttributeValue>(),
+                        ConsumedCapacity = new ConsumedCapacity()
+                    };
+                    return Task.FromResult(response);
+                });
+
+            var store = CreateStore(client);
+            var startKey = new RDFTripleKey("start-subject", "start-predicate");
+            var request = new QueryRDFTriplesRequest(TableName, "test-subject", "test-predicate", startKey, true, 10, false, false);
+
+            var response = await store.QueryRDFTriplesAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, response.Items.Count);
+        }
+
+        [TestMethod]
+        public async Task ScanRDFTriplesAsyncWithExclusiveStartKey()
+        {
+            var triple = CreateTriple();
+            var client = new MockAmazonDynamoDBClient(
+                scanHandler: (request, ct) =>
+                {
+                    Assert.IsNotNull(request.ExclusiveStartKey);
+                    var response = new ScanResponse
+                    {
+                        Items = new List<Dictionary<string, AttributeValue>>
+                        {
+                            new Dictionary<string, AttributeValue>
+                            {
+                                { "Subject", AttributeValueFactory.CreateS(triple.Subject) },
+                                { "Predicate", AttributeValueFactory.CreateS(triple.Predicate) },
+                                { "IndexedObject", AttributeValueFactory.CreateS(triple.IndexedObject) },
+                                { "Object", AttributeValueFactory.CreateS(triple.Object) },
+                                { "Partition", AttributeValueFactory.CreateS(triple.Partition) }
+                            }
+                        },
+                        LastEvaluatedKey = new Dictionary<string, AttributeValue>(),
+                        ConsumedCapacity = new ConsumedCapacity()
+                    };
+                    return Task.FromResult(response);
+                });
+
+            var store = CreateStore(client);
+            var startKey = new RDFTripleKey("start-subject", "start-predicate");
+            var request = new ScanRDFTriplesRequest(TableName, startKey, 10, false, false);
+
+            var response = await store.ScanRDFTriplesAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, response.Items.Count);
+        }
     }
 }
