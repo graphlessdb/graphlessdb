@@ -15,7 +15,7 @@ mkdir -p "$COVERAGE_DIR"
 
 # Build the entire solution first
 echo "Building solution..." >&2
-dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug --verbosity quiet
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug --verbosity quiet > /dev/null 2>&1
 BUILD_EXIT=$?
 
 if [ $BUILD_EXIT -ne 0 ]; then
@@ -34,6 +34,7 @@ dotnet test src/GraphlessDB.sln \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
   --no-build \
+  > /dev/null 2>&1
 
 # Find all coverage.cobertura.xml files
 COVERAGE_FILES=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" -type f)
