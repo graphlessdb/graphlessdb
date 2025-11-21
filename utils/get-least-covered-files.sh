@@ -47,7 +47,7 @@ for project in non_test_projects:
     try:
         # Run coverage for this project (no limit on individual project results)
         result = subprocess.run(
-            [os.path.join(script_dir, 'run-project-coverage.sh'), project_path, '999999'],
+            [os.path.join(script_dir, 'get-project-coverage.sh'), project_path, '999999'],
             capture_output=True,
             text=True,
             check=True,
@@ -105,6 +105,6 @@ all_results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
 # Truncate to limit
 all_results = all_results[:limit]
 
-# Output in the same format as run-project-coverage.sh
+# Output in the same format as get-project-coverage.sh
 print(json.dumps(all_results, indent=2))
 PYTHON_SCRIPT
