@@ -980,5 +980,653 @@ namespace GraphlessDB.Graph.Services.Internal.Tests
             await Assert.ThrowsExceptionAsync<NotSupportedException>(
                 async () => await queryService.GetInToEdgeConnectionAsync(request, CancellationToken.None));
         }
+
+        [TestMethod]
+        public async Task GetInToEdgeConnectionWithFilterByAndOrderByWithSamePropertyNameReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user2.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user2)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var filterBy = new EdgeFilterArguments("LikedByUsername", PropertyOperator.Equals, "user1");
+            var orderBy = new OrderArguments("LikedByUsername", OrderDirection.Asc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                filterBy,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetInToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetOutToEdgeConnectionWithFilterByAndOrderByWithSamePropertyNameReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user1.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user1)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var filterBy = new EdgeFilterArguments("LikesUsername", PropertyOperator.Equals, "user2");
+            var orderBy = new OrderArguments("LikesUsername", OrderDirection.Asc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                filterBy,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetOutToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetInToEdgeConnectionWithOrderByReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user2.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user2)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var orderBy = new OrderArguments("LikedByUsername", OrderDirection.Asc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                null,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetInToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task PutAsyncUpdatesExistingNode()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user = User.New("testuser");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var getRequest = new TryGetNodesRequest([user.Id], true);
+            var getResponse = await queryService.TryGetNodesAsync(getRequest, cancellationToken);
+            var retrievedUser = (User)getResponse.Nodes[0]!.Node;
+
+            var updatedUser = retrievedUser with { Username = "updateduser", Version = retrievedUser.Version with { NodeVersion = retrievedUser.Version.NodeVersion + 1 } };
+            var putRequest = new PutRequest(
+                new MutationId("mut2"),
+                [updatedUser],
+                ImmutableList<INode>.Empty,
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                false);
+
+            await queryService.PutAsync(putRequest, cancellationToken);
+
+            var getUpdatedResponse = await queryService.TryGetNodesAsync(getRequest, cancellationToken);
+            var finalUser = (User)getUpdatedResponse.Nodes[0]!.Node;
+
+            Assert.AreEqual("updateduser", finalUser.Username);
+        }
+
+        [TestMethod]
+        public async Task PutAsyncDeletesExistingNode()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user = User.New("testuser");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var getRequest = new TryGetNodesRequest([user.Id], true);
+            var getResponse = await queryService.TryGetNodesAsync(getRequest, cancellationToken);
+            var retrievedUser = (User)getResponse.Nodes[0]!.Node;
+
+            var deletedUser = retrievedUser with { DeletedAt = DateTime.UtcNow, Version = retrievedUser.Version with { NodeVersion = retrievedUser.Version.NodeVersion + 1 } };
+            var putRequest = new PutRequest(
+                new MutationId("mut2"),
+                [deletedUser],
+                ImmutableList<INode>.Empty,
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                false);
+
+            await queryService.PutAsync(putRequest, cancellationToken);
+
+            var getDeletedResponse = await queryService.TryGetNodesAsync(getRequest, cancellationToken);
+            Assert.IsNull(getDeletedResponse.Nodes[0]);
+        }
+
+        [TestMethod]
+        public async Task PutAsyncUpdatesExistingEdge()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+
+            var updatedEdge = edge with { UpdatedAt = DateTime.UtcNow.AddSeconds(1) };
+            var putRequest = new PutRequest(
+                new MutationId("mut2"),
+                [updatedEdge],
+                [user1, user2],
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                false);
+
+            await queryService.PutAsync(putRequest, cancellationToken);
+
+            var edgeRequest = new TryGetEdgesRequest(
+                [new EdgeKey("UserLikesUserEdge", user2.Id, user1.Id)],
+                false);
+            var edgeResponse = await queryService.TryGetEdgesAsync(edgeRequest, cancellationToken);
+
+            Assert.IsNotNull(edgeResponse);
+            Assert.AreEqual(1, edgeResponse.Edges.Count);
+        }
+
+        [TestMethod]
+        public async Task PutAsyncDeletesExistingEdge()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var getRequest = new TryGetNodesRequest([user1.Id, user2.Id], false);
+            var getResponse = await queryService.TryGetNodesAsync(getRequest, cancellationToken);
+            var retrievedUser1 = (User)getResponse.Nodes[0]!.Node;
+            var retrievedUser2 = (User)getResponse.Nodes[1]!.Node;
+
+            var deletedEdge = edge with { DeletedAt = DateTime.UtcNow };
+            var putRequest = new PutRequest(
+                new MutationId("mut2"),
+                [deletedEdge],
+                [retrievedUser1, retrievedUser2],
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                false);
+
+            await queryService.PutAsync(putRequest, cancellationToken);
+
+            var edgeRequest = new TryGetEdgesRequest(
+                [new EdgeKey("UserLikesUserEdge", user2.Id, user1.Id)],
+                false);
+            var edgeResponse = await queryService.TryGetEdgesAsync(edgeRequest, cancellationToken);
+
+            Assert.IsNotNull(edgeResponse);
+            Assert.IsNull(edgeResponse.Edges[0]);
+        }
+
+        [TestMethod]
+        public async Task PutAsyncWithoutNodeEdgeChecksAddsEdge()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var edge = UserLikesUserEdge.New(user1, user2);
+
+            var putRequest = new PutRequest(
+                new MutationId("mut2"),
+                [edge],
+                ImmutableList<INode>.Empty,
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                true);
+
+            await queryService.PutAsync(putRequest, cancellationToken);
+
+            var edgeRequest = new TryGetEdgesRequest(
+                [new EdgeKey("UserLikesUserEdge", user2.Id, user1.Id)],
+                false);
+            var edgeResponse = await queryService.TryGetEdgesAsync(edgeRequest, cancellationToken);
+
+            Assert.IsNotNull(edgeResponse);
+            Assert.AreEqual(1, edgeResponse.Edges.Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(GraphlessDBOperationException))]
+        public async Task PutAsyncThrowsWhenNodesWithoutEdgeChecks()
+        {
+            var services = CreateServiceProvider();
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+
+            var putRequest = new PutRequest(
+                new MutationId("mut1"),
+                [edge],
+                ImmutableList<INode>.Empty,
+                ImmutableList<EdgeByPropCheck>.Empty,
+                ImmutableList<string>.Empty,
+                false);
+
+            await queryService.PutAsync(putRequest, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task GetConnectionByTypeWithLastPaginationReturnsConnection()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var request = new GetConnectionByTypeRequest("User", ConnectionArguments.GetLast(10), false);
+            var response = await queryService.GetConnectionByTypeAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+            Assert.IsTrue(response.Connection.Edges.Count >= 2);
+        }
+
+        [TestMethod]
+        public async Task GetConnectionByTypeAndPropertyNameWithOrderDescReturnsConnection()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user = User.New("testuser");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var request = new GetConnectionByTypeAndPropertyNameRequest(
+                "User",
+                "Username",
+                true,
+                ConnectionArguments.GetFirst(10),
+                false);
+            var response = await queryService.GetConnectionByTypeAndPropertyNameAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetConnectionByTypePropertyNameAndValueWithOrderDescReturnsConnection()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user = User.New("testuser");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var request = new GetConnectionByTypePropertyNameAndValueRequest(
+                "User",
+                "Username",
+                PropertyOperator.Equals,
+                "testuser",
+                true,
+                ConnectionArguments.GetFirst(10),
+                false);
+            var response = await queryService.GetConnectionByTypePropertyNameAndValueAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetConnectionByTypePropertyNameAndValuesWithOrderDescReturnsConnection()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var request = new GetConnectionByTypePropertyNameAndValuesRequest(
+                "User",
+                "Username",
+                PropertyOperator.Equals,
+                ["user1", "user2"],
+                true,
+                ConnectionArguments.GetFirst(10),
+                false);
+            var response = await queryService.GetConnectionByTypePropertyNameAndValuesAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetInAndOutToEdgeConnectionWithFilterByAndOrderByWithSamePropertyNameReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user1.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user1)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var filterBy = new EdgeFilterArguments("LikesUsername", PropertyOperator.Equals, "user2");
+            var orderBy = new OrderArguments("LikesUsername", OrderDirection.Asc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                filterBy,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetInAndOutToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetInAndOutToEdgeConnectionWithFilterByAndOrderByWithDifferentPropertyNamesThrows()
+        {
+            var services = CreateServiceProvider();
+            var user1 = User.New("user1");
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user1.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user1)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var filterBy = new EdgeFilterArguments("LikesUsername", PropertyOperator.Equals, "user2");
+            var orderBy = new OrderArguments("DifferentProperty", OrderDirection.Asc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                filterBy,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            await Assert.ThrowsExceptionAsync<NotSupportedException>(
+                async () => await queryService.GetInAndOutToEdgeConnectionAsync(request, CancellationToken.None));
+        }
+
+        [TestMethod]
+        public async Task GetPropRdfTriplesAsyncReturnsTriples()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user = User.New("testuser");
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user)
+                .ExecuteAsync(cancellationToken);
+
+            var queryService = (RDFTripleGraphQueryService)services.GetRequiredService<IGraphQueryService>();
+            var triples = await queryService.GetPropRdfTriplesAsync(user.Id, cancellationToken);
+
+            Assert.IsNotNull(triples);
+            Assert.IsTrue(triples.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task GetOutToEdgeConnectionWithDescOrderReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user1.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user1)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var orderBy = new OrderArguments("LikesUsername", OrderDirection.Desc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                null,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetOutToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
+
+        [TestMethod]
+        public async Task GetInToEdgeConnectionWithDescOrderReturnsEdges()
+        {
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
+            var services = CreateServiceProvider();
+
+            var user1 = User.New("user1");
+            var user2 = User.New("user2");
+            var edge = UserLikesUserEdge.New(user1, user2);
+            await services
+                .CreateScope()
+                .GraphDB()
+                .Graph<TestGraph>()
+                .Put(user1, user2, edge)
+                .ExecuteAsync(cancellationToken);
+
+            var cursorSerializer = new GraphCursorSerializationService();
+            var hasTypeCursor = new HasTypeCursor(user2.Id, "0", []);
+            var cursorNode = new CursorNode(hasTypeCursor, null, null, null, null, null, null, null);
+            var cursor = Cursor.Create(cursorNode);
+            var cursorText = cursorSerializer.Serialize(cursor);
+
+            var nodeConnection = new Connection<RelayEdge<INode>, INode>(
+                [new RelayEdge<INode>(cursorText, user2)],
+                new PageInfo(false, false, cursorText, cursorText));
+
+            var queryService = services.GetRequiredService<IGraphQueryService>();
+            var orderBy = new OrderArguments("LikedByUsername", OrderDirection.Desc);
+            var request = new ToEdgeQueryRequest(
+                "User",
+                "UserLikesUserEdge",
+                nodeConnection,
+                orderBy,
+                null,
+                ConnectionArguments.GetFirst(10),
+                false);
+
+            var response = await queryService.GetInToEdgeConnectionAsync(request, cancellationToken);
+
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.Connection);
+        }
     }
 }
