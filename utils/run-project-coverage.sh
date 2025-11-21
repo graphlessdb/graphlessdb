@@ -27,7 +27,8 @@ COVERAGE_DIR=".coverage/project-$(date +%s)-$$"
 mkdir -p "$COVERAGE_DIR"
 
 # Build the solution first
-dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug > /dev/null 2>&1
+dotnet build src/GraphlessDB.sln --no-incremental -p:UseSharedCompilation=false -p:UseRazorBuildServer=false /nodeReuse:false --configuration Debug
+# > /dev/null 2>&1
 
 # Run tests with coverage for the specific project
 dotnet test src/GraphlessDB.sln \
@@ -37,7 +38,7 @@ dotnet test src/GraphlessDB.sln \
   --results-directory "$COVERAGE_DIR" \
   --verbosity quiet \
   --no-build \
-  > /dev/null 2>&1
+  # > /dev/null 2>&1
 
 # Find the coverage.cobertura.xml file
 COVERAGE_FILE=$(find "$COVERAGE_DIR" -name "coverage.cobertura.xml" | head -n 1)
@@ -152,4 +153,4 @@ print(json.dumps(classes_data, indent=2))
 PYTHON_SCRIPT
 
 # Clean up coverage files
-rm -rf "$COVERAGE_DIR"
+# rm -rf "$COVERAGE_DIR"

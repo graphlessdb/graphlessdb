@@ -6,8 +6,8 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 export MSBUILDDISABLENODEREUSE=1
 
-dotnet test "$REPO_ROOT/src/GraphlessDB.sln" \
-    --no-build \
+dotnet build "$REPO_ROOT/src/GraphlessDB.sln" \
+    --no-incremental \
     -p:UseSharedCompilation=false \
     -p:UseRazorBuildServer=false \
     /nodeReuse:false \
