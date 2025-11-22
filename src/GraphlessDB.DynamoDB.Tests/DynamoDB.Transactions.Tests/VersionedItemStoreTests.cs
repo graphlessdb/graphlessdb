@@ -2890,5 +2890,1307 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
             Assert.AreEqual(1, response.Responses.Count);
             Assert.AreEqual(1, response.Responses[0].Item.Count);
         }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncDeleteItemReturnsAllOldWhenTransient()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                true,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Delete));
+
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new DeleteItemRequest
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    },
+                    ReturnValues = ReturnValue.ALL_OLD
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(DeleteItemResponse));
+            var response = (DeleteItemResponse)result;
+            Assert.AreEqual(0, response.Attributes.Count);
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncDeleteItemReturnsAllOldWithBackup()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Delete));
+
+            var itemRecord = new ItemRecord(
+                itemKey,
+                new Dictionary<string, ImmutableAttributeValue>
+                {
+                    { "Id", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("TestId")) },
+                    { "Name", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("TestName")) }
+                }.ToImmutableDictionary());
+
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new DeleteItemRequest
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    },
+                    ReturnValues = ReturnValue.ALL_OLD
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty.Add(itemKey, itemRecord));
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(DeleteItemResponse));
+            var response = (DeleteItemResponse)result;
+            Assert.AreEqual(2, response.Attributes.Count);
+            Assert.IsTrue(response.Attributes.ContainsKey("Id"));
+            Assert.IsTrue(response.Attributes.ContainsKey("Name"));
+        }
+
+        [TestMethod]
+        public void GetItemRecordAndTransactionStateReturnsNullWhenNotConditionalCheckFailed()
+        {
+            var itemKey = CreateItemKey();
+            var item = new Dictionary<string, AttributeValue>
+            {
+                { "Id", AttributeValueFactory.CreateS("TestId") },
+                { "Name", AttributeValueFactory.CreateS("TestName") }
+            };
+
+            var store = CreateVersionedItemStore();
+            var result = store.GetItemRecordAndTransactionState(itemKey, item);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.ItemResponse);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public async Task ApplyRequestAsyncThrowsForUnsupportedRequestType()
+        {
+            var transaction = CreateTransaction();
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new ScanRequest { TableName = "TestTable" },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty,
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesConditionCheckAttributeNotExists()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                true,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.ConditionCheck));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.ConditionCheck, "attribute_not_exists(Id)", 
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            ConditionCheck = new ConditionCheck
+                            {
+                                TableName = "TestTable",
+                                Key = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") }
+                                },
+                                ConditionExpression = "attribute_not_exists(Id)"
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesConditionCheckAttributeExists()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.ConditionCheck));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.ConditionCheck, "attribute_exists(Id)",
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            ConditionCheck = new ConditionCheck
+                            {
+                                TableName = "TestTable",
+                                Key = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") }
+                                },
+                                ConditionExpression = "attribute_exists(Id)"
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public async Task ApplyRequestAsyncTransactWriteItemsThrowsForUnsupportedConditionExpression()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.ConditionCheck));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.ConditionCheck, "size(Name) > :val",
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB();
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            ConditionCheck = new ConditionCheck
+                            {
+                                TableName = "TestTable",
+                                Key = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") }
+                                },
+                                ConditionExpression = "size(Name) > :val",
+                                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                                {
+                                    { ":val", AttributeValueFactory.CreateN("5") }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task ApplyRequestAsyncTransactWriteItemsThrowsWhenItemNotTransientForAttributeNotExists()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var itemRequestDetail = new ItemRequestDetail(itemKey, RequestAction.Put, "attribute_not_exists(Id)",
+                ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(itemRequestDetail));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Name", AttributeValueFactory.CreateS("TestName") }
+                                },
+                                ConditionExpression = "attribute_not_exists(Id)"
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task GetItemsToBackupAsyncReturnsEmptyForNonMutatingRequests()
+        {
+            var itemKey = CreateItemKey();
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Get, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var store = CreateVersionedItemStore(requestService: requestService);
+
+            var result = await store.GetItemsToBackupAsync(
+                new GetItemRequest { TableName = "TestTable", Key = new Dictionary<string, AttributeValue>() },
+                CancellationToken.None);
+
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithBinaryAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var binaryData = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Data", AttributeValueFactory.CreateB(binaryData) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithBoolAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "IsActive", AttributeValueFactory.CreateBOOL(true) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithBinarySetAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var binarySet = new List<MemoryStream>
+            {
+                new MemoryStream(new byte[] { 1, 2, 3 }),
+                new MemoryStream(new byte[] { 4, 5, 6 })
+            };
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "DataSet", AttributeValueFactory.CreateBS(binarySet) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithNumberSetAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Numbers", AttributeValueFactory.CreateNS(new List<string> { "1", "2", "3" }) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithStringSetAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Tags", AttributeValueFactory.CreateSS(new List<string> { "tag1", "tag2", "tag3" }) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithListAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Items", AttributeValueFactory.CreateL(new List<AttributeValue>
+                                    {
+                                        AttributeValueFactory.CreateS("item1"),
+                                        AttributeValueFactory.CreateN("123")
+                                    }) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithMapAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "Metadata", AttributeValueFactory.CreateM(new Dictionary<string, AttributeValue>
+                                    {
+                                        { "key1", AttributeValueFactory.CreateS("value1") },
+                                        { "key2", AttributeValueFactory.CreateN("456") }
+                                    }) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncTransactWriteItemsHandlesPutWithNullAttribute()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Put));
+
+            var requestService = new MockRequestService(
+                getItemRequestDetailsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
+                        new ItemRequestDetail(itemKey, RequestAction.Put, null,
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                });
+
+            var amazonDynamoDBKeyService = new MockAmazonDynamoDBKeyService(
+                createKeyMapAsync: (tableName, item, ct) =>
+                {
+                    return Task.FromResult(new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }.ToImmutableDictionary());
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(
+                requestService: requestService,
+                amazonDynamoDBKeyService: amazonDynamoDBKeyService,
+                amazonDynamoDB: amazonDynamoDB);
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new TransactWriteItemsRequest
+                {
+                    TransactItems = new List<TransactWriteItem>
+                    {
+                        new TransactWriteItem
+                        {
+                            Put = new Put
+                            {
+                                TableName = "TestTable",
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { "OptionalField", AttributeValueFactory.CreateNULL(true) }
+                                }
+                            }
+                        }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncGetItemRequestUsesProjectionExpression()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Get));
+
+            var itemRecord = new ItemRecord(
+                itemKey,
+                new Dictionary<string, ImmutableAttributeValue>
+                {
+                    { "Id", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("TestId")) },
+                    { "Name", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("TestName")) },
+                    { "Email", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("test@example.com")) }
+                }.ToImmutableDictionary());
+
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new GetItemRequest
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    },
+                    ProjectionExpression = "#name, Email",
+                    ExpressionAttributeNames = new Dictionary<string, string>
+                    {
+                        { "#name", "Name" }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty.Add(itemKey, itemRecord));
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            var response = (GetItemResponse)result;
+            Assert.AreEqual(2, response.Item.Count);
+            Assert.IsTrue(response.Item.ContainsKey("Name"));
+            Assert.IsTrue(response.Item.ContainsKey("Email"));
+            Assert.IsFalse(response.Item.ContainsKey("Id"));
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncGetItemRequestForDeletedItemReturnsEmpty()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Delete));
+
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new GetItemRequest
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            var response = (GetItemResponse)result;
+            Assert.AreEqual(0, response.Item.Count);
+        }
+
+        [TestMethod]
+        public async Task ApplyRequestAsyncGetItemRequestForTransientGetReturnsEmpty()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                true,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Get));
+
+            var store = CreateVersionedItemStore();
+
+            var applyRequest = new ApplyRequestRequest(
+                transaction,
+                new GetItemRequest
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", AttributeValueFactory.CreateS("TestId") }
+                    }
+                },
+                0,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty);
+
+            var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
+
+            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            var response = (GetItemResponse)result;
+            Assert.AreEqual(0, response.Item.Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(NotSupportedException))]
+        public async Task ReleaseLocksAsyncThrowsForRollbackWithoutBackupImage()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                true,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Update));
+
+            var requestService = new MockRequestService(
+                getItemRequestActionsAsync: (txn, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty.Add(
+                        new LockedItemRequestAction(itemKey, 0, RequestAction.Update)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactGetItemsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(new TransactGetItemsResponse
+                    {
+                        Responses = new List<ItemResponse>
+                        {
+                            new ItemResponse
+                            {
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { ItemAttributeName.TXID.Value, AttributeValueFactory.CreateS(transaction.Id) },
+                                    { ItemAttributeName.DATE.Value, AttributeValueFactory.CreateN(DateTime.UtcNow.Ticks.ToString()) },
+                                    { ItemAttributeName.APPLIED.Value, AttributeValueFactory.CreateS("1") }
+                                }
+                            }
+                        }
+                    });
+                });
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            await store.ReleaseLocksAsync(
+                transaction,
+                true,
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty,
+                CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ReleaseLocksAsyncHandlesRollbackWithBackupImage()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                transaction.Id,
+                DateTime.UtcNow,
+                false,
+                true,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Update));
+
+            var itemRecord = new ItemRecord(
+                itemKey,
+                new Dictionary<string, ImmutableAttributeValue>
+                {
+                    { "Id", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("TestId")) },
+                    { "Name", ImmutableAttributeValue.Create(AttributeValueFactory.CreateS("OldName")) }
+                }.ToImmutableDictionary());
+
+            var requestService = new MockRequestService(
+                getItemRequestActionsAsync: (txn, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty.Add(
+                        new LockedItemRequestAction(itemKey, 0, RequestAction.Update)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactGetItemsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(new TransactGetItemsResponse
+                    {
+                        Responses = new List<ItemResponse>
+                        {
+                            new ItemResponse
+                            {
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { ItemAttributeName.TXID.Value, AttributeValueFactory.CreateS(transaction.Id) },
+                                    { ItemAttributeName.DATE.Value, AttributeValueFactory.CreateN(DateTime.UtcNow.Ticks.ToString()) },
+                                    { ItemAttributeName.APPLIED.Value, AttributeValueFactory.CreateS("1") }
+                                }
+                            }
+                        }
+                    });
+                },
+                transactWriteItemsAsync: (req, ct) => Task.FromResult(new TransactWriteItemsResponse()));
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            await store.ReleaseLocksAsync(
+                transaction,
+                true,
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty.Add(itemKey, itemRecord),
+                CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ReleaseLocksAsyncHandlesDeleteAlreadyCarriedOut()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+
+            var requestService = new MockRequestService(
+                getItemRequestActionsAsync: (txn, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty.Add(
+                        new LockedItemRequestAction(itemKey, 0, RequestAction.Delete)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactGetItemsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(new TransactGetItemsResponse
+                    {
+                        Responses = new List<ItemResponse>
+                        {
+                            new ItemResponse
+                            {
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") },
+                                    { ItemAttributeName.TXID.Value, AttributeValueFactory.CreateS(transaction.Id) },
+                                    { ItemAttributeName.DATE.Value, AttributeValueFactory.CreateN(DateTime.UtcNow.Ticks.ToString()) }
+                                }
+                            }
+                        }
+                    });
+                },
+                transactWriteItemsAsync: (req, ct) =>
+                {
+                    Assert.AreEqual(1, req.TransactItems.Count);
+                    Assert.IsNotNull(req.TransactItems[0].Delete);
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                });
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            await store.ReleaseLocksAsync(
+                transaction,
+                false,
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty,
+                CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ReleaseLocksAsyncHandlesAlreadyCompletedOperation()
+        {
+            var transaction = CreateTransaction();
+            var itemKey = CreateItemKey();
+
+            var requestService = new MockRequestService(
+                getItemRequestActionsAsync: (txn, ct) =>
+                {
+                    return Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty.Add(
+                        new LockedItemRequestAction(itemKey, 0, RequestAction.Update)));
+                });
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactGetItemsAsync: (req, ct) =>
+                {
+                    return Task.FromResult(new TransactGetItemsResponse
+                    {
+                        Responses = new List<ItemResponse>
+                        {
+                            new ItemResponse
+                            {
+                                Item = new Dictionary<string, AttributeValue>
+                                {
+                                    { "Id", AttributeValueFactory.CreateS("TestId") }
+                                }
+                            }
+                        }
+                    });
+                },
+                transactWriteItemsAsync: (req, ct) =>
+                {
+                    Assert.AreEqual(0, req.TransactItems.Count);
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                });
+
+            var store = CreateVersionedItemStore(requestService: requestService, amazonDynamoDB: amazonDynamoDB);
+
+            await store.ReleaseLocksAsync(
+                transaction,
+                false,
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty,
+                CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ReleaseLocksAsyncFromOtherTransactionHandlesRollbackWithTransactionIdNull()
+        {
+            var transaction = CreateTransaction();
+            var owningTransactionId = new TransactionId("tx-owner");
+            var itemKey = CreateItemKey();
+            var itemTransactionState = new ItemTransactionState(
+                itemKey,
+                true,
+                null,
+                DateTime.UtcNow,
+                false,
+                false,
+                new LockedItemRequestAction(itemKey, 0, RequestAction.Update));
+
+            var amazonDynamoDB = new MockAmazonDynamoDB(
+                transactWriteItemsAsync: (req, ct) =>
+                {
+                    Assert.AreEqual(1, req.TransactItems.Count);
+                    Assert.IsNotNull(req.TransactItems[0].ConditionCheck);
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                });
+
+            var store = CreateVersionedItemStore(amazonDynamoDB: amazonDynamoDB);
+
+            await store.ReleaseLocksAsync(
+                transaction.GetId(),
+                owningTransactionId,
+                ImmutableList<ItemKey>.Empty.Add(itemKey),
+                true,
+                ImmutableDictionary<ItemKey, ItemTransactionState>.Empty.Add(itemKey, itemTransactionState),
+                ImmutableDictionary<ItemKey, ItemRecord>.Empty,
+                CancellationToken.None);
+        }
     }
 }
