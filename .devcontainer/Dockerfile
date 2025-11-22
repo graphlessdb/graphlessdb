@@ -64,6 +64,8 @@ RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
   && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
   && rm dotnet-install.sh
 
+RUN dotnet workload update
+
 # Set up non-root user
 USER node
 
