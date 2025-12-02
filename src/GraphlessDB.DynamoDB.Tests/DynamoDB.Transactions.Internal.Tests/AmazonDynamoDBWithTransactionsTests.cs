@@ -931,6 +931,410 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             var result = AmazonDynamoDBWithTransactionsTestHelper.IsSupportedConditionExpression(conditionCheck, "attribute_not_exists");
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithInvalidIsolationLevelThrows()
+        {
+            var service = CreateService();
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await Assert.ThrowsExceptionAsync<ArgumentException>(async () =>
+            {
+                await service.GetItemAsync((IsolationLevel)999, request, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task CommitTransactionAsyncWithActiveStateUpdatesTransactionToCommitting()
+        {
+            var transaction = Transaction.CreateNew();
+            var transactionUpdated = false;
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                UpdateAsyncFunc = (txn, ct) =>
+                {
+                    transactionUpdated = true;
+                    Assert.AreEqual(TransactionState.Committing, txn.State);
+                    return Task.FromResult(txn with { State = TransactionState.Committed });
+                }
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+
+            await service.CommitTransactionAsync(transaction.GetId(), CancellationToken.None);
+
+            Assert.IsTrue(transactionUpdated);
+        }
+
+        [TestMethod]
+        public async Task RollbackTransactionAsyncWithActiveStateUpdatesTransactionToRollingBack()
+        {
+            var transaction = Transaction.CreateNew();
+            var transactionUpdated = false;
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                UpdateAsyncFunc = (txn, ct) =>
+                {
+                    transactionUpdated = true;
+                    Assert.AreEqual(TransactionState.RollingBack, txn.State);
+                    return Task.FromResult(txn with { State = TransactionState.RolledBack });
+                }
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+
+            await service.RollbackTransactionAsync(transaction.GetId(), CancellationToken.None);
+
+            Assert.IsTrue(transactionUpdated);
+        }
+
+        [TestMethod]
+        public async Task CommitTransactionAsyncWithCommittedStateDoesNotThrow()
+        {
+            var transaction = Transaction.CreateNew() with { State = TransactionState.Committed };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+
+            await service.CommitTransactionAsync(transaction.GetId(), CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task RollbackTransactionAsyncWithRolledBackStateDoesNotThrow()
+        {
+            var transaction = Transaction.CreateNew() with { State = TransactionState.RolledBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+
+            await service.RollbackTransactionAsync(transaction.GetId(), CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CommitTransactionAsyncWithRolledBackStateThrowsTransactionRolledBackException()
+        {
+            var transaction = Transaction.CreateNew() with { State = TransactionState.RolledBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+
+            await Assert.ThrowsExceptionAsync<TransactionRolledBackException>(async () =>
+            {
+                await service.CommitTransactionAsync(transaction.GetId(), CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task RollbackTransactionAsyncWithCommittedStateThrowsTransactionCommittedException()
+        {
+            var transaction = Transaction.CreateNew() with { State = TransactionState.Committed };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+
+            await Assert.ThrowsExceptionAsync<TransactionCommittedException>(async () =>
+            {
+                await service.RollbackTransactionAsync(transaction.GetId(), CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncProcessesTransactions()
+        {
+            var transaction1 = Transaction.CreateNew() with { State = TransactionState.Committed };
+            var transaction2 = Transaction.CreateNew() with { State = TransactionState.RolledBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(transaction1, transaction2)),
+                TryRemoveAsyncFunc = (id, duration, ct) => Task.FromResult(true)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(2, result.Items.Count);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncDoesNotRollbackRecentActiveTransactions()
+        {
+            var recentTransaction = Transaction.CreateNew() with
+            {
+                State = TransactionState.Active,
+                LastUpdateDateTime = DateTime.UtcNow
+            };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(recentTransaction))
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(HouseKeepTransactionAction.None, result.Items[0].Action);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncHandlesCommittingStateByRollingBack()
+        {
+            var committingTransaction = Transaction.CreateNew() with { State = TransactionState.Committing };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(committingTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(committingTransaction with { State = TransactionState.RolledBack }),
+                UpdateAsyncFunc = (txn, ct) => Task.FromResult(txn with { State = TransactionState.RolledBack })
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncHandlesRollingBackStateByRollingBack()
+        {
+            var rollingBackTransaction = Transaction.CreateNew() with { State = TransactionState.RollingBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(rollingBackTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(rollingBackTransaction with { State = TransactionState.RolledBack }),
+                UpdateAsyncFunc = (txn, ct) => Task.FromResult(txn with { State = TransactionState.RolledBack })
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTransactionIdAppendsRequest()
+        {
+            var transaction = Transaction.CreateNew();
+            var appendCalled = false;
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) =>
+                {
+                    appendCalled = true;
+                    return Task.FromResult(txn);
+                }
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new PutItemResponse())
+            };
+            var service = CreateService(transactionStore: mockTransactionStore, versionedItemStore: mockVersionedItemStore);
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await service.PutItemAsync(transaction.GetId(), request, CancellationToken.None);
+
+            Assert.IsTrue(appendCalled);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTransactionIdAppendsRequest()
+        {
+            var transaction = Transaction.CreateNew();
+            var appendCalled = false;
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) =>
+                {
+                    appendCalled = true;
+                    return Task.FromResult(txn);
+                }
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new UpdateItemResponse())
+            };
+            var service = CreateService(transactionStore: mockTransactionStore, versionedItemStore: mockVersionedItemStore);
+            var request = new UpdateItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await service.UpdateItemAsync(transaction.GetId(), request, CancellationToken.None);
+
+            Assert.IsTrue(appendCalled);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTransactionIdAppendsRequest()
+        {
+            var transaction = Transaction.CreateNew();
+            var appendCalled = false;
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) =>
+                {
+                    appendCalled = true;
+                    return Task.FromResult(txn);
+                }
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new DeleteItemResponse())
+            };
+            var service = CreateService(transactionStore: mockTransactionStore, versionedItemStore: mockVersionedItemStore);
+            var request = new DeleteItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await service.DeleteItemAsync(transaction.GetId(), request, CancellationToken.None);
+
+            Assert.IsTrue(appendCalled);
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithSingleItemProcessesRequest()
+        {
+            var transaction = Transaction.CreateNew();
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new TransactWriteItemsResponse())
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            var result = await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTransactionIdProcessesRequest()
+        {
+            var transaction = Transaction.CreateNew();
+            var processRequestCalled = false;
+            var expectedItem = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) =>
+                {
+                    processRequestCalled = true;
+                    return Task.FromResult<AmazonWebServiceResponse>(new GetItemResponse { Item = expectedItem });
+                }
+            };
+            var service = CreateService(transactionStore: mockTransactionStore, versionedItemStore: mockVersionedItemStore);
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            var result = await service.GetItemAsync(transaction.GetId(), request, CancellationToken.None);
+
+            Assert.IsTrue(processRequestCalled);
+            Assert.AreEqual(expectedItem, result.Item);
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
