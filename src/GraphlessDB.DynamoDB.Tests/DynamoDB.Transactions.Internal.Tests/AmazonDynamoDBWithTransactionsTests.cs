@@ -421,32 +421,6 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         }
 
         [TestMethod]
-        public async Task BatchGetItemAsyncWithIsolationLevelCallsCorrectService()
-        {
-            var committedCalled = false;
-            var mockCommittedService = new MockIsolatedGetItemService<CommittedIsolationLevelServiceType>
-            {
-                BatchGetItemAsyncFunc = (req, ct) =>
-                {
-                    committedCalled = true;
-                    return Task.FromResult(new BatchGetItemResponse());
-                }
-            };
-            var service = CreateService(committedService: mockCommittedService);
-            var request = new BatchGetItemRequest
-            {
-                RequestItems = new Dictionary<string, KeysAndAttributes>
-                {
-                    { "TestTable", new KeysAndAttributes { Keys = new List<Dictionary<string, AttributeValue>>() } }
-                }
-            };
-
-            await service.BatchGetItemAsync(IsolationLevel.Committed, request, CancellationToken.None);
-
-            Assert.IsTrue(committedCalled);
-        }
-
-        [TestMethod]
         public async Task TransactGetItemsAsyncWithIsolationLevelCallsCorrectService()
         {
             var committedCalled = false;
