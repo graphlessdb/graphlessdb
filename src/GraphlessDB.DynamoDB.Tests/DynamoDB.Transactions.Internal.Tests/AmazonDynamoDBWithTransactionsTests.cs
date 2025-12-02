@@ -2143,6 +2143,199 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
                 service.DetermineServiceOperationEndpoint(request);
             });
         }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsEnabledUsesShortcut()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB);
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem { Put = new Put { TableName = "TestTable", Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "1" } } } } }
+                }
+            };
+
+            await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndConflictRetriesAfterProcessingConflict()
+        {
+            var callCount = 0;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        throw new TransactionCanceledException("Conflict");
+                    }
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ContainsAsyncFunc = (id, ct) => Task.FromResult(false)
+            };
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB,
+                transactionStore: mockTransactionStore);
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem { Put = new Put { TableName = "TestTable", Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "1" } } } } }
+                }
+            };
+
+            await Assert.ThrowsExceptionAsync<TransactionCanceledException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
+            });
+
+            Assert.AreEqual(1, callCount);
+        }
+
+        [TestMethod]
+        public void ValidatePutItemRequestWithConditionExpressionAndExpectedThrowsNotSupported()
+        {
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = new Dictionary<string, AttributeValue>(),
+                Expected = new Dictionary<string, ExpectedAttributeValue> { { "attr1", new ExpectedAttributeValue() } }
+            };
+
+            Assert.ThrowsException<NotSupportedException>(() =>
+            {
+                AmazonDynamoDBWithTransactionsTestHelper.ValidateRequest(request);
+            });
+        }
+
+        [TestMethod]
+        public void ValidatePutItemRequestWithConditionalOperatorThrowsNotSupported()
+        {
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = new Dictionary<string, AttributeValue>(),
+                ConditionalOperator = null
+            };
+            request.ConditionalOperator = "AND"; // Set via property
+
+            Assert.ThrowsException<NotSupportedException>(() =>
+            {
+                AmazonDynamoDBWithTransactionsTestHelper.ValidateRequest(request);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateUpdateItemRequestWithExpectedThrowsNotSupported()
+        {
+            var request = new UpdateItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "1" } } },
+                Expected = new Dictionary<string, ExpectedAttributeValue> { { "attr1", new ExpectedAttributeValue() } }
+            };
+
+            Assert.ThrowsException<NotSupportedException>(() =>
+            {
+                AmazonDynamoDBWithTransactionsTestHelper.ValidateRequest(request);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateDeleteItemRequestWithExpectedThrowsNotSupported()
+        {
+            var request = new DeleteItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "1" } } },
+                Expected = new Dictionary<string, ExpectedAttributeValue> { { "attr1", new ExpectedAttributeValue() } }
+            };
+
+            Assert.ThrowsException<NotSupportedException>(() =>
+            {
+                AmazonDynamoDBWithTransactionsTestHelper.ValidateRequest(request);
+            });
+        }
+
+        [TestMethod]
+        public void IsSupportedConditionExpressionWithMultipleKeysReturnsFalse()
+        {
+            var conditionCheck = new ConditionCheck
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    { "Id", new AttributeValue { S = "test" } },
+                    { "SortKey", new AttributeValue { S = "sk" } }
+                },
+                ConditionExpression = "attribute_not_exists(Id)"
+            };
+
+            var result = AmazonDynamoDBWithTransactionsTestHelper.IsSupportedConditionExpression(conditionCheck, "attribute_not_exists");
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task ResumeTransactionAsyncWithoutEventHandlerDoesNotInvokeHandler()
+        {
+            var transactionId = new TransactionId("test-id");
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(Transaction.CreateNew())
+            };
+            var mockEvents = new MockTransactionServiceEvents(); // No OnResumeTransactionFinishAsync set
+            var service = CreateService(transactionStore: mockTransactionStore, transactionServiceEvents: mockEvents);
+
+            var result = await service.ResumeTransactionAsync(transactionId, CancellationToken.None);
+
+            Assert.AreEqual(transactionId, result);
+        }
+
+        [TestMethod]
+        public async Task CommitTransactionAsyncWithUnexpectedStateThrowsTransactionException()
+        {
+            var transaction = Transaction.CreateNew() with { State = (TransactionState)999 };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction)
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+
+            await Assert.ThrowsExceptionAsync<TransactionException>(async () =>
+            {
+                await service.CommitTransactionAsync(transaction.GetId(), CancellationToken.None);
+            });
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
