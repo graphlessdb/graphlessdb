@@ -3029,12 +3029,8 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 getItemRequestDetailsAsync: (req, ct) =>
                 {
                     return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty.Add(
-                        new ItemRequestDetail(
-                            itemKey,
-                            RequestAction.ConditionCheck,
-                            "attribute_not_exists(Id)",
-                            ImmutableDictionary<string, string>.Empty,
-                            ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
+                        new ItemRequestDetail(itemKey, RequestAction.ConditionCheck, "attribute_not_exists(Id)",
+                            ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, ImmutableAttributeValue>.Empty)));
                 });
 
             var amazonDynamoDB = new MockAmazonDynamoDB(
