@@ -1,44 +1,56 @@
-# Implement Issue
+---
+argument-hint: [issue-number]
+description: Implement a GitHub issue
+---
 
-This command describes how to implement a GitHub issue.
+Implement a GitHub issue $1.
 
-## General Notes
+## Context
+
+- Current git status: !`git status`
+- Current git diff (staged and unstaged changes): !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Current git worktree list: !`git worktree list`
+
+## General notes
 
 - You do NOT need to ask me to proceed at any stage.
 - Carry out each implementation step in order, ensure that each step is successful before continuing to the next.
 - While carrying out the implementation steps you should maintain a temporary file listing unexpected errors arising from incorrect usage of scripts, commands and tools.  This file will be reviewed at the end of the implemenation process to correct our understanding before starting the next issue implementation.
 
-## Git Notes
+## Git notes
 
 - You will be working mainly within a git worktree.  To do this you will need to cd into the worktree folder before each execution of a script and then you will need to cd back to the original folder to reset the pwd back to what it was before.
 - git worktree: Check for existing branches before creating - use ```git worktree add <path> <existing-branch>``` if branch exists, not -b flag
 
-## GitHub Notes
+## GitHub notes
 
-- gh pr create: Must execute from within the worktree directory
-- When creating the PR ensure that the branch can be merged back to main without conflicts by pulling latest from remote
+- use gh (GitHub cli) to work with github rather than using the MCP.
+- You MUST check the current repository name using GitHub cli before getting or adding GitHub issues.
+- gh pr create: Must execute from within the worktree directory.
+- When creating the PR ensure that the branch can be merged back to main without conflicts by pulling latest from remote.
 
-## Coding Notes
+## Coding notes
 
-- Follow existing project naming conventions, use PascalCase without underscores for method names including test methods (e.g., CanGetDateTimePropertyAsString and not Can_Get_DateTime_Property_As_String)
-- Helper methods in test classes should be static when possible to follow project conventions
-- Manual mock classes are preferred over Moq framework in this project
+- Follow existing project naming conventions, use PascalCase without underscores for method names including test methods (e.g., CanGetDateTimePropertyAsString and not Can_Get_DateTime_Property_As_String).
+- Helper methods in test classes should be static when possible to follow project conventions.
+- Manual mock classes are preferred over Moq framework in this project.
 
-## Script Notes
+## Script notes
 
 - Executing scripts in a git worktree may require one "cd" before calling the script and then another "cd" after to return to the original directory.  E.g. cd /private/tmp/claude/graphlessdb-issue-164 && git pull origin main && cd /users/blah/github/graphlessdb
 - get-file-coverage.sh: Use positional argument, not environment variable - ./utils/get-file-coverage.sh "path/to/file" not FILE_PATH="path"
   ./utils/get-file-coverage.sh
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
 
-## Dotnet Notes
+## Dotnet notes
 
 - Ensure that "export MSBUILDDISABLENODEREUSE=1" is run before any using and dotnet commands to ensure the called process finishes.
 - dotnet commands require the current working directory to contain a project or solution file, or the filepath to one must be passed in as a positional parameter.  E.g. dotnet clean src/GraphlessDB.sln --nodereuse:false or dotnet build src/GraphlessDB.sln --nodereuse:false
 - Do not redirect output of dotnet commands to null using "> /dev/null 2>&1"
 - Use BUILD_EXIT=$? to check the output of dotnet commands and exit the script with an error if one had occurred
 
-## Implementation Steps
+## Your task
 
 - Ensure you are on the main git branch.
 - Ensure you have the pulled the latest from remote.
