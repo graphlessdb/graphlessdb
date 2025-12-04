@@ -27,7 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   wget \
   ca-certificates \
+  locales \
+  && sed -i '/en_GB.UTF-8/s/^# //g' /etc/locale.gen \
+  && locale-gen \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set locale to en_GB.UTF-8
+ENV LANG=en_GB.UTF-8
+ENV LC_ALL=en_GB.UTF-8
 
 # Install latest GitHub CLI from official repository
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
