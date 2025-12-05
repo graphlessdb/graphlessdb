@@ -7,7 +7,24 @@ Create an issue on GitHub for unit testing a / the type $1.
 
 ## Context
 
-- Current gh repo !`gh repo view --json nameWithOwner`
+- Current GitHub project, including project number !`gh project list --owner graphlessdb`
+- Current GitHub repository and owner !`gh repo view --json nameWithOwner`
+- GitHub cli project help !`gh project --help`
+- GitHub cli project field-list help !`gh project field-list --help`
+- GitHub cli project item-edit help !`gh project item-edit --help`
+
+## GitHub notes
+
+- use gh (GitHub cli) to work with github rather than using the MCP.
+- You MUST check the current repository name using GitHub cli before getting or adding GitHub issues.
+- gh pr create: Must execute from within the worktree directory.
+- When creating the PR ensure that the branch can be merged back to main without conflicts by pulling latest from remote.
+
+## Process to create a GitHub sub-issue
+
+- If asked to create a GitHub sub-issue then this refers to the GitHub project system way of handling sub-issues.
+- First create the sub-issue as you would a regular issue.
+- Then you must associate it with the parent by using the gh cli, use the following as a template "gh project item-edit --project-id <PROJECT_NUMBER> --id <SUB_ISSUE_ID> --field-id <PARENT_ISSUE_FIELD_ID> --text "#<PARENT_ISSUE_ID>"".  You need the project number, the sub issue id, the parent issue id and the field id.  The field id can be determined using the "gh project field-list" command with suitable arguments.  The field name could be "Parent", "Parent issue", "Parent Issue" or something similar depending on the project configuration.
 
 ## Script notes
 
@@ -22,4 +39,4 @@ Create an issue on GitHub for unit testing a / the type $1.
 - Ensure you can find the type in the codebase before proceeding to create the GitHub issue.
 - Use the get-file-coverage.sh script to determine the current code coverage for the type.
 - If you have found the type then create a suitable GitHub issue detailing the name and the path to the file relative to the root of the project and summary information about the current code coverage.
-- If the code for the type is particularly large and complex, with areas that may be hard to test then you should create additional sub-tasks for each method which lacks full code coverage.  Sub-tasks for methods should be created in order of methods deepest in the call stack first.  Sub-tasks can and should be created for private or directly inaccessible methods.
+- If the code for the type is particularly large and complex you must create a "GitHub sub-issue" using the GitHub project system, do this for each method which lacks full code coverage.  Each "GitHub sub-issue" should be dedicated to a particular well defined method, property, etc within the type such that full coverage of that area will mean that the sub-issue can be marked as complete. GitHub sub-issues should be created for private or directly inaccessible methods, not just the publicly accessible ones.
