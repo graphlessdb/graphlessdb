@@ -11,7 +11,9 @@ Implement a GitHub issue $1.
 - Current git diff (staged and unstaged changes): !`git diff HEAD`
 - Current branch: !`git branch --show-current`
 - Current git worktree list: !`git worktree list`
-- Current gh repo !`gh repo view --json nameWithOwner`
+- Current GitHub project, including project number !`gh project list --owner graphlessdb`
+- Current GitHub repository and owner !`gh repo view --json nameWithOwner`
+- GitHub cli help !`gh --help`
 
 ## General notes
 
@@ -53,10 +55,11 @@ Implement a GitHub issue $1.
 
 ## Your task
 
+- Ensure that you have executed each command under the "Context" section, they provide important context to the task. Each command is specified within an exclamation mark and quotes as follows !``.  Those symbols are not part of the command to be executed.
 - Ensure you are on the main git branch.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.
-- Run ./utils/begin-issue.sh, it should put a GitHub issue into progress and return the issue id.
+- Ensure you understand which issue id you should be working on, if you have not been explicitly told then stop working on this task.
 - Create a new git worktree under the folder /tmp/claude/ for working on the issue, use a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - Use the issue id to read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage.
 - Determine if the code under test is more suited to unit testing or integration testing.
