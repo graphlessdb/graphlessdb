@@ -4078,6 +4078,73 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
 
             Assert.IsNotNull(endpoint);
         }
+
+        [TestMethod]
+        public void IsStaleReturnsTrueWhenTransactionIsStale()
+        {
+            var staleDuration = TimeSpan.FromSeconds(10);
+            var options = new MockOptionsSnapshot<AmazonDynamoDBOptions>(new AmazonDynamoDBOptions
+            {
+                TransactionStaleDuration = staleDuration
+            });
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(options: options, amazonDynamoDB: mockDynamoDB);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("IsStale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var lastUpdateDateTime = DateTime.UtcNow - staleDuration - TimeSpan.FromSeconds(1);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, lastUpdateDateTime, []);
+
+            var result = method.Invoke(service, new object[] { transaction });
+
+            Assert.IsTrue((bool)result!);
+        }
+
+        [TestMethod]
+        public void IsStaleReturnsFalseWhenTransactionIsNotStale()
+        {
+            var staleDuration = TimeSpan.FromSeconds(10);
+            var options = new MockOptionsSnapshot<AmazonDynamoDBOptions>(new AmazonDynamoDBOptions
+            {
+                TransactionStaleDuration = staleDuration
+            });
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(options: options, amazonDynamoDB: mockDynamoDB);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("IsStale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var lastUpdateDateTime = DateTime.UtcNow - staleDuration + TimeSpan.FromSeconds(1);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, lastUpdateDateTime, []);
+
+            var result = method.Invoke(service, new object[] { transaction });
+
+            Assert.IsFalse((bool)result!);
+        }
+
+        [TestMethod]
+        public void IsStaleReturnsTrueWhenTransactionIsExactlyAtStaleDurationBoundary()
+        {
+            var staleDuration = TimeSpan.FromSeconds(10);
+            var options = new MockOptionsSnapshot<AmazonDynamoDBOptions>(new AmazonDynamoDBOptions
+            {
+                TransactionStaleDuration = staleDuration
+            });
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(options: options, amazonDynamoDB: mockDynamoDB);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("IsStale", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var currentUtcNow = DateTime.UtcNow;
+            var lastUpdateDateTime = currentUtcNow - staleDuration - TimeSpan.FromMilliseconds(100);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, lastUpdateDateTime, []);
+
+            var result = method.Invoke(service, new object[] { transaction });
+
+            Assert.IsTrue((bool)result!);
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
