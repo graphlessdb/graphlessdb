@@ -2640,6 +2640,451 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
                 await service.TransactWriteItemsAsync(request, CancellationToken.None);
             });
         }
+
+        [TestMethod]
+        public async Task BatchExecuteStatementAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchExecuteStatementAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchExecuteStatementResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new BatchExecuteStatementRequest();
+
+            await service.BatchExecuteStatementAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ExecuteStatementAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ExecuteStatementAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ExecuteStatementResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ExecuteStatementRequest();
+
+            await service.ExecuteStatementAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ExecuteTransactionAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ExecuteTransactionAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ExecuteTransactionResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ExecuteTransactionRequest();
+
+            await service.ExecuteTransactionAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchGetItemAsyncWithDictionaryOverloadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchGetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchGetItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, KeysAndAttributes>();
+
+            await service.BatchGetItemAsync(requestItems, ReturnConsumedCapacity.TOTAL, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchGetItemAsyncWithDictionaryOverload2DelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchGetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchGetItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, KeysAndAttributes>();
+
+            await service.BatchGetItemAsync(requestItems, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchWriteItemAsyncWithDictionaryOverloadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchWriteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchWriteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, List<WriteRequest>>();
+
+            await service.BatchWriteItemAsync(requestItems, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTableNameAndKeyDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+
+            await service.DeleteItemAsync("TestTable", key, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTableNameKeyAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+
+            await service.DeleteItemAsync("TestTable", key, ReturnValue.ALL_OLD, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTableNameAndKeyDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockIsolatedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+            var service = CreateService(unCommittedService: mockIsolatedService);
+            var key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+
+            await service.GetItemAsync("TestTable", key, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTableNameKeyAndConsistentReadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockIsolatedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+            var service = CreateService(unCommittedService: mockIsolatedService);
+            var key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+
+            await service.GetItemAsync("TestTable", key, true, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTableNameAndItemDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                PutItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new PutItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var item = new Dictionary<string, AttributeValue>();
+
+            await service.PutItemAsync("TestTable", item, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTableNameItemAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                PutItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new PutItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var item = new Dictionary<string, AttributeValue>();
+
+            await service.PutItemAsync("TestTable", item, ReturnValue.ALL_OLD, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAndAttributesToGetDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var attributesToGet = new List<string>();
+
+            await service.ScanAsync("TestTable", attributesToGet, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAndScanFilterDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var scanFilter = new Dictionary<string, Condition>();
+
+            await service.ScanAsync("TestTable", scanFilter, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAttributesToGetAndScanFilterDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var attributesToGet = new List<string>();
+            var scanFilter = new Dictionary<string, Condition>();
+
+            await service.ScanAsync("TestTable", attributesToGet, scanFilter, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTableNameKeyAndAttributeUpdatesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+            var attributeUpdates = new Dictionary<string, AttributeValueUpdate>();
+
+            await service.UpdateItemAsync("TestTable", key, attributeUpdates, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTableNameKeyAttributeUpdatesAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+            var attributeUpdates = new Dictionary<string, AttributeValueUpdate>();
+
+            await service.UpdateItemAsync("TestTable", key, attributeUpdates, ReturnValue.ALL_NEW, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateBackupRequest();
+
+            await service.CreateBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateGlobalTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateGlobalTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateGlobalTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateGlobalTableRequest();
+
+            await service.CreateGlobalTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithTableNameKeySchemaAttributeDefinitionsAndProvisionedThroughputDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var keySchema = new List<KeySchemaElement>();
+            var attributeDefinitions = new List<AttributeDefinition>();
+            var provisionedThroughput = new ProvisionedThroughput();
+
+            await service.CreateTableAsync("TestTable", keySchema, attributeDefinitions, provisionedThroughput, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithRequestDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateTableRequest();
+
+            await service.CreateTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DeleteBackupRequest();
+
+            await service.DeleteBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
