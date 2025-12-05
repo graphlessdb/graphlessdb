@@ -48,6 +48,46 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             public Func<CreateGlobalTableRequest, CancellationToken, Task<CreateGlobalTableResponse>> CreateGlobalTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new CreateGlobalTableResponse());
             public Func<CreateTableRequest, CancellationToken, Task<CreateTableResponse>> CreateTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new CreateTableResponse());
             public Func<DeleteBackupRequest, CancellationToken, Task<DeleteBackupResponse>> DeleteBackupAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DeleteBackupResponse());
+            public Func<DeleteTableRequest, CancellationToken, Task<DeleteTableResponse>> DeleteTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DeleteTableResponse());
+            public Func<DescribeBackupRequest, CancellationToken, Task<DescribeBackupResponse>> DescribeBackupAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeBackupResponse());
+            public Func<DescribeContinuousBackupsRequest, CancellationToken, Task<DescribeContinuousBackupsResponse>> DescribeContinuousBackupsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeContinuousBackupsResponse());
+            public Func<DescribeContributorInsightsRequest, CancellationToken, Task<DescribeContributorInsightsResponse>> DescribeContributorInsightsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeContributorInsightsResponse());
+            public Func<DescribeEndpointsRequest, CancellationToken, Task<DescribeEndpointsResponse>> DescribeEndpointsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeEndpointsResponse());
+            public Func<DescribeExportRequest, CancellationToken, Task<DescribeExportResponse>> DescribeExportAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeExportResponse());
+            public Func<DescribeGlobalTableRequest, CancellationToken, Task<DescribeGlobalTableResponse>> DescribeGlobalTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeGlobalTableResponse());
+            public Func<DescribeGlobalTableSettingsRequest, CancellationToken, Task<DescribeGlobalTableSettingsResponse>> DescribeGlobalTableSettingsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeGlobalTableSettingsResponse());
+            public Func<DescribeImportRequest, CancellationToken, Task<DescribeImportResponse>> DescribeImportAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeImportResponse());
+            public Func<DescribeKinesisStreamingDestinationRequest, CancellationToken, Task<DescribeKinesisStreamingDestinationResponse>> DescribeKinesisStreamingDestinationAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeKinesisStreamingDestinationResponse());
+            public Func<DescribeLimitsRequest, CancellationToken, Task<DescribeLimitsResponse>> DescribeLimitsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeLimitsResponse());
+            public Func<DescribeTableRequest, CancellationToken, Task<DescribeTableResponse>> DescribeTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeTableResponse());
+            public Func<DescribeTableReplicaAutoScalingRequest, CancellationToken, Task<DescribeTableReplicaAutoScalingResponse>> DescribeTableReplicaAutoScalingAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeTableReplicaAutoScalingResponse());
+            public Func<DescribeTimeToLiveRequest, CancellationToken, Task<DescribeTimeToLiveResponse>> DescribeTimeToLiveAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DescribeTimeToLiveResponse());
+            public Func<DisableKinesisStreamingDestinationRequest, CancellationToken, Task<DisableKinesisStreamingDestinationResponse>> DisableKinesisStreamingDestinationAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DisableKinesisStreamingDestinationResponse());
+            public Func<EnableKinesisStreamingDestinationRequest, CancellationToken, Task<EnableKinesisStreamingDestinationResponse>> EnableKinesisStreamingDestinationAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new EnableKinesisStreamingDestinationResponse());
+            public Func<ExportTableToPointInTimeRequest, CancellationToken, Task<ExportTableToPointInTimeResponse>> ExportTableToPointInTimeAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ExportTableToPointInTimeResponse());
+            public Func<ImportTableRequest, CancellationToken, Task<ImportTableResponse>> ImportTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ImportTableResponse());
+            public Func<ListBackupsRequest, CancellationToken, Task<ListBackupsResponse>> ListBackupsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListBackupsResponse());
+            public Func<ListContributorInsightsRequest, CancellationToken, Task<ListContributorInsightsResponse>> ListContributorInsightsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListContributorInsightsResponse());
+            public Func<ListExportsRequest, CancellationToken, Task<ListExportsResponse>> ListExportsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListExportsResponse());
+            public Func<ListGlobalTablesRequest, CancellationToken, Task<ListGlobalTablesResponse>> ListGlobalTablesAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListGlobalTablesResponse());
+            public Func<ListImportsRequest, CancellationToken, Task<ListImportsResponse>> ListImportsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListImportsResponse());
+            public Func<ListTablesRequest, CancellationToken, Task<ListTablesResponse>> ListTablesAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListTablesResponse());
+            public Func<ListTagsOfResourceRequest, CancellationToken, Task<ListTagsOfResourceResponse>> ListTagsOfResourceAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ListTagsOfResourceResponse());
+            public Func<DeleteResourcePolicyRequest, CancellationToken, Task<DeleteResourcePolicyResponse>> DeleteResourcePolicyAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DeleteResourcePolicyResponse());
+            public Func<GetResourcePolicyRequest, CancellationToken, Task<GetResourcePolicyResponse>> GetResourcePolicyAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new GetResourcePolicyResponse());
+            public Func<PutResourcePolicyRequest, CancellationToken, Task<PutResourcePolicyResponse>> PutResourcePolicyAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new PutResourcePolicyResponse());
+            public Func<RestoreTableFromBackupRequest, CancellationToken, Task<RestoreTableFromBackupResponse>> RestoreTableFromBackupAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new RestoreTableFromBackupResponse());
+            public Func<RestoreTableToPointInTimeRequest, CancellationToken, Task<RestoreTableToPointInTimeResponse>> RestoreTableToPointInTimeAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new RestoreTableToPointInTimeResponse());
+            public Func<TagResourceRequest, CancellationToken, Task<TagResourceResponse>> TagResourceAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new TagResourceResponse());
+            public Func<UntagResourceRequest, CancellationToken, Task<UntagResourceResponse>> UntagResourceAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UntagResourceResponse());
+            public Func<UpdateContinuousBackupsRequest, CancellationToken, Task<UpdateContinuousBackupsResponse>> UpdateContinuousBackupsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateContinuousBackupsResponse());
+            public Func<UpdateContributorInsightsRequest, CancellationToken, Task<UpdateContributorInsightsResponse>> UpdateContributorInsightsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateContributorInsightsResponse());
+            public Func<UpdateGlobalTableRequest, CancellationToken, Task<UpdateGlobalTableResponse>> UpdateGlobalTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateGlobalTableResponse());
+            public Func<UpdateGlobalTableSettingsRequest, CancellationToken, Task<UpdateGlobalTableSettingsResponse>> UpdateGlobalTableSettingsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateGlobalTableSettingsResponse());
+            public Func<UpdateKinesisStreamingDestinationRequest, CancellationToken, Task<UpdateKinesisStreamingDestinationResponse>> UpdateKinesisStreamingDestinationAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateKinesisStreamingDestinationResponse());
+            public Func<UpdateTableRequest, CancellationToken, Task<UpdateTableResponse>> UpdateTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateTableResponse());
+            public Func<UpdateTableReplicaAutoScalingRequest, CancellationToken, Task<UpdateTableReplicaAutoScalingResponse>> UpdateTableReplicaAutoScalingAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateTableReplicaAutoScalingResponse());
+            public Func<UpdateTimeToLiveRequest, CancellationToken, Task<UpdateTimeToLiveResponse>> UpdateTimeToLiveAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateTimeToLiveResponse());
 
             public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity, CancellationToken cancellationToken = default) => BatchGetItemAsyncFunc(new BatchGetItemRequest { RequestItems = requestItems, ReturnConsumedCapacity = returnConsumedCapacity }, cancellationToken);
             public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default) => BatchGetItemAsyncFunc(new BatchGetItemRequest { RequestItems = requestItems }, cancellationToken);
@@ -80,58 +120,58 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => CreateTableAsyncFunc(new CreateTableRequest { TableName = tableName, KeySchema = keySchema, AttributeDefinitions = attributeDefinitions, ProvisionedThroughput = provisionedThroughput }, cancellationToken);
             public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = default) => CreateTableAsyncFunc(request, cancellationToken);
             public Task<DeleteBackupResponse> DeleteBackupAsync(DeleteBackupRequest request, CancellationToken cancellationToken = default) => DeleteBackupAsyncFunc(request, cancellationToken);
-            public Task<DeleteResourcePolicyResponse> DeleteResourcePolicyAsync(DeleteResourcePolicyRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeBackupResponse> DescribeBackupAsync(DescribeBackupRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeContinuousBackupsResponse> DescribeContinuousBackupsAsync(DescribeContinuousBackupsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeContributorInsightsResponse> DescribeContributorInsightsAsync(DescribeContributorInsightsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeEndpointsResponse> DescribeEndpointsAsync(DescribeEndpointsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeExportResponse> DescribeExportAsync(DescribeExportRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeGlobalTableResponse> DescribeGlobalTableAsync(DescribeGlobalTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeGlobalTableSettingsResponse> DescribeGlobalTableSettingsAsync(DescribeGlobalTableSettingsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeImportResponse> DescribeImportAsync(DescribeImportRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeKinesisStreamingDestinationResponse> DescribeKinesisStreamingDestinationAsync(DescribeKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeLimitsResponse> DescribeLimitsAsync(DescribeLimitsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeTableResponse> DescribeTableAsync(string tableName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeTableResponse> DescribeTableAsync(DescribeTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeTableReplicaAutoScalingResponse> DescribeTableReplicaAutoScalingAsync(DescribeTableReplicaAutoScalingRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeTimeToLiveResponse> DescribeTimeToLiveAsync(string tableName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DescribeTimeToLiveResponse> DescribeTimeToLiveAsync(DescribeTimeToLiveRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Amazon.Runtime.Endpoints.Endpoint DetermineServiceOperationEndpoint(AmazonWebServiceRequest request) => throw new NotImplementedException();
-            public Task<DisableKinesisStreamingDestinationResponse> DisableKinesisStreamingDestinationAsync(DisableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            public Task<DeleteResourcePolicyResponse> DeleteResourcePolicyAsync(DeleteResourcePolicyRequest request, CancellationToken cancellationToken = default) => DeleteResourcePolicyAsyncFunc(request, cancellationToken);
+            public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = default) => DeleteTableAsyncFunc(new DeleteTableRequest { TableName = tableName }, cancellationToken);
+            public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = default) => DeleteTableAsyncFunc(request, cancellationToken);
+            public Task<DescribeBackupResponse> DescribeBackupAsync(DescribeBackupRequest request, CancellationToken cancellationToken = default) => DescribeBackupAsyncFunc(request, cancellationToken);
+            public Task<DescribeContinuousBackupsResponse> DescribeContinuousBackupsAsync(DescribeContinuousBackupsRequest request, CancellationToken cancellationToken = default) => DescribeContinuousBackupsAsyncFunc(request, cancellationToken);
+            public Task<DescribeContributorInsightsResponse> DescribeContributorInsightsAsync(DescribeContributorInsightsRequest request, CancellationToken cancellationToken = default) => DescribeContributorInsightsAsyncFunc(request, cancellationToken);
+            public Task<DescribeEndpointsResponse> DescribeEndpointsAsync(DescribeEndpointsRequest request, CancellationToken cancellationToken = default) => DescribeEndpointsAsyncFunc(request, cancellationToken);
+            public Task<DescribeExportResponse> DescribeExportAsync(DescribeExportRequest request, CancellationToken cancellationToken = default) => DescribeExportAsyncFunc(request, cancellationToken);
+            public Task<DescribeGlobalTableResponse> DescribeGlobalTableAsync(DescribeGlobalTableRequest request, CancellationToken cancellationToken = default) => DescribeGlobalTableAsyncFunc(request, cancellationToken);
+            public Task<DescribeGlobalTableSettingsResponse> DescribeGlobalTableSettingsAsync(DescribeGlobalTableSettingsRequest request, CancellationToken cancellationToken = default) => DescribeGlobalTableSettingsAsyncFunc(request, cancellationToken);
+            public Task<DescribeImportResponse> DescribeImportAsync(DescribeImportRequest request, CancellationToken cancellationToken = default) => DescribeImportAsyncFunc(request, cancellationToken);
+            public Task<DescribeKinesisStreamingDestinationResponse> DescribeKinesisStreamingDestinationAsync(DescribeKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => DescribeKinesisStreamingDestinationAsyncFunc(request, cancellationToken);
+            public Task<DescribeLimitsResponse> DescribeLimitsAsync(DescribeLimitsRequest request, CancellationToken cancellationToken = default) => DescribeLimitsAsyncFunc(request, cancellationToken);
+            public Task<DescribeTableResponse> DescribeTableAsync(string tableName, CancellationToken cancellationToken = default) => DescribeTableAsyncFunc(new DescribeTableRequest { TableName = tableName }, cancellationToken);
+            public Task<DescribeTableResponse> DescribeTableAsync(DescribeTableRequest request, CancellationToken cancellationToken = default) => DescribeTableAsyncFunc(request, cancellationToken);
+            public Task<DescribeTableReplicaAutoScalingResponse> DescribeTableReplicaAutoScalingAsync(DescribeTableReplicaAutoScalingRequest request, CancellationToken cancellationToken = default) => DescribeTableReplicaAutoScalingAsyncFunc(request, cancellationToken);
+            public Task<DescribeTimeToLiveResponse> DescribeTimeToLiveAsync(string tableName, CancellationToken cancellationToken = default) => DescribeTimeToLiveAsyncFunc(new DescribeTimeToLiveRequest { TableName = tableName }, cancellationToken);
+            public Task<DescribeTimeToLiveResponse> DescribeTimeToLiveAsync(DescribeTimeToLiveRequest request, CancellationToken cancellationToken = default) => DescribeTimeToLiveAsyncFunc(request, cancellationToken);
+            public Amazon.Runtime.Endpoints.Endpoint DetermineServiceOperationEndpoint(AmazonWebServiceRequest request) => new Amazon.Runtime.Endpoints.Endpoint("https://dynamodb.us-east-1.amazonaws.com");
+            public Task<DisableKinesisStreamingDestinationResponse> DisableKinesisStreamingDestinationAsync(DisableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => DisableKinesisStreamingDestinationAsyncFunc(request, cancellationToken);
             public void Dispose() { }
-            public Task<EnableKinesisStreamingDestinationResponse> EnableKinesisStreamingDestinationAsync(EnableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            public Task<EnableKinesisStreamingDestinationResponse> EnableKinesisStreamingDestinationAsync(EnableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => EnableKinesisStreamingDestinationAsyncFunc(request, cancellationToken);
             public Task<ExecuteStatementResponse> ExecuteStatementAsync(ExecuteStatementRequest request, CancellationToken cancellationToken = default) => ExecuteStatementAsyncFunc(request, cancellationToken);
             public Task<ExecuteTransactionResponse> ExecuteTransactionAsync(ExecuteTransactionRequest request, CancellationToken cancellationToken = default) => ExecuteTransactionAsyncFunc(request, cancellationToken);
-            public Task<ExportTableToPointInTimeResponse> ExportTableToPointInTimeAsync(ExportTableToPointInTimeRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<GetResourcePolicyResponse> GetResourcePolicyAsync(GetResourcePolicyRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ImportTableResponse> ImportTableAsync(ImportTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListBackupsResponse> ListBackupsAsync(ListBackupsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListContributorInsightsResponse> ListContributorInsightsAsync(ListContributorInsightsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListExportsResponse> ListExportsAsync(ListExportsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListGlobalTablesResponse> ListGlobalTablesAsync(ListGlobalTablesRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListImportsResponse> ListImportsAsync(ListImportsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, int limit, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTablesResponse> ListTablesAsync(int limit, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTablesResponse> ListTablesAsync(ListTablesRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ListTagsOfResourceResponse> ListTagsOfResourceAsync(ListTagsOfResourceRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<PutResourcePolicyResponse> PutResourcePolicyAsync(PutResourcePolicyRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<RestoreTableFromBackupResponse> RestoreTableFromBackupAsync(RestoreTableFromBackupRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<RestoreTableToPointInTimeResponse> RestoreTableToPointInTimeAsync(RestoreTableToPointInTimeRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<TagResourceResponse> TagResourceAsync(TagResourceRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UntagResourceResponse> UntagResourceAsync(UntagResourceRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateContinuousBackupsResponse> UpdateContinuousBackupsAsync(UpdateContinuousBackupsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateContributorInsightsResponse> UpdateContributorInsightsAsync(UpdateContributorInsightsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateGlobalTableResponse> UpdateGlobalTableAsync(UpdateGlobalTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateGlobalTableSettingsResponse> UpdateGlobalTableSettingsAsync(UpdateGlobalTableSettingsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateKinesisStreamingDestinationResponse> UpdateKinesisStreamingDestinationAsync(UpdateKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateTableResponse> UpdateTableAsync(string tableName, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateTableResponse> UpdateTableAsync(UpdateTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateTableReplicaAutoScalingResponse> UpdateTableReplicaAutoScalingAsync(UpdateTableReplicaAutoScalingRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<UpdateTimeToLiveResponse> UpdateTimeToLiveAsync(UpdateTimeToLiveRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            public Task<ExportTableToPointInTimeResponse> ExportTableToPointInTimeAsync(ExportTableToPointInTimeRequest request, CancellationToken cancellationToken = default) => ExportTableToPointInTimeAsyncFunc(request, cancellationToken);
+            public Task<GetResourcePolicyResponse> GetResourcePolicyAsync(GetResourcePolicyRequest request, CancellationToken cancellationToken = default) => GetResourcePolicyAsyncFunc(request, cancellationToken);
+            public Task<ImportTableResponse> ImportTableAsync(ImportTableRequest request, CancellationToken cancellationToken = default) => ImportTableAsyncFunc(request, cancellationToken);
+            public Task<ListBackupsResponse> ListBackupsAsync(ListBackupsRequest request, CancellationToken cancellationToken = default) => ListBackupsAsyncFunc(request, cancellationToken);
+            public Task<ListContributorInsightsResponse> ListContributorInsightsAsync(ListContributorInsightsRequest request, CancellationToken cancellationToken = default) => ListContributorInsightsAsyncFunc(request, cancellationToken);
+            public Task<ListExportsResponse> ListExportsAsync(ListExportsRequest request, CancellationToken cancellationToken = default) => ListExportsAsyncFunc(request, cancellationToken);
+            public Task<ListGlobalTablesResponse> ListGlobalTablesAsync(ListGlobalTablesRequest request, CancellationToken cancellationToken = default) => ListGlobalTablesAsyncFunc(request, cancellationToken);
+            public Task<ListImportsResponse> ListImportsAsync(ListImportsRequest request, CancellationToken cancellationToken = default) => ListImportsAsyncFunc(request, cancellationToken);
+            public Task<ListTablesResponse> ListTablesAsync(CancellationToken cancellationToken = default) => ListTablesAsyncFunc(new ListTablesRequest(), cancellationToken);
+            public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, CancellationToken cancellationToken = default) => ListTablesAsyncFunc(new ListTablesRequest { ExclusiveStartTableName = exclusiveStartTableName }, cancellationToken);
+            public Task<ListTablesResponse> ListTablesAsync(string exclusiveStartTableName, int limit, CancellationToken cancellationToken = default) => ListTablesAsyncFunc(new ListTablesRequest { ExclusiveStartTableName = exclusiveStartTableName, Limit = limit }, cancellationToken);
+            public Task<ListTablesResponse> ListTablesAsync(int limit, CancellationToken cancellationToken = default) => ListTablesAsyncFunc(new ListTablesRequest { Limit = limit }, cancellationToken);
+            public Task<ListTablesResponse> ListTablesAsync(ListTablesRequest request, CancellationToken cancellationToken = default) => ListTablesAsyncFunc(request, cancellationToken);
+            public Task<ListTagsOfResourceResponse> ListTagsOfResourceAsync(ListTagsOfResourceRequest request, CancellationToken cancellationToken = default) => ListTagsOfResourceAsyncFunc(request, cancellationToken);
+            public Task<PutResourcePolicyResponse> PutResourcePolicyAsync(PutResourcePolicyRequest request, CancellationToken cancellationToken = default) => PutResourcePolicyAsyncFunc(request, cancellationToken);
+            public Task<RestoreTableFromBackupResponse> RestoreTableFromBackupAsync(RestoreTableFromBackupRequest request, CancellationToken cancellationToken = default) => RestoreTableFromBackupAsyncFunc(request, cancellationToken);
+            public Task<RestoreTableToPointInTimeResponse> RestoreTableToPointInTimeAsync(RestoreTableToPointInTimeRequest request, CancellationToken cancellationToken = default) => RestoreTableToPointInTimeAsyncFunc(request, cancellationToken);
+            public Task<TagResourceResponse> TagResourceAsync(TagResourceRequest request, CancellationToken cancellationToken = default) => TagResourceAsyncFunc(request, cancellationToken);
+            public Task<UntagResourceResponse> UntagResourceAsync(UntagResourceRequest request, CancellationToken cancellationToken = default) => UntagResourceAsyncFunc(request, cancellationToken);
+            public Task<UpdateContinuousBackupsResponse> UpdateContinuousBackupsAsync(UpdateContinuousBackupsRequest request, CancellationToken cancellationToken = default) => UpdateContinuousBackupsAsyncFunc(request, cancellationToken);
+            public Task<UpdateContributorInsightsResponse> UpdateContributorInsightsAsync(UpdateContributorInsightsRequest request, CancellationToken cancellationToken = default) => UpdateContributorInsightsAsyncFunc(request, cancellationToken);
+            public Task<UpdateGlobalTableResponse> UpdateGlobalTableAsync(UpdateGlobalTableRequest request, CancellationToken cancellationToken = default) => UpdateGlobalTableAsyncFunc(request, cancellationToken);
+            public Task<UpdateGlobalTableSettingsResponse> UpdateGlobalTableSettingsAsync(UpdateGlobalTableSettingsRequest request, CancellationToken cancellationToken = default) => UpdateGlobalTableSettingsAsyncFunc(request, cancellationToken);
+            public Task<UpdateKinesisStreamingDestinationResponse> UpdateKinesisStreamingDestinationAsync(UpdateKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => UpdateKinesisStreamingDestinationAsyncFunc(request, cancellationToken);
+            public Task<UpdateTableResponse> UpdateTableAsync(string tableName, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => UpdateTableAsyncFunc(new UpdateTableRequest { TableName = tableName, ProvisionedThroughput = provisionedThroughput }, cancellationToken);
+            public Task<UpdateTableResponse> UpdateTableAsync(UpdateTableRequest request, CancellationToken cancellationToken = default) => UpdateTableAsyncFunc(request, cancellationToken);
+            public Task<UpdateTableReplicaAutoScalingResponse> UpdateTableReplicaAutoScalingAsync(UpdateTableReplicaAutoScalingRequest request, CancellationToken cancellationToken = default) => UpdateTableReplicaAutoScalingAsyncFunc(request, cancellationToken);
+            public Task<UpdateTimeToLiveResponse> UpdateTimeToLiveAsync(UpdateTimeToLiveRequest request, CancellationToken cancellationToken = default) => UpdateTimeToLiveAsyncFunc(request, cancellationToken);
         }
 
         private sealed class MockTransactionStore : ITransactionStore
@@ -2104,18 +2144,6 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         }
 
         [TestMethod]
-        public void DetermineServiceOperationEndpointThrowsNotImplementedException()
-        {
-            var service = CreateService();
-            var request = new GetItemRequest();
-
-            Assert.ThrowsException<NotImplementedException>(() =>
-            {
-                service.DetermineServiceOperationEndpoint(request);
-            });
-        }
-
-        [TestMethod]
         public async Task TransactWriteItemsAsyncWithQuickTransactionsEnabledUsesShortcut()
         {
             var called = false;
@@ -2639,6 +2667,1416 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             {
                 await service.TransactWriteItemsAsync(request, CancellationToken.None);
             });
+        }
+
+        [TestMethod]
+        public async Task BatchExecuteStatementAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchExecuteStatementAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchExecuteStatementResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new BatchExecuteStatementRequest();
+
+            await service.BatchExecuteStatementAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ExecuteStatementAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ExecuteStatementAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ExecuteStatementResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ExecuteStatementRequest();
+
+            await service.ExecuteStatementAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ExecuteTransactionAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ExecuteTransactionAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ExecuteTransactionResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ExecuteTransactionRequest();
+
+            await service.ExecuteTransactionAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchGetItemAsyncWithDictionaryOverloadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchGetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchGetItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, KeysAndAttributes>();
+
+            await service.BatchGetItemAsync(requestItems, ReturnConsumedCapacity.TOTAL, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchGetItemAsyncWithDictionaryOverload2DelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchGetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchGetItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, KeysAndAttributes>();
+
+            await service.BatchGetItemAsync(requestItems, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task BatchWriteItemAsyncWithDictionaryOverloadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                BatchWriteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new BatchWriteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var requestItems = new Dictionary<string, List<WriteRequest>>();
+
+            await service.BatchWriteItemAsync(requestItems, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTableNameAndKeyDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+
+            await service.DeleteItemAsync("TestTable", key, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTableNameKeyAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+
+            await service.DeleteItemAsync("TestTable", key, ReturnValue.ALL_OLD, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTableNameAndKeyDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockIsolatedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+            var service = CreateService(unCommittedService: mockIsolatedService);
+            var key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+
+            await service.GetItemAsync("TestTable", key, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTableNameKeyAndConsistentReadDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockIsolatedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+            var service = CreateService(unCommittedService: mockIsolatedService);
+            var key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+
+            await service.GetItemAsync("TestTable", key, true, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTableNameAndItemDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                PutItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new PutItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var item = new Dictionary<string, AttributeValue>();
+
+            await service.PutItemAsync("TestTable", item, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTableNameItemAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                PutItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new PutItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var item = new Dictionary<string, AttributeValue>();
+
+            await service.PutItemAsync("TestTable", item, ReturnValue.ALL_OLD, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAndAttributesToGetDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var attributesToGet = new List<string>();
+
+            await service.ScanAsync("TestTable", attributesToGet, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAndScanFilterDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var scanFilter = new Dictionary<string, Condition>();
+
+            await service.ScanAsync("TestTable", scanFilter, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ScanAsyncWithTableNameAttributesToGetAndScanFilterDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ScanAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ScanResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var attributesToGet = new List<string>();
+            var scanFilter = new Dictionary<string, Condition>();
+
+            await service.ScanAsync("TestTable", attributesToGet, scanFilter, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTableNameKeyAndAttributeUpdatesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+            var attributeUpdates = new Dictionary<string, AttributeValueUpdate>();
+
+            await service.UpdateItemAsync("TestTable", key, attributeUpdates, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTableNameKeyAttributeUpdatesAndReturnValuesDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateItemAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateItemResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var key = new Dictionary<string, AttributeValue>();
+            var attributeUpdates = new Dictionary<string, AttributeValueUpdate>();
+
+            await service.UpdateItemAsync("TestTable", key, attributeUpdates, ReturnValue.ALL_NEW, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateBackupRequest();
+
+            await service.CreateBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateGlobalTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateGlobalTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateGlobalTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateGlobalTableRequest();
+
+            await service.CreateGlobalTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithTableNameKeySchemaAttributeDefinitionsAndProvisionedThroughputDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var keySchema = new List<KeySchemaElement>();
+            var attributeDefinitions = new List<AttributeDefinition>();
+            var provisionedThroughput = new ProvisionedThroughput();
+
+            await service.CreateTableAsync("TestTable", keySchema, attributeDefinitions, provisionedThroughput, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithRequestDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                CreateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new CreateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new CreateTableRequest();
+
+            await service.CreateTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DeleteBackupRequest();
+
+            await service.DeleteBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DeleteTableRequest();
+
+            await service.DeleteTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeBackupRequest();
+
+            await service.DescribeBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeContinuousBackupsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeContinuousBackupsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeContinuousBackupsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeContinuousBackupsRequest();
+
+            await service.DescribeContinuousBackupsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeContributorInsightsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeContributorInsightsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeContributorInsightsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeContributorInsightsRequest();
+
+            await service.DescribeContributorInsightsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeEndpointsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeEndpointsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeEndpointsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeEndpointsRequest();
+
+            await service.DescribeEndpointsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeExportAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeExportAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeExportResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeExportRequest();
+
+            await service.DescribeExportAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeGlobalTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeGlobalTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeGlobalTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeGlobalTableRequest();
+
+            await service.DescribeGlobalTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeGlobalTableSettingsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeGlobalTableSettingsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeGlobalTableSettingsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeGlobalTableSettingsRequest();
+
+            await service.DescribeGlobalTableSettingsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeImportAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeImportAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeImportResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeImportRequest();
+
+            await service.DescribeImportAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeKinesisStreamingDestinationAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeKinesisStreamingDestinationAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeKinesisStreamingDestinationResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeKinesisStreamingDestinationRequest();
+
+            await service.DescribeKinesisStreamingDestinationAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeLimitsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeLimitsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeLimitsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeLimitsRequest();
+
+            await service.DescribeLimitsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeTableRequest();
+
+            await service.DescribeTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeTableReplicaAutoScalingAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeTableReplicaAutoScalingAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeTableReplicaAutoScalingResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeTableReplicaAutoScalingRequest();
+
+            await service.DescribeTableReplicaAutoScalingAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeTimeToLiveAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeTimeToLiveAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeTimeToLiveResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DescribeTimeToLiveRequest();
+
+            await service.DescribeTimeToLiveAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DisableKinesisStreamingDestinationAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DisableKinesisStreamingDestinationAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DisableKinesisStreamingDestinationResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DisableKinesisStreamingDestinationRequest();
+
+            await service.DisableKinesisStreamingDestinationAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task EnableKinesisStreamingDestinationAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                EnableKinesisStreamingDestinationAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new EnableKinesisStreamingDestinationResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new EnableKinesisStreamingDestinationRequest();
+
+            await service.EnableKinesisStreamingDestinationAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ExportTableToPointInTimeAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ExportTableToPointInTimeAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ExportTableToPointInTimeResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ExportTableToPointInTimeRequest();
+
+            await service.ExportTableToPointInTimeAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteResourcePolicyAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteResourcePolicyAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteResourcePolicyResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new DeleteResourcePolicyRequest();
+
+            await service.DeleteResourcePolicyAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task GetResourcePolicyAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                GetResourcePolicyAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new GetResourcePolicyResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new GetResourcePolicyRequest();
+
+            await service.GetResourcePolicyAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task PutResourcePolicyAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                PutResourcePolicyAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new PutResourcePolicyResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new PutResourcePolicyRequest();
+
+            await service.PutResourcePolicyAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ImportTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ImportTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ImportTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ImportTableRequest();
+
+            await service.ImportTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListBackupsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListBackupsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListBackupsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListBackupsRequest();
+
+            await service.ListBackupsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListContributorInsightsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListContributorInsightsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListContributorInsightsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListContributorInsightsRequest();
+
+            await service.ListContributorInsightsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListExportsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListExportsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListExportsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListExportsRequest();
+
+            await service.ListExportsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListGlobalTablesAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListGlobalTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListGlobalTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListGlobalTablesRequest();
+
+            await service.ListGlobalTablesAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListImportsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListImportsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListImportsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListImportsRequest();
+
+            await service.ListImportsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTablesAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListTablesRequest();
+
+            await service.ListTablesAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTagsOfResourceAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTagsOfResourceAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTagsOfResourceResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new ListTagsOfResourceRequest();
+
+            await service.ListTagsOfResourceAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task RestoreTableFromBackupAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                RestoreTableFromBackupAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new RestoreTableFromBackupResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new RestoreTableFromBackupRequest();
+
+            await service.RestoreTableFromBackupAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task RestoreTableToPointInTimeAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                RestoreTableToPointInTimeAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new RestoreTableToPointInTimeResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new RestoreTableToPointInTimeRequest();
+
+            await service.RestoreTableToPointInTimeAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task TagResourceAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TagResourceAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new TagResourceResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new TagResourceRequest();
+
+            await service.TagResourceAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UntagResourceAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UntagResourceAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UntagResourceResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UntagResourceRequest();
+
+            await service.UntagResourceAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateContinuousBackupsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateContinuousBackupsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateContinuousBackupsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateContinuousBackupsRequest();
+
+            await service.UpdateContinuousBackupsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateContributorInsightsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateContributorInsightsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateContributorInsightsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateContributorInsightsRequest();
+
+            await service.UpdateContributorInsightsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateGlobalTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateGlobalTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateGlobalTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateGlobalTableRequest();
+
+            await service.UpdateGlobalTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateGlobalTableSettingsAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateGlobalTableSettingsAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateGlobalTableSettingsResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateGlobalTableSettingsRequest();
+
+            await service.UpdateGlobalTableSettingsAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateKinesisStreamingDestinationAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateKinesisStreamingDestinationAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateKinesisStreamingDestinationResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateKinesisStreamingDestinationRequest();
+
+            await service.UpdateKinesisStreamingDestinationAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateTableAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateTableRequest();
+
+            await service.UpdateTableAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateTableReplicaAutoScalingAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateTableReplicaAutoScalingAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateTableReplicaAutoScalingResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateTableReplicaAutoScalingRequest();
+
+            await service.UpdateTableReplicaAutoScalingAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateTimeToLiveAsyncDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateTimeToLiveAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateTimeToLiveResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new UpdateTimeToLiveRequest();
+
+            await service.UpdateTimeToLiveAsync(request, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTablesAsyncWithNoParametersDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ListTablesAsync(CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTablesAsyncWithExclusiveStartTableNameDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ListTablesAsync("StartTable", CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTablesAsyncWithLimitDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ListTablesAsync(10, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task ListTablesAsyncWithExclusiveStartTableNameAndLimitDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                ListTablesAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new ListTablesResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ListTablesAsync("StartTable", 10, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DeleteTableAsyncWithTableNameDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DeleteTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DeleteTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.DeleteTableAsync("TestTable", CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeTableAsyncWithTableNameDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.DescribeTableAsync("TestTable", CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task DescribeTimeToLiveAsyncWithTableNameDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                DescribeTimeToLiveAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new DescribeTimeToLiveResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.DescribeTimeToLiveAsync("TestTable", CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public async Task UpdateTableAsyncWithTableNameAndProvisionedThroughputDelegatesToUnderlyingClient()
+        {
+            var called = false;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                UpdateTableAsyncFunc = (req, ct) =>
+                {
+                    called = true;
+                    return Task.FromResult(new UpdateTableResponse());
+                }
+            };
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var provisionedThroughput = new ProvisionedThroughput();
+
+            await service.UpdateTableAsync("TestTable", provisionedThroughput, CancellationToken.None);
+
+            Assert.IsTrue(called);
+        }
+
+        [TestMethod]
+        public void DetermineServiceOperationEndpointReturnsEndpoint()
+        {
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+            var request = new GetItemRequest();
+
+            var endpoint = service.DetermineServiceOperationEndpoint(request);
+
+            Assert.IsNotNull(endpoint);
         }
     }
 
