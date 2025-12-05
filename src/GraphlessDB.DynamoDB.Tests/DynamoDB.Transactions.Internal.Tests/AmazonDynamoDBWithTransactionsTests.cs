@@ -4723,6 +4723,399 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             Assert.IsNotNull(capturedRequest);
             Assert.IsInstanceOfType(capturedRequest, typeof(TransactWriteItemsRequest));
         }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncReturnsNullWhenNoConditionalCheckFailedReasons()
+        {
+            var transactionId = new TransactionId("test-id");
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRequestDetail>.Empty)
+            };
+            var service = CreateService(requestService: mockRequestService);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "None" },
+                new CancellationReason { Code = "ItemCollectionSizeLimitExceeded" }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncReturnsNullWhenNoConflictedItems()
+        {
+            var transactionId = new TransactionId("test-id");
+            var itemKey = ItemKey.Create("TestTable", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail = new ItemRequestDetail(
+                itemKey,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) => new ItemResponseAndTransactionState<ItemRecord>(
+                    new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                    new TransactionStateValue(true, null, DateTime.UtcNow, false, false))
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncReturnsExceptionWithSingleConflictedItem()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId = "conflicting-txn-id";
+            var itemKey = ItemKey.Create("TestTable", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail = new ItemRequestDetail(
+                itemKey,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) => new ItemResponseAndTransactionState<ItemRecord>(
+                    new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                    new TransactionStateValue(true, conflictingTransactionId, DateTime.UtcNow, false, false))
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(transactionId.Id, result.Id);
+            Assert.AreEqual(1, result.ConflictingItems.Count);
+            Assert.AreEqual(conflictingTransactionId, result.ConflictingItems[0].TransactionStateValue.TransactionId);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncReturnsExceptionWithMultipleConflictedItems()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId1 = "conflicting-txn-id-1";
+            var conflictingTransactionId2 = "conflicting-txn-id-2";
+            var itemKey1 = ItemKey.Create("TestTable1", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemKey2 = ItemKey.Create("TestTable2", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail1 = new ItemRequestDetail(
+                itemKey1,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var itemRequestDetail2 = new ItemRequestDetail(
+                itemKey2,
+                RequestAction.Update,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail1, itemRequestDetail2))
+            };
+            var callCount = 0;
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) =>
+                {
+                    callCount++;
+                    var txnId = callCount == 1 ? conflictingTransactionId1 : conflictingTransactionId2;
+                    return new ItemResponseAndTransactionState<ItemRecord>(
+                        new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                        new TransactionStateValue(true, txnId, DateTime.UtcNow, false, false));
+                }
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() },
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(transactionId.Id, result.Id);
+            Assert.AreEqual(2, result.ConflictingItems.Count);
+            Assert.AreEqual(conflictingTransactionId1, result.ConflictingItems[0].TransactionStateValue.TransactionId);
+            Assert.AreEqual(conflictingTransactionId2, result.ConflictingItems[1].TransactionStateValue.TransactionId);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncFiltersMixedCancellationReasons()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId = "conflicting-txn-id";
+            var itemKey1 = ItemKey.Create("TestTable1", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemKey2 = ItemKey.Create("TestTable2", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemKey3 = ItemKey.Create("TestTable3", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail1 = new ItemRequestDetail(
+                itemKey1,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var itemRequestDetail2 = new ItemRequestDetail(
+                itemKey2,
+                RequestAction.Update,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var itemRequestDetail3 = new ItemRequestDetail(
+                itemKey3,
+                RequestAction.Delete,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail1, itemRequestDetail2, itemRequestDetail3))
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) => new ItemResponseAndTransactionState<ItemRecord>(
+                    new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                    new TransactionStateValue(true, conflictingTransactionId, DateTime.UtcNow, false, false))
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() },
+                new CancellationReason { Code = "None" },
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(transactionId.Id, result.Id);
+            Assert.AreEqual(2, result.ConflictingItems.Count);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncFiltersMixedConflictedAndNonConflictedItems()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId = "conflicting-txn-id";
+            var itemKey1 = ItemKey.Create("TestTable1", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemKey2 = ItemKey.Create("TestTable2", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail1 = new ItemRequestDetail(
+                itemKey1,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var itemRequestDetail2 = new ItemRequestDetail(
+                itemKey2,
+                RequestAction.Update,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail1, itemRequestDetail2))
+            };
+            var callCount = 0;
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) =>
+                {
+                    callCount++;
+                    var txnId = callCount == 1 ? conflictingTransactionId : null;
+                    return new ItemResponseAndTransactionState<ItemRecord>(
+                        new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                        new TransactionStateValue(true, txnId, DateTime.UtcNow, false, false));
+                }
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() },
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(transactionId.Id, result.Id);
+            Assert.AreEqual(1, result.ConflictingItems.Count);
+            Assert.AreEqual(conflictingTransactionId, result.ConflictingItems[0].TransactionStateValue.TransactionId);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncCorrectlyMapsItemKeysFromCancellationReasons()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId = "conflicting-txn-id";
+            var itemKey = ItemKey.Create("TestTable", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail = new ItemRequestDetail(
+                itemKey,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) => new ItemResponseAndTransactionState<ItemRecord>(
+                    new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                    new TransactionStateValue(true, conflictingTransactionId, DateTime.UtcNow, false, false))
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.ConflictingItems.Count);
+            Assert.AreEqual(itemKey, result.ConflictingItems[0].ItemKey);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncCreatesCorrectTransactionConflictItemInstances()
+        {
+            var transactionId = new TransactionId("test-id");
+            var conflictingTransactionId = "conflicting-txn-id";
+            var lastUpdatedDate = DateTime.UtcNow;
+            var itemKey = ItemKey.Create("TestTable", ImmutableDictionary<string, AttributeValue>.Empty);
+            var itemRequestDetail = new ItemRequestDetail(
+                itemKey,
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) => new ItemResponseAndTransactionState<ItemRecord>(
+                    new ItemRecord(key, ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                    new TransactionStateValue(true, conflictingTransactionId, lastUpdatedDate, false, false))
+            };
+            var service = CreateService(requestService: mockRequestService, versionedItemStore: mockVersionedItemStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason { Code = "ConditionalCheckFailed", Item = new Dictionary<string, AttributeValue>() }
+            };
+            var request = new TransactWriteItemsRequest();
+
+            var result = await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.ConflictingItems.Count);
+            var conflictItem = result.ConflictingItems[0];
+            Assert.AreEqual(itemKey, conflictItem.ItemKey);
+            Assert.AreEqual(itemKey, conflictItem.ItemRecord.Key);
+            Assert.AreEqual(conflictingTransactionId, conflictItem.TransactionStateValue.TransactionId);
+            Assert.AreEqual(lastUpdatedDate, conflictItem.TransactionStateValue.LastUpdatedDate);
+        }
+
+        [TestMethod]
+        public async Task TryGetTransactionConflictedExceptionAsyncPropagatesCancellationToken()
+        {
+            var transactionId = new TransactionId("test-id");
+            var cancellationTokenPassed = false;
+            using var cts = new CancellationTokenSource();
+            var expectedToken = cts.Token;
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) =>
+                {
+                    cancellationTokenPassed = ct == expectedToken;
+                    return Task.FromResult(ImmutableList<ItemRequestDetail>.Empty);
+                }
+            };
+            var service = CreateService(requestService: mockRequestService);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("TryGetTransactionConflictedExceptionAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var exception = new TransactionCanceledException("Transaction cancelled");
+            exception.CancellationReasons = new List<CancellationReason>();
+            var request = new TransactWriteItemsRequest();
+
+            await (Task<TransactionConflictedException?>)method.Invoke(service, new object[] { transactionId, exception, request, expectedToken })!;
+
+            Assert.IsTrue(cancellationTokenPassed);
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
