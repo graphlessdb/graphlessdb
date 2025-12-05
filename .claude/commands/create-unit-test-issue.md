@@ -24,7 +24,7 @@ Create an issue on GitHub for unit testing a / the type $1.
 
 - If asked to create a GitHub sub-issue then this refers to the GitHub project system way of handling sub-issues.
 - First create the sub-issue as you would a regular issue.
-- Then you must associate it with the parent by using the gh cli, use the following as a template "gh project item-edit --project-id <PROJECT_NUMBER> --id <SUB_ISSUE_ID> --field-id <PARENT_ISSUE_FIELD_ID> --text "#<PARENT_ISSUE_ID>"".  You need the project number, the sub issue id, the parent issue id and the field id.  The field id can be determined using the "gh project field-list" command with suitable arguments.  The field name could be "Parent", "Parent issue", "Parent Issue" or something similar depending on the project configuration.
+- Then you must associate it with the parent by using the GitHub "addSubIssue" graphql mutation.
 
 ## Script notes
 
