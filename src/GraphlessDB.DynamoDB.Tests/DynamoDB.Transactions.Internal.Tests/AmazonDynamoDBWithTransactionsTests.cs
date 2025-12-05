@@ -4370,6 +4370,238 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         }
 
         [TestMethod]
+        public async Task GetItemImagesAsyncWithEmptyTransactionReturnsEmptyList()
+        {
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty)
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, []);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithSingleRequestReturnsItemImages()
+        {
+            var key1 = ItemKey.Create("Table1", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item1" } } }.ToImmutableDictionary());
+            var itemRecord1 = new ItemRecord(key1, ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    if (version.Version == 1)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1));
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(key1, result[0].Key);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithMultipleRequestsReturnsAllItemImages()
+        {
+            var key1 = ItemKey.Create("Table1", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item1" } } }.ToImmutableDictionary());
+            var key2 = ItemKey.Create("Table2", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item2" } } }.ToImmutableDictionary());
+            var itemRecord1 = new ItemRecord(key1, ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var itemRecord2 = new ItemRecord(key2, ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    if (version.Version == 1)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1));
+                    if (version.Version == 2)
+                        return Task.FromResult(ImmutableList.Create(itemRecord2));
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var request2 = new RequestRecord(2, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1, request2]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Count);
+            Assert.IsTrue(result.Any(r => r.Key == key1));
+            Assert.IsTrue(result.Any(r => r.Key == key2));
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithDuplicateKeysReturnsFirstImagePerKey()
+        {
+            var key1 = ItemKey.Create("Table1", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item1" } } }.ToImmutableDictionary());
+            var itemRecord1a = new ItemRecord(key1, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "first" }) } }.ToImmutableDictionary());
+            var itemRecord1b = new ItemRecord(key1, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "second" }) } }.ToImmutableDictionary());
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    if (version.Version == 1)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1a, itemRecord1b));
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(key1, result[0].Key);
+            Assert.AreEqual("first", result[0].AttributeValues["Version"].S);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithRequestsWithoutImagesReturnsEmptyList()
+        {
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty)
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var request2 = new RequestRecord(2, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1, request2]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithMixedScenarioReturnsOnlyItemsWithImages()
+        {
+            var key1 = ItemKey.Create("Table1", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item1" } } }.ToImmutableDictionary());
+            var itemRecord1 = new ItemRecord(key1, ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    if (version.Version == 1)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1));
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var request2 = new RequestRecord(2, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1, request2]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(key1, result[0].Key);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncWithMultipleDifferentDuplicatesReturnsFirstPerKey()
+        {
+            var key1 = ItemKey.Create("Table1", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item1" } } }.ToImmutableDictionary());
+            var key2 = ItemKey.Create("Table2", new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "item2" } } }.ToImmutableDictionary());
+            var itemRecord1a = new ItemRecord(key1, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "first-key1" }) } }.ToImmutableDictionary());
+            var itemRecord1b = new ItemRecord(key1, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "second-key1" }) } }.ToImmutableDictionary());
+            var itemRecord2a = new ItemRecord(key2, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "first-key2" }) } }.ToImmutableDictionary());
+            var itemRecord2b = new ItemRecord(key2, new Dictionary<string, ImmutableAttributeValue> { { "Version", ImmutableAttributeValue.Create(new AttributeValue { S = "second-key2" }) } }.ToImmutableDictionary());
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    if (version.Version == 1)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1a, itemRecord2a));
+                    if (version.Version == 2)
+                        return Task.FromResult(ImmutableList.Create(itemRecord1b, itemRecord2b));
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var request2 = new RequestRecord(2, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1, request2]);
+
+            var result = await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, CancellationToken.None })!;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Count);
+            var key1Result = result.First(r => r.Key == key1);
+            var key2Result = result.First(r => r.Key == key2);
+            Assert.AreEqual("first-key1", key1Result.AttributeValues["Version"].S);
+            Assert.AreEqual("first-key2", key2Result.AttributeValues["Version"].S);
+        }
+
+        [TestMethod]
+        public async Task GetItemImagesAsyncPropagatesCancellationToken()
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+            var cancellationToken = cancellationTokenSource.Token;
+            var mockItemImageStore = new MockItemImageStore
+            {
+                GetItemImagesAsyncFunc = (version, ct) =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    return Task.FromResult(ImmutableList<ItemRecord>.Empty);
+                }
+            };
+            var service = CreateService(itemImageStore: mockItemImageStore);
+            var amazonDynamoDBWithTransactionsType = typeof(AmazonDynamoDBWithTransactions);
+            var method = amazonDynamoDBWithTransactionsType.GetMethod("GetItemImagesAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.IsNotNull(method);
+
+            var request1 = new RequestRecord(1, null, null, null, null, null, null);
+            var transaction = new Transaction("test-id", TransactionState.Active, 1, DateTime.UtcNow, [request1]);
+
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
+                await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, cancellationToken })!);
+        }
+
+        [TestMethod]
         public async Task InternalTransactWriteItemsAsyncReturnsResponseOnSuccess()
         {
             var expectedResponse = new TransactWriteItemsResponse();
