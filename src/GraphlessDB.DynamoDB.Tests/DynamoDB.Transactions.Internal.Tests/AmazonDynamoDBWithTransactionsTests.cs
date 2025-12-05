@@ -4145,6 +4145,229 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
 
             Assert.IsTrue((bool)result!);
         }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithUnCommittedIsolationLevelUsesUnCommittedService()
+        {
+            var unCommittedServiceCalled = false;
+            var committedServiceCalled = false;
+
+            var unCommittedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    unCommittedServiceCalled = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+
+            var committedService = new MockIsolatedGetItemService<CommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    committedServiceCalled = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+
+            var service = CreateService(
+                unCommittedService: unCommittedService,
+                committedService: committedService);
+
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await service.GetItemAsync(IsolationLevel.UnCommitted, request, CancellationToken.None);
+
+            Assert.IsTrue(unCommittedServiceCalled);
+            Assert.IsFalse(committedServiceCalled);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithCommittedIsolationLevelUsesCommittedService()
+        {
+            var unCommittedServiceCalled = false;
+            var committedServiceCalled = false;
+
+            var unCommittedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    unCommittedServiceCalled = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+
+            var committedService = new MockIsolatedGetItemService<CommittedIsolationLevelServiceType>
+            {
+                GetItemAsyncFunc = (req, ct) =>
+                {
+                    committedServiceCalled = true;
+                    return Task.FromResult(new GetItemResponse());
+                }
+            };
+
+            var service = CreateService(
+                unCommittedService: unCommittedService,
+                committedService: committedService);
+
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            await service.GetItemAsync(IsolationLevel.Committed, request, CancellationToken.None);
+
+            Assert.IsFalse(unCommittedServiceCalled);
+            Assert.IsTrue(committedServiceCalled);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithInvalidIsolationLevelThrowsArgumentException()
+        {
+            var service = CreateService();
+
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+            };
+
+            var exception = await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+                service.GetItemAsync((IsolationLevel)999, request, CancellationToken.None));
+
+            Assert.IsTrue(exception.Message.Contains("Unrecognized isolation level"));
+            Assert.IsTrue(exception.Message.Contains("999"));
+        }
+
+        [TestMethod]
+        public async Task TransactGetItemsAsyncWithUnCommittedIsolationLevelUsesUnCommittedService()
+        {
+            var unCommittedServiceCalled = false;
+            var committedServiceCalled = false;
+
+            var unCommittedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                TransactGetItemsAsyncFunc = (req, ct) =>
+                {
+                    unCommittedServiceCalled = true;
+                    return Task.FromResult(new TransactGetItemsResponse());
+                }
+            };
+
+            var committedService = new MockIsolatedGetItemService<CommittedIsolationLevelServiceType>
+            {
+                TransactGetItemsAsyncFunc = (req, ct) =>
+                {
+                    committedServiceCalled = true;
+                    return Task.FromResult(new TransactGetItemsResponse());
+                }
+            };
+
+            var service = CreateService(
+                unCommittedService: unCommittedService,
+                committedService: committedService);
+
+            var request = new TransactGetItemsRequest
+            {
+                TransactItems = new List<TransactGetItem>
+                {
+                    new TransactGetItem
+                    {
+                        Get = new Get
+                        {
+                            TableName = "TestTable",
+                            Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            await service.TransactGetItemsAsync(IsolationLevel.UnCommitted, request, CancellationToken.None);
+
+            Assert.IsTrue(unCommittedServiceCalled);
+            Assert.IsFalse(committedServiceCalled);
+        }
+
+        [TestMethod]
+        public async Task TransactGetItemsAsyncWithCommittedIsolationLevelUsesCommittedService()
+        {
+            var unCommittedServiceCalled = false;
+            var committedServiceCalled = false;
+
+            var unCommittedService = new MockIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
+            {
+                TransactGetItemsAsyncFunc = (req, ct) =>
+                {
+                    unCommittedServiceCalled = true;
+                    return Task.FromResult(new TransactGetItemsResponse());
+                }
+            };
+
+            var committedService = new MockIsolatedGetItemService<CommittedIsolationLevelServiceType>
+            {
+                TransactGetItemsAsyncFunc = (req, ct) =>
+                {
+                    committedServiceCalled = true;
+                    return Task.FromResult(new TransactGetItemsResponse());
+                }
+            };
+
+            var service = CreateService(
+                unCommittedService: unCommittedService,
+                committedService: committedService);
+
+            var request = new TransactGetItemsRequest
+            {
+                TransactItems = new List<TransactGetItem>
+                {
+                    new TransactGetItem
+                    {
+                        Get = new Get
+                        {
+                            TableName = "TestTable",
+                            Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            await service.TransactGetItemsAsync(IsolationLevel.Committed, request, CancellationToken.None);
+
+            Assert.IsFalse(unCommittedServiceCalled);
+            Assert.IsTrue(committedServiceCalled);
+        }
+
+        [TestMethod]
+        public async Task TransactGetItemsAsyncWithInvalidIsolationLevelThrowsArgumentException()
+        {
+            var service = CreateService();
+
+            var request = new TransactGetItemsRequest
+            {
+                TransactItems = new List<TransactGetItem>
+                {
+                    new TransactGetItem
+                    {
+                        Get = new Get
+                        {
+                            TableName = "TestTable",
+                            Key = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            var exception = await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+                service.TransactGetItemsAsync((IsolationLevel)999, request, CancellationToken.None));
+
+            Assert.IsTrue(exception.Message.Contains("Unrecognized isolation level"));
+            Assert.IsTrue(exception.Message.Contains("999"));
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
