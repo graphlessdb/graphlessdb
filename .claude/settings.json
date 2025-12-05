@@ -51,6 +51,7 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh repo view:*)",
+      "Bash(gh project:*)",
       "Bash(/dev/null)",
       "Bash(sort:*)",
       "Bash(timeout:*)",

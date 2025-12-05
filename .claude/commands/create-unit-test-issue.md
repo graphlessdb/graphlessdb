@@ -23,7 +23,7 @@ Create an issue on GitHub for unit testing a / the type $1.
 ## Process to create a GitHub sub-issue
 
 - If asked to create a GitHub sub-issue then this refers to the GitHub project system way of handling sub-issues.
-- First create the sub-issue as you would a regular issue.
+- First, create the sub-issue as you would a regular issue.
 - Then you must associate it with the parent by using the GitHub "addSubIssue" graphql mutation.
 
 ## Script notes
