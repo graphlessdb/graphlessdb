@@ -5,16 +5,24 @@ description: Agent specializing in implementing GitHub issues
 
 Implement a GitHub issue.
 
+## Context
+
+- Current git status: !`git status`
+- Current git diff (staged and unstaged changes): !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Current git worktree list: !`git worktree list`
+- Current gh repo !`gh repo view --json nameWithOwner`
+
 ## General notes
 
 - You do NOT need to ask me to proceed at any stage.
 - Carry out each implementation step in order, ensure that each step is successful before continuing to the next.
-- While carrying out the implementation steps you should maintain a temporary file listing unexpected errors arising from incorrect usage of scripts, commands and tools.  This file will be reviewed at the end of the implemenation process to correct our understanding before starting the next issue implementation.
+- While carrying out the implementation steps you should maintain a temporary file listing unexpected errors arising from incorrect usage of scripts, commands and tools. This file will be reviewed at the end of the implemenation process to correct our understanding before starting the next issue implementation.
 
 ## Git notes
 
-- You will be working mainly within a git worktree.  To do this you will need to cd into the worktree folder before each execution of a script and then you will need to cd back to the original folder to reset the pwd back to what it was before.
-- git worktree: Check for existing branches before creating - use ```git worktree add <path> <existing-branch>``` if branch exists, not -b flag
+- You will be working mainly within a git worktree. To do this you will need to cd into the worktree folder before each execution of a script and then you will need to cd back to the original folder to reset the pwd back to what it was before.
+- git worktree: Check for existing branches before creating - use `git worktree add <path> <existing-branch>` if branch exists, not -b flag
 
 ## GitHub notes
 
@@ -31,7 +39,7 @@ Implement a GitHub issue.
 
 ## Script notes
 
-- Executing scripts in a git worktree may require one "cd" before calling the script and then another "cd" after to return to the original directory.  E.g. cd /private/tmp/claude/graphlessdb-issue-164 && git pull origin main && cd /users/blah/github/graphlessdb
+- Executing scripts in a git worktree may require one "cd" before calling the script and then another "cd" after to return to the original directory. E.g. cd /private/tmp/claude/graphlessdb-issue-164 && git pull origin main && cd /users/blah/github/graphlessdb
 - get-file-coverage.sh: Use positional argument, not environment variable - ./utils/get-file-coverage.sh "path/to/file" not FILE_PATH="path"
   ./utils/get-file-coverage.sh
 - Coverage tools require full rebuild to get accurate numbers - don't rely on --no-build
@@ -39,12 +47,13 @@ Implement a GitHub issue.
 ## Dotnet notes
 
 - Ensure that "export MSBUILDDISABLENODEREUSE=1" is run before any using and dotnet commands to ensure the called process finishes.
-- dotnet commands require the current working directory to contain a project or solution file, or the filepath to one must be passed in as a positional parameter.  E.g. dotnet clean src/GraphlessDB.sln --nodereuse:false or dotnet build src/GraphlessDB.sln --nodereuse:false
+- dotnet commands require the current working directory to contain a project or solution file, or the filepath to one must be passed in as a positional parameter. E.g. dotnet clean src/GraphlessDB.sln --nodereuse:false or dotnet build src/GraphlessDB.sln --nodereuse:false
 - Do not redirect output of dotnet commands to null using "> /dev/null 2>&1"
 - Use BUILD_EXIT=$? to check the output of dotnet commands and exit the script with an error if one had occurred
 
 ## Your task
 
+- You must execute the command lines provided in the Context section above, each command line is defined within an exclamation mark and quotes, e.g. !`git status`
 - Ensure you are on the main git branch.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.
@@ -53,10 +62,10 @@ Implement a GitHub issue.
 - Use the issue id to read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage.
 - Determine if the code under test is more suited to unit testing or integration testing.
 - Implement any missing unit and / or integration tests for the file under test.
-- Iterate using new output from ```./utils/get-file-coverage.sh <file-path>``` until coverage has reached 100%, if 100% is not possible then try to achieve coverage as high as practically possible.
+- Iterate using new output from `./utils/get-file-coverage.sh <file-path>` until coverage has reached 100%, if 100% is not possible then try to achieve coverage as high as practically possible.
 - If coverage was already at 100% or it could not be increased then close the issue without raising a PR.
 - If coverage has been increased then create a PR so that the changes can be reviewed.
-- Run ```./utils/get-solution-coverage.sh``` and add this information to the PR along with any other important information.
+- Run `./utils/get-solution-coverage.sh` and add this information to the PR along with any other important information.
 - Clean up the local git worktree.
 - Review of any errors that occurred when calling scripts or utility functions and recommend changes to the way you used it for next time.
-- Carry out a final review of any exceptional behaviour during the implemenation of this issue, use the temporary file describes earlier to do this.  Determine instances where your understanding of global project concepts / rules has changed due to compilation errors, unit testing errors, script or command invocation errors.  Don't include instances where the learning includes references to particular classes or interfaces, but do include reference to predefined scripts and commands because they are likely reused often.  Generally include items which could be useful to correct for future requests.  If you were to be given your running list back to you again at the beginning of this request then you wouldn't have made as many incorrect assumptions.  Update the PR with this list, it should be extremely concise and be a single short line per item.
+- Carry out a final review of any exceptional behaviour during the implemenation of this issue, use the temporary file describes earlier to do this. Determine instances where your understanding of global project concepts / rules has changed due to compilation errors, unit testing errors, script or command invocation errors. Don't include instances where the learning includes references to particular classes or interfaces, but do include reference to predefined scripts and commands because they are likely reused often. Generally include items which could be useful to correct for future requests. If you were to be given your running list back to you again at the beginning of this request then you wouldn't have made as many incorrect assumptions. Update the PR with this list, it should be extremely concise and be a single short line per item.
