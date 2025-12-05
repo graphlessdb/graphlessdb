@@ -41,6 +41,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             public Func<UpdateItemRequest, CancellationToken, Task<UpdateItemResponse>> UpdateItemAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new UpdateItemResponse());
             public Func<TransactWriteItemsRequest, CancellationToken, Task<TransactWriteItemsResponse>> TransactWriteItemsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new TransactWriteItemsResponse());
             public Func<TransactGetItemsRequest, CancellationToken, Task<TransactGetItemsResponse>> TransactGetItemsAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new TransactGetItemsResponse());
+            public Func<BatchExecuteStatementRequest, CancellationToken, Task<BatchExecuteStatementResponse>> BatchExecuteStatementAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new BatchExecuteStatementResponse());
+            public Func<ExecuteStatementRequest, CancellationToken, Task<ExecuteStatementResponse>> ExecuteStatementAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ExecuteStatementResponse());
+            public Func<ExecuteTransactionRequest, CancellationToken, Task<ExecuteTransactionResponse>> ExecuteTransactionAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new ExecuteTransactionResponse());
+            public Func<CreateBackupRequest, CancellationToken, Task<CreateBackupResponse>> CreateBackupAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new CreateBackupResponse());
+            public Func<CreateGlobalTableRequest, CancellationToken, Task<CreateGlobalTableResponse>> CreateGlobalTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new CreateGlobalTableResponse());
+            public Func<CreateTableRequest, CancellationToken, Task<CreateTableResponse>> CreateTableAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new CreateTableResponse());
+            public Func<DeleteBackupRequest, CancellationToken, Task<DeleteBackupResponse>> DeleteBackupAsyncFunc { get; set; } = (req, ct) => Task.FromResult(new DeleteBackupResponse());
 
             public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, ReturnConsumedCapacity returnConsumedCapacity, CancellationToken cancellationToken = default) => BatchGetItemAsyncFunc(new BatchGetItemRequest { RequestItems = requestItems, ReturnConsumedCapacity = returnConsumedCapacity }, cancellationToken);
             public Task<BatchGetItemResponse> BatchGetItemAsync(Dictionary<string, KeysAndAttributes> requestItems, CancellationToken cancellationToken = default) => BatchGetItemAsyncFunc(new BatchGetItemRequest { RequestItems = requestItems }, cancellationToken);
@@ -67,12 +74,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             public Task<TransactWriteItemsResponse> TransactWriteItemsAsync(TransactWriteItemsRequest request, CancellationToken cancellationToken = default) => TransactWriteItemsAsyncFunc(request, cancellationToken);
             public Task<TransactGetItemsResponse> TransactGetItemsAsync(TransactGetItemsRequest request, CancellationToken cancellationToken = default) => TransactGetItemsAsyncFunc(request, cancellationToken);
 
-            public Task<BatchExecuteStatementResponse> BatchExecuteStatementAsync(BatchExecuteStatementRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<CreateBackupResponse> CreateBackupAsync(CreateBackupRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<CreateGlobalTableResponse> CreateGlobalTableAsync(CreateGlobalTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<DeleteBackupResponse> DeleteBackupAsync(DeleteBackupRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            public Task<BatchExecuteStatementResponse> BatchExecuteStatementAsync(BatchExecuteStatementRequest request, CancellationToken cancellationToken = default) => BatchExecuteStatementAsyncFunc(request, cancellationToken);
+            public Task<CreateBackupResponse> CreateBackupAsync(CreateBackupRequest request, CancellationToken cancellationToken = default) => CreateBackupAsyncFunc(request, cancellationToken);
+            public Task<CreateGlobalTableResponse> CreateGlobalTableAsync(CreateGlobalTableRequest request, CancellationToken cancellationToken = default) => CreateGlobalTableAsyncFunc(request, cancellationToken);
+            public Task<CreateTableResponse> CreateTableAsync(string tableName, List<KeySchemaElement> keySchema, List<AttributeDefinition> attributeDefinitions, ProvisionedThroughput provisionedThroughput, CancellationToken cancellationToken = default) => CreateTableAsyncFunc(new CreateTableRequest { TableName = tableName, KeySchema = keySchema, AttributeDefinitions = attributeDefinitions, ProvisionedThroughput = provisionedThroughput }, cancellationToken);
+            public Task<CreateTableResponse> CreateTableAsync(CreateTableRequest request, CancellationToken cancellationToken = default) => CreateTableAsyncFunc(request, cancellationToken);
+            public Task<DeleteBackupResponse> DeleteBackupAsync(DeleteBackupRequest request, CancellationToken cancellationToken = default) => DeleteBackupAsyncFunc(request, cancellationToken);
             public Task<DeleteResourcePolicyResponse> DeleteResourcePolicyAsync(DeleteResourcePolicyRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public Task<DeleteTableResponse> DeleteTableAsync(string tableName, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public Task<DeleteTableResponse> DeleteTableAsync(DeleteTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
@@ -95,8 +102,8 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             public Task<DisableKinesisStreamingDestinationResponse> DisableKinesisStreamingDestinationAsync(DisableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public void Dispose() { }
             public Task<EnableKinesisStreamingDestinationResponse> EnableKinesisStreamingDestinationAsync(EnableKinesisStreamingDestinationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ExecuteStatementResponse> ExecuteStatementAsync(ExecuteStatementRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-            public Task<ExecuteTransactionResponse> ExecuteTransactionAsync(ExecuteTransactionRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            public Task<ExecuteStatementResponse> ExecuteStatementAsync(ExecuteStatementRequest request, CancellationToken cancellationToken = default) => ExecuteStatementAsyncFunc(request, cancellationToken);
+            public Task<ExecuteTransactionResponse> ExecuteTransactionAsync(ExecuteTransactionRequest request, CancellationToken cancellationToken = default) => ExecuteTransactionAsyncFunc(request, cancellationToken);
             public Task<ExportTableToPointInTimeResponse> ExportTableToPointInTimeAsync(ExportTableToPointInTimeRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public Task<GetResourcePolicyResponse> GetResourcePolicyAsync(GetResourcePolicyRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
             public Task<ImportTableResponse> ImportTableAsync(ImportTableRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
@@ -2097,42 +2104,6 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         }
 
         [TestMethod]
-        public async Task ExecuteStatementAsyncThrowsNotImplementedException()
-        {
-            var service = CreateService();
-            var request = new ExecuteStatementRequest();
-
-            await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
-            {
-                await service.ExecuteStatementAsync(request, CancellationToken.None);
-            });
-        }
-
-        [TestMethod]
-        public async Task BatchExecuteStatementAsyncThrowsNotImplementedException()
-        {
-            var service = CreateService();
-            var request = new BatchExecuteStatementRequest();
-
-            await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
-            {
-                await service.BatchExecuteStatementAsync(request, CancellationToken.None);
-            });
-        }
-
-        [TestMethod]
-        public async Task ExecuteTransactionAsyncThrowsNotImplementedException()
-        {
-            var service = CreateService();
-            var request = new ExecuteTransactionRequest();
-
-            await Assert.ThrowsExceptionAsync<NotImplementedException>(async () =>
-            {
-                await service.ExecuteTransactionAsync(request, CancellationToken.None);
-            });
-        }
-
-        [TestMethod]
         public void DetermineServiceOperationEndpointThrowsNotImplementedException()
         {
             var service = CreateService();
@@ -2334,6 +2305,339 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             await Assert.ThrowsExceptionAsync<TransactionException>(async () =>
             {
                 await service.CommitTransactionAsync(transaction.GetId(), CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndDeleteItemAppliesDeleteCondition()
+        {
+            var deleteItem = new TransactWriteItem
+            {
+                Delete = new Delete
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test-id" } }
+                    },
+                    ConditionExpression = "attribute_exists(Id)",
+                    ExpressionAttributeNames = new Dictionary<string, string>(),
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>()
+                }
+            };
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem> { deleteItem }
+            };
+
+            var options = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100,
+                TransactionStaleDuration = TimeSpan.FromMinutes(5)
+            };
+
+            var capturedRequest = new TransactWriteItemsRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    capturedRequest = req;
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(options),
+                amazonDynamoDB: mockDynamoDB);
+
+            await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsNotNull(capturedRequest.TransactItems);
+            Assert.AreEqual(1, capturedRequest.TransactItems.Count);
+            Assert.IsNotNull(capturedRequest.TransactItems[0].Delete);
+            var conditionExpression = capturedRequest.TransactItems[0].Delete.ConditionExpression;
+            var expressionAttributeNames = capturedRequest.TransactItems[0].Delete.ExpressionAttributeNames;
+            
+            Assert.IsNotNull(conditionExpression, "ConditionExpression should not be null");
+            Assert.IsNotNull(expressionAttributeNames, "ExpressionAttributeNames should not be null");
+            Assert.IsTrue(conditionExpression.Contains("_TxId"), $"Expected condition to contain _TxId but got: {conditionExpression}");
+            Assert.IsTrue(expressionAttributeNames.ContainsKey("#_TxId"), $"Expected attribute names to contain #_TxId but got: {string.Join(", ", expressionAttributeNames.Keys)}");
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndConditionCheckWithAttributeNotExistsAppliesCondition()
+        {
+            var conditionCheckItem = new TransactWriteItem
+            {
+                ConditionCheck = new ConditionCheck
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test-id" } }
+                    },
+                    ConditionExpression = "attribute_not_exists(Id)",
+                    ExpressionAttributeNames = new Dictionary<string, string>(),
+                    ReturnValuesOnConditionCheckFailure = ReturnValuesOnConditionCheckFailure.ALL_OLD
+                }
+            };
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem> { conditionCheckItem }
+            };
+
+            var options = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100,
+                TransactionStaleDuration = TimeSpan.FromMinutes(5)
+            };
+
+            var capturedRequest = new TransactWriteItemsRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    capturedRequest = req;
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(options),
+                amazonDynamoDB: mockDynamoDB);
+
+            await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsNotNull(capturedRequest.TransactItems);
+            Assert.AreEqual(1, capturedRequest.TransactItems.Count);
+            Assert.IsNotNull(capturedRequest.TransactItems[0].ConditionCheck);
+            var conditionExpression = capturedRequest.TransactItems[0].ConditionCheck.ConditionExpression;
+            var expressionAttributeNames = capturedRequest.TransactItems[0].ConditionCheck.ExpressionAttributeNames;
+            
+            Assert.IsNotNull(conditionExpression);
+            Assert.IsNotNull(expressionAttributeNames);
+            Assert.IsTrue(conditionExpression.Contains("_TxId"));
+            Assert.IsTrue(expressionAttributeNames.ContainsKey("#_TxId"));
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndUpdateItemAppliesUpdateCondition()
+        {
+            var updateItem = new TransactWriteItem
+            {
+                Update = new Update
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test-id" } }
+                    },
+                    UpdateExpression = "SET #name = :value",
+                    ConditionExpression = "attribute_exists(Id)",
+                    ExpressionAttributeNames = new Dictionary<string, string>
+                    {
+                        { "#name", "Name" }
+                    },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        { ":value", new AttributeValue { S = "test-value" } }
+                    }
+                }
+            };
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem> { updateItem }
+            };
+
+            var options = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100,
+                TransactionStaleDuration = TimeSpan.FromMinutes(5)
+            };
+
+            var capturedRequest = new TransactWriteItemsRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    capturedRequest = req;
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(options),
+                amazonDynamoDB: mockDynamoDB);
+
+            await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsNotNull(capturedRequest.TransactItems);
+            Assert.AreEqual(1, capturedRequest.TransactItems.Count);
+            Assert.IsNotNull(capturedRequest.TransactItems[0].Update);
+            var conditionExpression = capturedRequest.TransactItems[0].Update.ConditionExpression;
+            var expressionAttributeNames = capturedRequest.TransactItems[0].Update.ExpressionAttributeNames;
+            
+            Assert.IsNotNull(conditionExpression);
+            Assert.IsNotNull(expressionAttributeNames);
+            Assert.IsTrue(conditionExpression.Contains("_TxId"));
+            Assert.IsTrue(expressionAttributeNames.ContainsKey("#_TxId"));
+            Assert.AreEqual("SET #name = :value", capturedRequest.TransactItems[0].Update.UpdateExpression);
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndUnsupportedConditionCheckThrowsNotSupportedException()
+        {
+            var conditionCheckItem = new TransactWriteItem
+            {
+                ConditionCheck = new ConditionCheck
+                {
+                    TableName = "TestTable",
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test-id" } }
+                    },
+                    ConditionExpression = "attribute_exists(Id)",
+                    ExpressionAttributeNames = new Dictionary<string, string>()
+                }
+            };
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem> { conditionCheckItem }
+            };
+
+            var options = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100,
+                TransactionStaleDuration = TimeSpan.FromMinutes(5)
+            };
+
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(options),
+                amazonDynamoDB: mockDynamoDB);
+
+            await Assert.ThrowsExceptionAsync<NotSupportedException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
+            });
+        }
+
+        [TestMethod]
+        public async Task BatchExecuteStatementAsyncCallsUnderlyingClient()
+        {
+            var request = new BatchExecuteStatementRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.BatchExecuteStatementAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ExecuteStatementAsyncCallsUnderlyingClient()
+        {
+            var request = new ExecuteStatementRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ExecuteStatementAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task ExecuteTransactionAsyncCallsUnderlyingClient()
+        {
+            var request = new ExecuteTransactionRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.ExecuteTransactionAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CreateBackupAsyncCallsUnderlyingClient()
+        {
+            var request = new CreateBackupRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.CreateBackupAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CreateGlobalTableAsyncCallsUnderlyingClient()
+        {
+            var request = new CreateGlobalTableRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.CreateGlobalTableAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithParametersCallsUnderlyingClient()
+        {
+            var tableName = "TestTable";
+            var keySchema = new List<KeySchemaElement>();
+            var attributeDefinitions = new List<AttributeDefinition>();
+            var provisionedThroughput = new ProvisionedThroughput();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.CreateTableAsync(tableName, keySchema, attributeDefinitions, provisionedThroughput, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CreateTableAsyncWithRequestCallsUnderlyingClient()
+        {
+            var request = new CreateTableRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.CreateTableAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task DeleteBackupAsyncCallsUnderlyingClient()
+        {
+            var request = new DeleteBackupRequest();
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(amazonDynamoDB: mockDynamoDB);
+
+            await service.DeleteBackupAsync(request, CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task TransactWriteItemsAsyncWithQuickTransactionsAndEmptyTransactWriteItemThrowsNotSupportedException()
+        {
+            var emptyItem = new TransactWriteItem();
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem> { emptyItem }
+            };
+
+            var options = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100,
+                TransactionStaleDuration = TimeSpan.FromMinutes(5)
+            };
+
+            var mockDynamoDB = new MockAmazonDynamoDB();
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(options),
+                amazonDynamoDB: mockDynamoDB);
+
+            await Assert.ThrowsExceptionAsync<NotSupportedException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
             });
         }
     }
