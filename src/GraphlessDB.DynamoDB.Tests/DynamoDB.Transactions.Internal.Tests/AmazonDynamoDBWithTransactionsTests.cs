@@ -4600,6 +4600,361 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
                 await (Task<ImmutableList<ItemRecord>>)method.Invoke(service, new object[] { transaction, cancellationToken })!);
         }
+
+        [TestMethod]
+        public async Task InternalTransactWriteItemsAsyncReturnsResponseOnSuccess()
+        {
+            var expectedResponse = new TransactWriteItemsResponse();
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) => Task.FromResult(expectedResponse)
+            };
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB);
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            var result = await service.TransactWriteItemsAsync(request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task InternalTransactWriteItemsAsyncThrowsTransactionConflictedExceptionWhenConflictsDetected()
+        {
+            var testTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var cancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason
+                {
+                    Code = "ConditionalCheckFailed",
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test" } },
+                        { "_tid", new AttributeValue { S = testTransactionId.Id } }
+                    }
+                }
+            };
+
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                    throw new TransactionCanceledException("Transaction cancelled")
+                    {
+                        CancellationReasons = cancellationReasons
+                    }
+            };
+
+            var itemRequestDetail = new ItemRequestDetail(
+                ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+
+            var itemRecord = new ItemRecord(
+                ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var transactionStateValue = new TransactionStateValue(
+                false,
+                testTransactionId.Id,
+                null,
+                false,
+                false);
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) =>
+                    new ItemResponseAndTransactionState<ItemRecord>(itemRecord, transactionStateValue)
+            };
+
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = itemKey
+                        }
+                    }
+                }
+            };
+
+            var exception = await Assert.ThrowsExceptionAsync<TransactionConflictedException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
+            });
+
+            Assert.IsNotNull(exception);
+            Assert.AreEqual("QUICK", exception.Id);
+            Assert.AreEqual(1, exception.ConflictingItems.Count);
+            Assert.AreEqual(testTransactionId.Id, exception.ConflictingItems[0].TransactionStateValue.TransactionId);
+        }
+
+        [TestMethod]
+        public async Task InternalTransactWriteItemsAsyncRethrowsOriginalExceptionWhenNoConflictsDetected()
+        {
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var cancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason
+                {
+                    Code = "ConditionalCheckFailed",
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test" } }
+                    }
+                }
+            };
+
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                    throw new TransactionCanceledException("Transaction cancelled")
+                    {
+                        CancellationReasons = cancellationReasons
+                    }
+            };
+
+            var itemRequestDetail = new ItemRequestDetail(
+                ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                RequestAction.Put,
+                null,
+                ImmutableDictionary<string, string>.Empty,
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) => Task.FromResult(ImmutableList.Create(itemRequestDetail))
+            };
+
+            var itemRecord = new ItemRecord(
+                ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var transactionStateValueWithoutConflict = new TransactionStateValue(
+                false,
+                null,
+                null,
+                false,
+                false);
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) =>
+                    new ItemResponseAndTransactionState<ItemRecord>(itemRecord, transactionStateValueWithoutConflict)
+            };
+
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = itemKey
+                        }
+                    }
+                }
+            };
+
+            var exception = await Assert.ThrowsExceptionAsync<TransactionCanceledException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
+            });
+
+            Assert.IsNotNull(exception);
+            Assert.AreEqual("Transaction cancelled", exception.Message);
+        }
+
+        [TestMethod]
+        public async Task InternalTransactWriteItemsAsyncPropagatesCancellationToken()
+        {
+            var cancellationTokenPassed = CancellationToken.None;
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                {
+                    cancellationTokenPassed = ct;
+                    return Task.FromResult(new TransactWriteItemsResponse());
+                }
+            };
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB);
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } }
+                        }
+                    }
+                }
+            };
+
+            var cts = new CancellationTokenSource();
+            await service.TransactWriteItemsAsync(request, cts.Token);
+
+            Assert.AreEqual<CancellationToken>(cts.Token, cancellationTokenPassed);
+        }
+
+        [TestMethod]
+        public async Task InternalTransactWriteItemsAsyncCallsTryGetTransactionConflictedExceptionAsyncWithCorrectParameters()
+        {
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var cancellationReasons = new List<CancellationReason>
+            {
+                new CancellationReason
+                {
+                    Code = "ConditionalCheckFailed",
+                    Item = new Dictionary<string, AttributeValue>
+                    {
+                        { "Id", new AttributeValue { S = "test" } }
+                    }
+                }
+            };
+
+            var mockDynamoDB = new MockAmazonDynamoDB
+            {
+                TransactWriteItemsAsyncFunc = (req, ct) =>
+                    throw new TransactionCanceledException("Transaction cancelled")
+                    {
+                        CancellationReasons = cancellationReasons
+                    }
+            };
+
+            AmazonDynamoDBRequest? capturedRequest = null;
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestDetailsAsyncFunc = (req, ct) =>
+                {
+                    capturedRequest = req;
+                    var itemRequestDetail = new ItemRequestDetail(
+                        ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                        RequestAction.Put,
+                        null,
+                        ImmutableDictionary<string, string>.Empty,
+                        ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+                    return Task.FromResult(ImmutableList.Create(itemRequestDetail));
+                }
+            };
+
+            var itemRecord = new ItemRecord(
+                ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
+
+            var transactionStateValue = new TransactionStateValue(
+                false,
+                null,
+                null,
+                false,
+                false);
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                GetItemRecordAndTransactionStateFunc = (key, item) =>
+                    new ItemResponseAndTransactionState<ItemRecord>(itemRecord, transactionStateValue)
+            };
+
+            var quickOptions = new AmazonDynamoDBOptions
+            {
+                QuickTransactionsEnabled = true,
+                TransactWriteItemCountMaxValue = 100
+            };
+
+            var service = CreateService(
+                options: new MockOptionsSnapshot<AmazonDynamoDBOptions>(quickOptions),
+                amazonDynamoDB: mockDynamoDB,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+
+            var request = new TransactWriteItemsRequest
+            {
+                TransactItems = new List<TransactWriteItem>
+                {
+                    new TransactWriteItem
+                    {
+                        Put = new Put
+                        {
+                            TableName = "TestTable",
+                            Item = itemKey
+                        }
+                    }
+                }
+            };
+
+            await Assert.ThrowsExceptionAsync<TransactionCanceledException>(async () =>
+            {
+                await service.TransactWriteItemsAsync(request, CancellationToken.None);
+            });
+
+            Assert.IsNotNull(capturedRequest);
+            Assert.IsInstanceOfType(capturedRequest, typeof(TransactWriteItemsRequest));
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
