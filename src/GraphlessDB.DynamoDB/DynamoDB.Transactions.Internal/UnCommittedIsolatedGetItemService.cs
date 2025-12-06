@@ -21,22 +21,22 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
         IAmazonDynamoDB client,
         IVersionedItemStore versionedItemStore) : IIsolatedGetItemService<UnCommittedIsolationLevelServiceType>
     {
-#pragma warning disable CS0649
-        private static readonly bool s_reRouteRequestsToBatchGet;
-        private static readonly bool s_reRouteRequestsToTransactGet;
-#pragma warning restore CS0649
+        // #pragma warning disable CS0649
+        //         private static readonly bool s_reRouteRequestsToBatchGet;
+        //         private static readonly bool s_reRouteRequestsToTransactGet;
+        // #pragma warning restore CS0649
 
         public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
         {
-            if (s_reRouteRequestsToBatchGet)
-            {
-                return await GetItemUsingBatchGetItemAsync(request, cancellationToken);
-            }
+            // if (s_reRouteRequestsToBatchGet)
+            // {
+            //     return await GetItemUsingBatchGetItemAsync(request, cancellationToken);
+            // }
 
-            if (s_reRouteRequestsToTransactGet)
-            {
-                return await GetItemUsingTransactGetItemAsync(request, cancellationToken);
-            }
+            // if (s_reRouteRequestsToTransactGet)
+            // {
+            //     return await GetItemUsingTransactGetItemAsync(request, cancellationToken);
+            // }
 
             var getItemRequest = GetItemRequestWithAddedProjection(request);
             var getItemResponse = await client.GetItemAsync(getItemRequest, cancellationToken);
@@ -48,49 +48,49 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
             };
         }
 
-        private async Task<GetItemResponse> GetItemUsingTransactGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
-        {
-            var batchGetResponse = await TransactGetItemsAsync(new TransactGetItemsRequest
-            {
-                TransactItems = [
-                    new() {
-                        Get = new Get {
-                            TableName = request.TableName,
-                            Key = request.Key,
-                            ProjectionExpression = request.ProjectionExpression,
-                            ExpressionAttributeNames = request.ExpressionAttributeNames,
-                        }
-                    }
-                ]
-            }, cancellationToken);
+        // private async Task<GetItemResponse> GetItemUsingTransactGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        // {
+        //     var batchGetResponse = await TransactGetItemsAsync(new TransactGetItemsRequest
+        //     {
+        //         TransactItems = [
+        //             new() {
+        //                 Get = new Get {
+        //                     TableName = request.TableName,
+        //                     Key = request.Key,
+        //                     ProjectionExpression = request.ProjectionExpression,
+        //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+        //                 }
+        //             }
+        //         ]
+        //     }, cancellationToken);
 
-            return new GetItemResponse
-            {
-                Item = GetItemResponse(batchGetResponse.Responses.Single().Item)
-            };
-        }
+        //     return new GetItemResponse
+        //     {
+        //         Item = GetItemResponse(batchGetResponse.Responses.Single().Item)
+        //     };
+        // }
 
-        private async Task<GetItemResponse> GetItemUsingBatchGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
-        {
-            var batchGetResponse = await BatchGetItemAsync(new BatchGetItemRequest
-            {
-                RequestItems = new Dictionary<string, KeysAndAttributes> {
-                        { request.TableName, new KeysAndAttributes {
-                            ConsistentRead = request.ConsistentRead,
-                            Keys = [request.Key],
-                            ProjectionExpression = request.ProjectionExpression,
-                            ExpressionAttributeNames = request.ExpressionAttributeNames }
-                        }
-                    }
-            }, cancellationToken);
+        // private async Task<GetItemResponse> GetItemUsingBatchGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        // {
+        //     var batchGetResponse = await BatchGetItemAsync(new BatchGetItemRequest
+        //     {
+        //         RequestItems = new Dictionary<string, KeysAndAttributes> {
+        //                 { request.TableName, new KeysAndAttributes {
+        //                     ConsistentRead = request.ConsistentRead,
+        //                     Keys = [request.Key],
+        //                     ProjectionExpression = request.ProjectionExpression,
+        //                     ExpressionAttributeNames = request.ExpressionAttributeNames }
+        //                 }
+        //             }
+        //     }, cancellationToken);
 
-            var reroutedItem = GetItemResponse(batchGetResponse.Responses.Single().Value.Single());
-            return new GetItemResponse
-            {
-                Item = reroutedItem,
-                IsItemSet = reroutedItem.Count > 0
-            };
-        }
+        //     var reroutedItem = GetItemResponse(batchGetResponse.Responses.Single().Value.Single());
+        //     return new GetItemResponse
+        //     {
+        //         Item = reroutedItem,
+        //         IsItemSet = reroutedItem.Count > 0
+        //     };
+        // }
 
         public async Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken)
         {

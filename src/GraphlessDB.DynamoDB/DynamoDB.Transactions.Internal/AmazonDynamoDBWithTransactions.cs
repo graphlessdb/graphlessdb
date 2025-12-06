@@ -34,9 +34,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
         ITransactionServiceEvents transactionServiceEvents,
         IFullyAppliedRequestService fullyAppliedRequestService) : IAmazonDynamoDBWithTransactions
     {
-#pragma warning disable CS0649
-        private static readonly bool s_reRouteRequests;
-#pragma warning restore CS0649  
+        // #pragma warning disable CS0649
+        //         private static readonly bool s_reRouteRequests;
+        // #pragma warning restore CS0649
 
         public IDynamoDBv2PaginatorFactory Paginators => amazonDynamoDB.Paginators;
 
@@ -144,12 +144,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
         // private void BreakLock(string tableName, ImmutableDictionary<string, AttributeValue> item, string transactionId)
         // {
         //     // Breaks an item lock and leaves the item intact, leaving an item in an unknown state.  Only works if the owning transaction
-        //     // does not exist. 
-        //     // 
+        //     // does not exist.
+        //     //
         //     //   1) It could leave an item that should not exist (was inserted only for obtaining the lock)
         //     //   2) It could replace the item with an old copy of the item from an unknown previous transaction
         //     //   3) A request from an earlier transaction could be applied a second time
-        //     //   4) Other conditions of this nature 
+        //     //   4) Other conditions of this nature
         //     _logger.LogWarning("Breaking a lock on table " + tableName + " for transaction " + transactionId + " for item " + item + ".  This will leave the item in an unknown state");
         //     UnlockItemUnsafe(tableName, item, transactionId);
         // }
@@ -310,28 +310,28 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
 
         public async Task<GetItemResponse> GetItemAsync(TransactionId id, GetItemRequest request, CancellationToken cancellationToken)
         {
-            if (s_reRouteRequests)
-            {
-                var resp = await TransactGetItemsAsync(id, new TransactGetItemsRequest
-                {
-                    TransactItems = [
-                        new() {
-                            Get = new Get{
-                                TableName = request.TableName,
-                                Key = request.Key,
-                                ProjectionExpression = request.ProjectionExpression,
-                                ExpressionAttributeNames = request.ExpressionAttributeNames,
-                            }
-                        }
-                    ]
-                }, cancellationToken);
+            // if (s_reRouteRequests)
+            // {
+            //     var resp = await TransactGetItemsAsync(id, new TransactGetItemsRequest
+            //     {
+            //         TransactItems = [
+            //             new() {
+            //                 Get = new Get{
+            //                     TableName = request.TableName,
+            //                     Key = request.Key,
+            //                     ProjectionExpression = request.ProjectionExpression,
+            //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+            //                 }
+            //             }
+            //         ]
+            //     }, cancellationToken);
 
-                return new GetItemResponse
-                {
-                    Item = resp.Responses.First().Item,
-                    IsItemSet = resp.Responses.First().Item.Count > 0,
-                };
-            }
+            //     return new GetItemResponse
+            //     {
+            //         Item = resp.Responses.First().Item,
+            //         IsItemSet = resp.Responses.First().Item.Count > 0,
+            //     };
+            // }
 
             var processResponse = await ProcessRequestAsync(id, request, cancellationToken);
             return (GetItemResponse)processResponse.AmazonWebServiceResponse;
@@ -362,44 +362,44 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
 
         public async Task<PutItemResponse> PutItemAsync(TransactionId id, PutItemRequest request, CancellationToken cancellationToken = default)
         {
-            if (s_reRouteRequests)
-            {
-                var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
-                {
-                    TransactItems = [
-                        new() {
-                            Put = new Put{
-                                TableName = request.TableName,
-                                Item = request.Item,
-                                ConditionExpression = request.ConditionExpression,
-                                ExpressionAttributeNames = request.ExpressionAttributeNames,
-                                ExpressionAttributeValues = request.ExpressionAttributeValues
-                            }
-                        }
-                    ]
-                }, cancellationToken);
+            // if (s_reRouteRequests)
+            // {
+            //     var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
+            //     {
+            //         TransactItems = [
+            //             new() {
+            //                 Put = new Put{
+            //                     TableName = request.TableName,
+            //                     Item = request.Item,
+            //                     ConditionExpression = request.ConditionExpression,
+            //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+            //                     ExpressionAttributeValues = request.ExpressionAttributeValues
+            //                 }
+            //             }
+            //         ]
+            //     }, cancellationToken);
 
-                if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE)
-                {
-                    return new PutItemResponse();
-                }
+            //     if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE)
+            //     {
+            //         return new PutItemResponse();
+            //     }
 
-                var itemTransactionState = resp.ItemTransactionStates.Values.Single();
-                if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
-                {
-                    return new PutItemResponse();
-                }
+            //     var itemTransactionState = resp.ItemTransactionStates.Values.Single();
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
+            //     {
+            //         return new PutItemResponse();
+            //     }
 
-                if (request.ReturnValues == ReturnValue.ALL_OLD)
-                {
-                    return new PutItemResponse
-                    {
-                        Attributes = resp.ItemsToBackupByKey.Values.Single().AttributeValues.ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
-                    };
-                }
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD)
+            //     {
+            //         return new PutItemResponse
+            //         {
+            //             Attributes = resp.ItemsToBackupByKey.Values.Single().AttributeValues.ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
+            //         };
+            //     }
 
-                throw new NotSupportedException();
-            }
+            //     throw new NotSupportedException();
+            // }
 
             var processResponse = await ProcessRequestAsync(id, request, cancellationToken);
             return (PutItemResponse)processResponse.AmazonWebServiceResponse;
@@ -412,68 +412,68 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
 
         public async Task<UpdateItemResponse> UpdateItemAsync(TransactionId id, UpdateItemRequest request, CancellationToken cancellationToken)
         {
-            if (s_reRouteRequests)
-            {
-                var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
-                {
-                    TransactItems = [
-                        new() {
-                            Update = new Update {
-                                TableName = request.TableName,
-                                Key = request.Key,
-                                ConditionExpression = request.ConditionExpression,
-                                UpdateExpression = request.UpdateExpression,
-                                ExpressionAttributeNames = request.ExpressionAttributeNames,
-                                ExpressionAttributeValues = request.ExpressionAttributeValues
-                            }
-                        }
-                    ]
-                }, cancellationToken);
+            // if (s_reRouteRequests)
+            // {
+            //     var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
+            //     {
+            //         TransactItems = [
+            //             new() {
+            //                 Update = new Update {
+            //                     TableName = request.TableName,
+            //                     Key = request.Key,
+            //                     ConditionExpression = request.ConditionExpression,
+            //                     UpdateExpression = request.UpdateExpression,
+            //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+            //                     ExpressionAttributeValues = request.ExpressionAttributeValues
+            //                 }
+            //             }
+            //         ]
+            //     }, cancellationToken);
 
-                if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE)
-                {
-                    return new UpdateItemResponse();
-                }
+            //     if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE)
+            //     {
+            //         return new UpdateItemResponse();
+            //     }
 
-                if (request.ReturnValues == ReturnValue.ALL_NEW)
-                {
-                    var getAllNewResponse = await amazonDynamoDB.GetItemAsync(new GetItemRequest
-                    {
-                        TableName = request.TableName,
-                        Key = request.Key,
-                        ConsistentRead = true,
-                    }, cancellationToken);
+            //     if (request.ReturnValues == ReturnValue.ALL_NEW)
+            //     {
+            //         var getAllNewResponse = await amazonDynamoDB.GetItemAsync(new GetItemRequest
+            //         {
+            //             TableName = request.TableName,
+            //             Key = request.Key,
+            //             ConsistentRead = true,
+            //         }, cancellationToken);
 
-                    return new UpdateItemResponse
-                    {
-                        Attributes = getAllNewResponse
-                            .Item
-                            .Where(i => !ItemAttributeName.Values.Contains(new ItemAttributeName(i.Key)))
-                            .ToDictionary(k => k.Key, v => v.Value)
-                    };
-                }
+            //         return new UpdateItemResponse
+            //         {
+            //             Attributes = getAllNewResponse
+            //                 .Item
+            //                 .Where(i => !ItemAttributeName.Values.Contains(new ItemAttributeName(i.Key)))
+            //                 .ToDictionary(k => k.Key, v => v.Value)
+            //         };
+            //     }
 
-                var itemTransactionState = resp.ItemTransactionStates.Values.Single();
-                if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
-                {
-                    return new UpdateItemResponse();
-                }
+            //     var itemTransactionState = resp.ItemTransactionStates.Values.Single();
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
+            //     {
+            //         return new UpdateItemResponse();
+            //     }
 
-                if (request.ReturnValues == ReturnValue.ALL_OLD)
-                {
-                    return new UpdateItemResponse
-                    {
-                        Attributes = resp
-                            .ItemsToBackupByKey
-                            .Values
-                            .Single()
-                            .AttributeValues
-                            .ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
-                    };
-                }
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD)
+            //     {
+            //         return new UpdateItemResponse
+            //         {
+            //             Attributes = resp
+            //                 .ItemsToBackupByKey
+            //                 .Values
+            //                 .Single()
+            //                 .AttributeValues
+            //                 .ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
+            //         };
+            //     }
 
-                throw new NotSupportedException();
-            }
+            //     throw new NotSupportedException();
+            // }
 
             var processResponse = await ProcessRequestAsync(id, request, cancellationToken);
             return (UpdateItemResponse)processResponse.AmazonWebServiceResponse;
@@ -486,49 +486,49 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
 
         public async Task<DeleteItemResponse> DeleteItemAsync(TransactionId id, DeleteItemRequest request, CancellationToken cancellationToken)
         {
-            if (s_reRouteRequests)
-            {
-                var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
-                {
-                    TransactItems = [
-                        new() {
-                            Delete = new Delete{
-                                TableName = request.TableName,
-                                Key = request.Key,
-                                ConditionExpression = request.ConditionExpression,
-                                ExpressionAttributeNames = request.ExpressionAttributeNames,
-                                ExpressionAttributeValues = request.ExpressionAttributeValues
-                            }
-                        }
-                    ]
-                }, cancellationToken);
+            // if (s_reRouteRequests)
+            // {
+            //     var resp = await ProcessRequestAsync(id, new TransactWriteItemsRequest
+            //     {
+            //         TransactItems = [
+            //             new() {
+            //                 Delete = new Delete{
+            //                     TableName = request.TableName,
+            //                     Key = request.Key,
+            //                     ConditionExpression = request.ConditionExpression,
+            //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+            //                     ExpressionAttributeValues = request.ExpressionAttributeValues
+            //                 }
+            //             }
+            //         ]
+            //     }, cancellationToken);
 
-                if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE || request.ReturnValues == ReturnValue.ALL_NEW)
-                {
-                    return new DeleteItemResponse();
-                }
+            //     if (request.ReturnValues == null || request.ReturnValues == ReturnValue.NONE || request.ReturnValues == ReturnValue.ALL_NEW)
+            //     {
+            //         return new DeleteItemResponse();
+            //     }
 
-                var itemTransactionState = resp.ItemTransactionStates.Values.Single();
-                if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
-                {
-                    return new DeleteItemResponse();
-                }
+            //     var itemTransactionState = resp.ItemTransactionStates.Values.Single();
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD && itemTransactionState.IsTransient)
+            //     {
+            //         return new DeleteItemResponse();
+            //     }
 
-                if (request.ReturnValues == ReturnValue.ALL_OLD)
-                {
-                    return new DeleteItemResponse
-                    {
-                        Attributes = resp
-                            .ItemsToBackupByKey
-                            .Values
-                            .Single()
-                            .AttributeValues
-                            .ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
-                    };
-                }
+            //     if (request.ReturnValues == ReturnValue.ALL_OLD)
+            //     {
+            //         return new DeleteItemResponse
+            //         {
+            //             Attributes = resp
+            //                 .ItemsToBackupByKey
+            //                 .Values
+            //                 .Single()
+            //                 .AttributeValues
+            //                 .ToDictionary(k => k.Key, v => v.Value.ToAttributeValue())
+            //         };
+            //     }
 
-                throw new NotSupportedException();
-            }
+            //     throw new NotSupportedException();
+            // }
 
             var processResponse = await ProcessRequestAsync(id, request, cancellationToken);
             return (DeleteItemResponse)processResponse.AmazonWebServiceResponse;

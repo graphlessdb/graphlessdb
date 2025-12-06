@@ -25,24 +25,24 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
         IItemImageStore itemImageStore,
         IRequestService requestService) : IIsolatedGetItemService<CommittedIsolationLevelServiceType>
     {
-#pragma warning disable CS0649
-        private static readonly bool s_reRouteRequestsToBatchGet;
-        private static readonly bool s_reRouteRequestsToTransactGet;
-#pragma warning restore CS0649
+        // #pragma warning disable CS0649
+        //         private static readonly bool s_reRouteRequestsToBatchGet;
+        //         private static readonly bool s_reRouteRequestsToTransactGet;
+        // #pragma warning restore CS0649
 
         public async Task<GetItemResponse> GetItemAsync(
             GetItemRequest request,
             CancellationToken cancellationToken)
         {
-            if (s_reRouteRequestsToBatchGet)
-            {
-                return await GetItemUsingBatchGetItemAsync(request, cancellationToken);
-            }
+            // if (s_reRouteRequestsToBatchGet)
+            // {
+            //     return await GetItemUsingBatchGetItemAsync(request, cancellationToken);
+            // }
 
-            if (s_reRouteRequestsToTransactGet)
-            {
-                return await GetItemUsingTransactGetItemAsync(request, cancellationToken);
-            }
+            // if (s_reRouteRequestsToTransactGet)
+            // {
+            //     return await GetItemUsingTransactGetItemAsync(request, cancellationToken);
+            // }
 
             var getItemRequest = new GetItemRequest
             {
@@ -240,51 +240,51 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
             };
         }
 
-        private async Task<GetItemResponse> GetItemUsingBatchGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
-        {
-            var batchGetResponse = await BatchGetItemAsync(new BatchGetItemRequest
-            {
-                RequestItems = new Dictionary<string, KeysAndAttributes> {
-                        { request.TableName, new KeysAndAttributes {
-                            ConsistentRead = request.ConsistentRead,
-                            Keys = [request.Key],
-                            ProjectionExpression = request.ProjectionExpression,
-                            ExpressionAttributeNames = request.ExpressionAttributeNames }
-                        }
-                    }
-            }, cancellationToken);
+        // private async Task<GetItemResponse> GetItemUsingBatchGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        // {
+        //     var batchGetResponse = await BatchGetItemAsync(new BatchGetItemRequest
+        //     {
+        //         RequestItems = new Dictionary<string, KeysAndAttributes> {
+        //                 { request.TableName, new KeysAndAttributes {
+        //                     ConsistentRead = request.ConsistentRead,
+        //                     Keys = [request.Key],
+        //                     ProjectionExpression = request.ProjectionExpression,
+        //                     ExpressionAttributeNames = request.ExpressionAttributeNames }
+        //                 }
+        //             }
+        //     }, cancellationToken);
 
-            var batchGetItemResponse = new GetItemResponse
-            {
-                Item = batchGetResponse.Responses.Single().Value.Single()
-            };
+        //     var batchGetItemResponse = new GetItemResponse
+        //     {
+        //         Item = batchGetResponse.Responses.Single().Value.Single()
+        //     };
 
-            return await GetItemResponseAsync(request.TableName, request.Key, batchGetItemResponse.Item, cancellationToken);
-        }
+        //     return await GetItemResponseAsync(request.TableName, request.Key, batchGetItemResponse.Item, cancellationToken);
+        // }
 
-        private async Task<GetItemResponse> GetItemUsingTransactGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
-        {
-            var batchGetResponse = await TransactGetItemsAsync(new TransactGetItemsRequest
-            {
-                TransactItems = [
-                    new() {
-                        Get = new Get {
-                            TableName = request.TableName,
-                            Key = request.Key,
-                            ProjectionExpression = request.ProjectionExpression,
-                            ExpressionAttributeNames = request.ExpressionAttributeNames,
-                        }
-                    }
-                ]
-            }, cancellationToken);
+        // private async Task<GetItemResponse> GetItemUsingTransactGetItemAsync(GetItemRequest request, CancellationToken cancellationToken)
+        // {
+        //     var batchGetResponse = await TransactGetItemsAsync(new TransactGetItemsRequest
+        //     {
+        //         TransactItems = [
+        //             new() {
+        //                 Get = new Get {
+        //                     TableName = request.TableName,
+        //                     Key = request.Key,
+        //                     ProjectionExpression = request.ProjectionExpression,
+        //                     ExpressionAttributeNames = request.ExpressionAttributeNames,
+        //                 }
+        //             }
+        //         ]
+        //     }, cancellationToken);
 
-            var batchGetItemResponse = new GetItemResponse
-            {
-                Item = batchGetResponse.Responses.Single().Item
-            };
+        //     var batchGetItemResponse = new GetItemResponse
+        //     {
+        //         Item = batchGetResponse.Responses.Single().Item
+        //     };
 
-            return await GetItemResponseAsync(request.TableName, request.Key, batchGetItemResponse.Item, cancellationToken);
-        }
+        //     return await GetItemResponseAsync(request.TableName, request.Key, batchGetItemResponse.Item, cancellationToken);
+        // }
 
         private static TransactGetItem GetTransactItemWithAddedProjection(TransactGetItem value)
         {
