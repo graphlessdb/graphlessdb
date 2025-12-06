@@ -33,6 +33,12 @@ Implement a GitHub issue.
 - gh pr create: Must execute from within the worktree directory.
 - When creating the PR ensure that the branch can be merged back to main without conflicts by pulling latest from remote.
 
+## Process to create a GitHub sub-issue
+
+- If asked to create a GitHub sub-issue then this refers to the GitHub project system way of handling sub-issues.
+- First, create the sub-issue as you would a regular issue.
+- Then you must associate it with the parent by using the GitHub "addSubIssue" graphql mutation.
+
 ## Coding notes
 
 - Follow existing project naming conventions, use PascalCase without underscores for method names including test methods (e.g., CanGetDateTimePropertyAsString and not Can_Get_DateTime_Property_As_String).
@@ -55,7 +61,7 @@ Implement a GitHub issue.
 
 ## Your task
 
-- Ensure that you have executed each command under the "Context" section, they provide important context to the task. Each command is specified within an exclamation mark and quotes as follows !``. Those symbols are not part of the command to be executed.
+- If you are a Copilot agent then ensure that you have executed each command under the "Context" section, they provide important context to the task. Each command is specified within an exclamation mark and quotes as follows !``. Those symbols are not part of the command to be executed. If you are a Claude agent then you have likely done this already.
 - Ensure you are on the main git branch.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.
@@ -63,11 +69,10 @@ Implement a GitHub issue.
 - Create a new git worktree under the folder /tmp/claude/ for working on the issue, use a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - Use the issue id to read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage.
 - Determine if the code under test is more suited to unit testing or integration testing.
-- Implement any missing unit and / or integration tests for the file under test.
-- Iterate using new output from `./utils/get-file-coverage.sh <file-path>` until coverage has reached 100%, if 100% is not possible then try to achieve coverage as high as practically possible.
-- If coverage was already at 100% or it could not be increased then close the issue without raising a PR.
+- Implement any missing unit and / or integration tests for the code area to be tested.
+- Iterate using new output from `./utils/get-file-coverage.sh <file-path>` until coverage for the area to be tested has reached 100%.
+- If coverage was already at 100% then close the issue without raising a PR.
+- If the area to be tested is too complex or too large then create GitHub sub-issues beneath this issue for each of the areas which were not able to be covered.
 - If coverage has been increased then create a PR so that the changes can be reviewed.
-- Run `./utils/get-solution-coverage.sh` and add this information to the PR along with any other important information.
 - Clean up the local git worktree.
-- Review of any errors that occurred when calling scripts or utility functions and recommend changes to the way you used it for next time.
-- Carry out a final review of any exceptional behaviour during the implemenation of this issue, use the temporary file describes earlier to do this. Determine instances where your understanding of global project concepts / rules has changed due to compilation errors, unit testing errors, script or command invocation errors. Don't include instances where the learning includes references to particular classes or interfaces, but do include reference to predefined scripts and commands because they are likely reused often. Generally include items which could be useful to correct for future requests. If you were to be given your running list back to you again at the beginning of this request then you wouldn't have made as many incorrect assumptions. Update the PR with this list, it should be extremely concise and be a single short line per item.
+- Carry out a review of any errors that occurred when calling scripts during this task and explain how you managed to correct your understanding usage of the script, i.e. recommend changes to the way you used it for next time.
