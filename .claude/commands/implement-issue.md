@@ -18,6 +18,7 @@ Implement a GitHub issue $1.
 - Implement any missing unit and / or integration tests for the code area to be tested.
 - Iterate using new output from `./utils/get-file-coverage.sh <file-path>` until coverage for the area to be tested has reached 100%.
 - The task cannot be completed if there are failing tests.
+- If there were any unresolved elements of the task then update the GitHub issue with a comment detailing the challenges encountered and set out a short set of clearly defined proposed tasks to break down and tackle the task further.
 - If coverage was already at 100% then close the issue without raising a PR.
 - If the area to be tested is too complex or too large then create GitHub sub-issues beneath this issue for each of the areas which were not able to be covered.
 - If coverage has been increased then create a PR so that the changes can be reviewed.
