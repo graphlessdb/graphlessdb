@@ -18,6 +18,7 @@ This skill guides the process to implement a GitHub issue.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.
 - Ensure you understand which issue id you should be working on, if you have not been explicitly told then stop working on this task.
+- Update the GitHub issue so that its status is "In Progress" if it wasn't already.
 - Create a new git worktree under the folder /tmp/claude/ for working on the issue, use a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - Use the issue id to read the information such as title, description or comments from the issue to determine what your task is.
 - Carry out and complete the task.
