@@ -1,110 +1,117 @@
 #!/bin/bash
 
 # Get least covered files across all non-test projects
+# Outputs JSON array of files with low coverage, sorted by notCovered (descending)
 # Usage: ./get-least-covered-files.sh [limit]
-# Output: JSON array of files with coverage info, sorted by notCovered descending
 
 set -e
 
-LIMIT=${1:-10}
+# Disable MSBuild node reuse to prevent hanging processes
+export MSBUILDDISABLENODEREUSE=1
 
 # Navigate to project root
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-cd "$PROJECT_ROOT"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$REPO_ROOT"
 
-# Pass script dir and limit to Python script
-python3 - "$LIMIT" "$SCRIPT_DIR" "$PROJECT_ROOT" <<'PYTHON_SCRIPT'
-import sys
+# Parse arguments
+LIMIT=10
+if [ $# -ge 1 ]; then
+  LIMIT="$1"
+fi
+
+# Get projects in dependency order
+PROJECTS_JSON=$("$SCRIPT_DIR/get-project-dependency-order.sh")
+
+# Export variables for Python script
+export SCRIPT_DIR
+export LIMIT
+
+# Process all projects and filter results
+export PROJECTS_JSON
+python3 << 'PYTHON_SCRIPT'
 import json
+import sys
 import subprocess
-import re
 import os
+import re
 
-limit = int(sys.argv[1])
-script_dir = sys.argv[2]
-project_root = sys.argv[3]
+# Get script directory and limit
+script_dir = os.environ.get('SCRIPT_DIR', '')
+limit = int(os.environ.get('LIMIT', '10'))
+projects_json = os.environ.get('PROJECTS_JSON', '[]')
 
-# Get project dependency order
-result = subprocess.run(
-    [os.path.join(script_dir, 'get-project-dependency-order.sh')],
-    capture_output=True,
-    text=True,
-    check=True,
-    cwd=project_root
-)
-projects = json.loads(result.stdout)
+# Load projects
+projects = json.loads(projects_json)
 
-# Filter out test projects
+# Filter non-test projects
 non_test_projects = [p for p in projects if not p.get('isTestProject', False)]
 
-all_results = []
+# Collect coverage data from all projects
+all_coverage_data = []
 
-# Process each non-test project
 for project in non_test_projects:
     project_path = project['path']
 
+    # Run coverage for this project (suppress errors - some projects may not have tests)
     try:
-        # Run coverage for this project (no limit on individual project results)
         result = subprocess.run(
-            [os.path.join(script_dir, 'get-project-coverage.sh'), project_path, '999999'],
+            [f"{script_dir}/get-project-coverage.sh", project_path, "999999"],
             capture_output=True,
             text=True,
-            check=True,
-            cwd=project_root
+            timeout=120
         )
 
-        coverage_data = json.loads(result.stdout)
+        if result.returncode == 0 and result.stdout.strip():
+            coverage_output = json.loads(result.stdout)
+            all_coverage_data.extend(coverage_output)
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, json.JSONDecodeError):
+        # Skip projects that fail or timeout
+        pass
 
-        # Filter results
-        for item in coverage_data:
-            not_covered = item['lines']['notCovered']
-            covered = item['lines']['covered']
+# Filter function to detect compiler-generated classes
+def is_compiler_generated(name, path):
+    # Common compiler-generated patterns in C#
+    patterns = [
+        r'<>c__DisplayClass',  # Closure display classes
+        r'<>c',                # Compiler-generated helper classes
+        r'<\w+>d__\d+',        # Iterator state machines (e.g., <GetEnumerator>d__1)
+        r'<\w+>g__\w+\|\d+_\d+',  # Local functions
+        r'__EqualityContract',  # Record equality contracts
+        r'__StaticArrayInitTypeSize',  # Array initialization helpers
+        r'\$\$method',         # Various compiler helpers
+        r'PrivateImplementationDetails',  # Static initialization
+    ]
 
-            # Skip items with 0 notCovered
-            if not_covered == 0:
-                continue
+    for pattern in patterns:
+        if re.search(pattern, name):
+            return True
 
-            # Skip compiler-generated classes
-            # Patterns: contains <>, starts with <, contains anonymous types like <>c, <>9, etc.
-            class_name = item['name']
-            if '<' in class_name or '>' in class_name:
-                continue
-            if class_name.startswith('__'):
-                continue
-            if re.search(r'<>.*__', class_name):
-                continue
-            if 'DisplayClass' in class_name:
-                continue
-            if class_name.endswith('__c'):
-                continue
+    return False
 
-            # Skip files with ≥80% coverage
-            total_lines = covered + not_covered
-            if total_lines > 0:
-                coverage_ratio = covered / total_lines
-                if coverage_ratio >= 0.8:
-                    continue
+# Filter out items with notCovered = 0
+filtered_data = [
+    item for item in all_coverage_data
+    if item.get('lines', {}).get('notCovered', 0) > 0
+]
 
-            all_results.append(item)
-
-    except subprocess.CalledProcessError:
-        # If coverage fails for a project, skip it
-        continue
-    except json.JSONDecodeError:
-        # If output is not valid JSON, skip it
-        continue
-
-    # Stop if we have enough results
-    if len(all_results) >= limit:
-        break
+# Filter out compiler-generated classes
+filtered_data = [
+    item for item in filtered_data
+    if not is_compiler_generated(item.get('name', ''), item.get('path', ''))
+]
 
 # Sort by notCovered descending
-all_results.sort(key=lambda x: x['lines']['notCovered'], reverse=True)
+sorted_data = sorted(
+    filtered_data,
+    key=lambda x: x.get('lines', {}).get('notCovered', 0),
+    reverse=True
+)
 
-# Truncate to limit
-all_results = all_results[:limit]
+# Limit results
+limited_data = sorted_data[:limit]
 
 # Output in the same format as get-project-coverage.sh
-print(json.dumps(all_results, indent=2))
+print(json.dumps(limited_data))
+
 PYTHON_SCRIPT
