@@ -26,4 +26,6 @@ MD033:
     - Tab
     - u
     - Video
+MD033: false
 MD036: false # Rationale: Possibly too strict, used frequently in documentation.
+MD041: false # Rationale: Front matter
