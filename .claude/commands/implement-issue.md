@@ -5,6 +5,15 @@ description: Implement a GitHub issue
 
 Implement a GitHub issue $1.
 
+## Skills
+
+Ensure you use the following skills:
+
+- dotnet-coder
+- github-issue-implementer
+- github-user
+- worktree-user
+
 ## Your task
 
 - If you are a Copilot agent then ensure that you have executed each command under the "Context" section, they provide important context to the task. Each command is specified within an exclamation mark and quotes as follows !``. Those symbols are not part of the command to be executed. If you are a Claude agent then you have likely done this already.
