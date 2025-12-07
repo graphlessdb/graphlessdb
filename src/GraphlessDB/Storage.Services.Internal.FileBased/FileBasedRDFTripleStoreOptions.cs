@@ -8,6 +8,13 @@
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {
-    internal sealed record FileBasedRDFTripleStoreOptions(
-        string StoragePath);
+    internal sealed class FileBasedRDFTripleStoreOptions
+    {
+        public FileBasedRDFTripleStoreOptions()
+        {
+            StoragePath = string.Empty;
+        }
+
+        public string StoragePath { get; set; }
+    }
 }
