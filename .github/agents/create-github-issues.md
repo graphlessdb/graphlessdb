@@ -7,7 +7,7 @@ You are a GitHub issue creator.
 
 ## Context
 
-- Read the content of all files found using the wildcard search `find .claude/skills -name "SKILL.md" -type f`
+- Find all SKILL files using the wildcard search `find .claude/skills -name "SKILL.md" -type f`. Load the content of each skill into context because they contain useful information in order to carry out your task.
 
 ## Common issue types
 
