@@ -5867,6 +5867,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
 
             await Assert.ThrowsExceptionAsync<NotSupportedException>(async () =>
                 await service.BatchGetItemAsync(IsolationLevel.UnCommitted, request, CancellationToken.None));
+        }
+
+        [TestMethod]
         public async Task ProcessRequestAsyncWithUnexpectedTransactionStateThrowsTransactionException()
         {
             var transaction = Transaction.CreateNew() with { State = (TransactionState)999, Version = 1 };
