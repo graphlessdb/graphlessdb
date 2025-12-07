@@ -5348,6 +5348,461 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
 
             Assert.IsTrue(cancellationTokenPassed);
         }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithTransactionConflictCallsProcessTransactionConflictAsyncAndRetries()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var callCount = 0;
+            var processConflictCalled = false;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        var conflictingItem = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new PutItemResponse())
+            };
+
+            var mockTransactionStore2 = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId)
+                    {
+                        processConflictCalled = true;
+                        return Task.FromResult(new Transaction(conflictingTransactionId.Id, TransactionState.Committed, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore2,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = itemKey
+            };
+
+            var result = await service.PutItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, callCount);
+            Assert.IsTrue(processConflictCalled);
+        }
+
+        [TestMethod]
+        public async Task GetItemAsyncWithTransactionConflictProcessesConflictAndRetries()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var acquireLocksCallCount = 0;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId)
+                    {
+                        return Task.FromResult(new Transaction(conflictingTransactionId.Id, TransactionState.Committed, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    if (acquireLocksCallCount == 1)
+                    {
+                        var conflictingItem = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new GetItemResponse { Item = itemKey })
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new GetItemRequest
+            {
+                TableName = "TestTable",
+                Key = itemKey
+            };
+
+            var result = await service.GetItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, acquireLocksCallCount);
+        }
+
+        [TestMethod]
+        public async Task UpdateItemAsyncWithTransactionConflictRetriesAfterProcessingConflict()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var acquireLocksCallCount = 0;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId)
+                    {
+                        return Task.FromResult(new Transaction(conflictingTransactionId.Id, TransactionState.RolledBack, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    if (acquireLocksCallCount == 1)
+                    {
+                        var conflictingItem = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new UpdateItemResponse())
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new UpdateItemRequest
+            {
+                TableName = "TestTable",
+                Key = itemKey,
+                UpdateExpression = "SET #attr = :val",
+                ExpressionAttributeNames = new Dictionary<string, string> { { "#attr", "attribute" } },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":val", new AttributeValue { S = "value" } } }
+            };
+
+            var result = await service.UpdateItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, acquireLocksCallCount);
+        }
+
+        [TestMethod]
+        public async Task DeleteItemAsyncWithTransactionConflictProcessesConflictAndRetriesSuccessfully()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var acquireLocksCallCount = 0;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId)
+                    {
+                        return Task.FromResult(new Transaction(conflictingTransactionId.Id, TransactionState.Committed, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    if (acquireLocksCallCount == 1)
+                    {
+                        var conflictingItem = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new DeleteItemResponse())
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new DeleteItemRequest
+            {
+                TableName = "TestTable",
+                Key = itemKey
+            };
+
+            var result = await service.DeleteItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, acquireLocksCallCount);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithoutConflictDoesNotRetry()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var acquireLocksCallCount = 0;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(transaction),
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new PutItemResponse())
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = itemKey
+            };
+
+            var result = await service.PutItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, acquireLocksCallCount);
+        }
+
+        [TestMethod]
+        public async Task TransactGetItemsAsyncWithTransactionConflictProcessesConflictAndRetries()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId = new TransactionId("conflicting-txn");
+            var itemKey = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test" } } };
+            var acquireLocksCallCount = 0;
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId)
+                    {
+                        return Task.FromResult(new Transaction(conflictingTransactionId.Id, TransactionState.Committed, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    if (acquireLocksCallCount == 1)
+                    {
+                        var conflictingItem = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new TransactGetItemsResponse())
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new TransactGetItemsRequest
+            {
+                TransactItems = new List<TransactGetItem>
+                {
+                    new TransactGetItem
+                    {
+                        Get = new Get
+                        {
+                            TableName = "TestTable",
+                            Key = itemKey
+                        }
+                    }
+                }
+            };
+
+            var result = await service.TransactGetItemsAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, acquireLocksCallCount);
+        }
+
+        [TestMethod]
+        public async Task PutItemAsyncWithMultipleConflictingTransactionsProcessesAllConflicts()
+        {
+            var transactionId = new TransactionId("test-id");
+            var transaction = new Transaction(transactionId.Id, TransactionState.Active, 0, DateTime.UtcNow, []);
+            var conflictingTransactionId1 = new TransactionId("conflicting-txn-1");
+            var conflictingTransactionId2 = new TransactionId("conflicting-txn-2");
+            var itemKey1 = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test1" } } };
+            var itemKey2 = new Dictionary<string, AttributeValue> { { "Id", new AttributeValue { S = "test2" } } };
+            var acquireLocksCallCount = 0;
+            var processedTransactions = new List<TransactionId>();
+
+            var mockTransactionStore = new MockTransactionStore
+            {
+                GetAsyncFunc = (id, consistent, ct) =>
+                {
+                    if (id == conflictingTransactionId1 || id == conflictingTransactionId2)
+                    {
+                        processedTransactions.Add(id);
+                        return Task.FromResult(new Transaction(id.Id, TransactionState.Committed, 1, DateTime.UtcNow, []));
+                    }
+                    return Task.FromResult(transaction);
+                },
+                AppendRequestAsyncFunc = (txn, req, ct) => Task.FromResult(txn with { Version = txn.Version + 1 })
+            };
+
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) =>
+                {
+                    acquireLocksCallCount++;
+                    if (acquireLocksCallCount == 1)
+                    {
+                        var conflictingItem1 = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey1.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey1.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId1.Id, DateTime.UtcNow, false, false));
+                        var conflictingItem2 = new TransactionConflictItem(
+                            ItemKey.Create("TestTable", itemKey2.ToImmutableDictionary()),
+                            new ItemRecord(ItemKey.Create("TestTable", itemKey2.ToImmutableDictionary()), ImmutableDictionary<string, ImmutableAttributeValue>.Empty),
+                            new TransactionStateValue(true, conflictingTransactionId2.Id, DateTime.UtcNow, false, false));
+                        throw new TransactionConflictedException(transactionId.Id, ImmutableList.Create(conflictingItem1, conflictingItem2));
+                    }
+                    return Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty);
+                },
+                GetItemsToBackupAsyncFunc = (req, ct) => Task.FromResult(ImmutableList<ItemRecord>.Empty),
+                ApplyRequestAsyncFunc = (req, ct) => Task.FromResult<AmazonWebServiceResponse>(new PutItemResponse())
+            };
+
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                versionedItemStore: mockVersionedItemStore,
+                requestService: mockRequestService);
+
+            var request = new PutItemRequest
+            {
+                TableName = "TestTable",
+                Item = itemKey1
+            };
+
+            var result = await service.PutItemAsync(transactionId, request, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, acquireLocksCallCount);
+            Assert.IsTrue(processedTransactions.Contains(conflictingTransactionId1) || processedTransactions.Contains(conflictingTransactionId2));
+        }
     }
 
     public static class AmazonDynamoDBWithTransactionsTestHelper
