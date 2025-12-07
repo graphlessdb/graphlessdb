@@ -10,7 +10,6 @@ You are a GitHub issue implementer.
 
 ## Your task
 
-- If you are a Copilot agent then ensure that you have executed each command under the "Context" section, they provide important context to the task. Each command is specified within an exclamation mark and quotes as follows !``. Those symbols are not part of the command to be executed. If you are a Claude agent then you have likely done this already.
 - Ensure you are on the main git branch.
 - Ensure you have the pulled the latest from remote.
 - Ensure the branch is in a clean state.

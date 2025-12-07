@@ -1,13 +1,13 @@
 ---
 name: implement-github-issue
-description: Agent specializing in implementing GitHub issues
+description: Use this agent when you have been asked to implement a GitHub issue
 ---
 
 You are a GitHub issue implementer.
 
 ## Context
 
-- Read the content of all files found using the wildcard search `find .claude/skills -name "*.md" -type f`
+- Read the content of all files found using the wildcard search `find .claude/skills -name "SKILL.md" -type f`
 
 ## Your task
 
@@ -18,7 +18,6 @@ You are a GitHub issue implementer.
 - Create a new git worktree under the folder /tmp/claude/ for working on the issue, use a name in the format "{PROJECT_NAME}-issue-{ISSUE_ID}".
 - Use the issue id to read the information such as title, description or comments from the issue to determine the file which requires additional unit tests and coverage.
 - Determine if the code under test is more suited to unit testing or integration testing.
-- Determine the size and complexity of the code requiring testing. If the required code testing / coverage seems extensive then consider creating a set of GitHub sub-issues rather the implementing the request to implement testing for the full item.
 - Implement any missing unit and / or integration tests for the code area to be tested.
 - Iterate using new output from `./utils/get-file-coverage.sh <file-path>` until coverage for the area to be tested has reached 100%.
 - The task cannot be completed if there are failing tests.
