@@ -7,10 +7,11 @@ This skill guides interaction with GitHub apis.
 
 ## Overview
 
-- You should use the GitHub cli to work with github rather than using an MCP.  The usage of this cli is shown next.
+- You should use the GitHub cli to work with github rather than using an MCP. The usage of this cli is shown next.
 
 ## GitHub CLI Usage
 
+```
 USAGE
   gh <command> <subcommand> [flags]
 
@@ -34,12 +35,24 @@ EXAMPLES
   $ gh issue create
   $ gh repo clone cli/cli
   $ gh pr checkout 321
+```
 
-## Before working with GitHub
+## Context
 
 You should run the following cli commands to get a understanding of the current GitHub repository, project, etc:
-gh repo view --json id,name,owner,nameWithOwner
-gh project list --owner <OWNER> --format json
+
+```
+gh repo view --json id,name,owner
+gh project list --owner <OWNER>
+gh project item-edit --help
+gh project item-add --help
+gh project field-list --help
+```
+
+## Update issue status
+
+- If asked to update the status of a GitHub sub-issue then this refers to the GitHub project system way of handling status.
+- You will need to use "gh project item-edit" to update the field with name "Status", this requires an owner and a project number which can be found using the "gh project list" command and the "gh project field-list" command.
 
 ## Creating a sub-issue
 
