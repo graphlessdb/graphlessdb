@@ -24,7 +24,8 @@ Information to add to the issue
 
 ## Your task
 
-- Find all SKILL files using the wildcard search `find .claude/skills -name "SKILL.md" -type f`. You MUST read all of these skill files to understand the context better.
+- Find all SKILL files using the wildcard search `find .claude/skills -name "SKILL.md" -type f`.
+- READ the content of all the SKILL.md files to understand the context better.
 - Ensure you understand the issue type the user wants to create. If you don't know the type then ask the user, make sure to present the "Common issue type" list as options.
 - Ensure you gather the required and optional information that may be required for the GitHub issue type. This information may already have been provided. Ensure you can have the information needed before proceeding to create the GitHub issue.
 - Check the amount of work required to implement the issue. If the work required is large or complex then you should break down the issue by first creating an overall parent issue, but then creating individual sub-issues each with a manageable amount of work.
