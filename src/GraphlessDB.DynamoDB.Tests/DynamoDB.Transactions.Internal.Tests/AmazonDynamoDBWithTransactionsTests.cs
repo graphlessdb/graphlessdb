@@ -1596,6 +1596,182 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         }
 
         [TestMethod]
+        public async Task RunHouseKeepingAsyncWithCommittedTransactionReturnsRemovedAction()
+        {
+            var committedTransaction = Transaction.CreateNew() with { State = TransactionState.Committed };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(committedTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(committedTransaction),
+                RemoveAsyncFunc = (id, ct) => Task.CompletedTask
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.Removed, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithRolledBackTransactionReturnsRemovedAction()
+        {
+            var rolledBackTransaction = Transaction.CreateNew() with { State = TransactionState.RolledBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(rolledBackTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(rolledBackTransaction),
+                RemoveAsyncFunc = (id, ct) => Task.CompletedTask
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.Removed, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithStaleActiveTransactionReturnsRolledBackAction()
+        {
+            var staleTransaction = Transaction.CreateNew() with
+            {
+                State = TransactionState.Active,
+                LastUpdateDateTime = DateTime.UtcNow.AddMinutes(-15)
+            };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(staleTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => Task.FromResult(staleTransaction with { State = TransactionState.RolledBack }),
+                UpdateAsyncFunc = (txn, ct) => Task.FromResult(txn with { State = TransactionState.RolledBack })
+            };
+            var mockRequestService = new MockRequestService
+            {
+                GetItemRequestActionsAsyncFunc = (txn, ct) => Task.FromResult(ImmutableList<LockedItemRequestAction>.Empty)
+            };
+            var mockVersionedItemStore = new MockVersionedItemStore
+            {
+                AcquireLocksAsyncFunc = (txn, req, ct) => Task.FromResult(ImmutableDictionary<ItemKey, ItemTransactionState>.Empty)
+            };
+            var service = CreateService(
+                transactionStore: mockTransactionStore,
+                requestService: mockRequestService,
+                versionedItemStore: mockVersionedItemStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithStaleActiveTransactionHandlesTransactionCompletedException()
+        {
+            var staleTransaction = Transaction.CreateNew() with
+            {
+                State = TransactionState.Active,
+                LastUpdateDateTime = DateTime.UtcNow.AddMinutes(-15)
+            };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(staleTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => throw new TransactionCompletedException()
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithCommittingTransactionHandlesTransactionCompletedException()
+        {
+            var committingTransaction = Transaction.CreateNew() with { State = TransactionState.Committing };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(committingTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => throw new TransactionCompletedException()
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithRollingBackTransactionHandlesTransactionCompletedException()
+        {
+            var rollingBackTransaction = Transaction.CreateNew() with { State = TransactionState.RollingBack };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(rollingBackTransaction)),
+                GetAsyncFunc = (id, consistent, ct) => throw new TransactionCompletedException()
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.RolledBack, result.Items[0].Action);
+            Assert.IsNull(result.Items[0].Error);
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithUnknownStateThrowsTransactionAssertionException()
+        {
+            var invalidTransaction = Transaction.CreateNew() with { State = (TransactionState)999 };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(invalidTransaction))
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.None, result.Items[0].Action);
+            Assert.IsNotNull(result.Items[0].Error);
+            Assert.IsInstanceOfType(result.Items[0].Error, typeof(TransactionAssertionException));
+        }
+
+        [TestMethod]
+        public async Task RunHouseKeepingAsyncWithGeneralExceptionReturnsExceptionInResponse()
+        {
+            var transaction = Transaction.CreateNew() with { State = TransactionState.Committed };
+            var mockTransactionStore = new MockTransactionStore
+            {
+                ListAsyncFunc = (limit, ct) => Task.FromResult(ImmutableList.Create(transaction)),
+                GetAsyncFunc = (id, consistent, ct) => throw new InvalidOperationException("Test exception")
+            };
+            var service = CreateService(transactionStore: mockTransactionStore);
+            var request = new RunHouseKeepingRequest(10, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+
+            var result = await service.RunHouseKeepingAsync(request, CancellationToken.None);
+
+            Assert.AreEqual(1, result.Items.Count);
+            Assert.AreEqual(HouseKeepTransactionAction.None, result.Items[0].Action);
+            Assert.IsNotNull(result.Items[0].Error);
+            Assert.IsInstanceOfType(result.Items[0].Error, typeof(InvalidOperationException));
+            Assert.AreEqual("Test exception", result.Items[0].Error!.Message);
+        }
+
+        [TestMethod]
         public void CombineWithNoExpressionsReturnsEmpty()
         {
             var result = AmazonDynamoDBWithTransactionsTestHelper.Combine();
