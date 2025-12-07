@@ -16,19 +16,16 @@ using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Extensions.DependencyInjection;
 using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
 using GraphlessDB.Graph.Services.Internal;
-using GraphlessDB.Graph.Services.Internal.Tests;
-using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests
 {
     [TestClass]
-    public sealed class GraphDBTests
+    public abstract class GraphDBTests
     {
+        protected abstract IServiceCollection ConfigureGraphDBServices(IServiceCollection services);
         [TestMethod]
         public async Task CanGetNodeByNodeAsync()
         {
@@ -2456,7 +2453,7 @@ namespace GraphlessDB.Tests
             Assert.AreEqual(0, returnedUsers.Count);
         }
 
-        private static ServiceProvider GetServiceProvider()
+        private ServiceProvider GetServiceProvider()
         {
             var services = new ServiceCollection();
 
@@ -2481,13 +2478,9 @@ namespace GraphlessDB.Tests
                     o.JsonContext = GraphlessDBTestContext.Default;
                 });
 
-            services
-                .AddTestInstrumentation(Debugger.IsAttached)
-                .AddGraphlessDBWithInMemoryDB()
-                .AddSingleton<IGraphSettingsService, GraphDBSettingsService>()
-                .AddSingleton<IGraphQueryablePropertyService, TestGraphGraphQueryablePropertyService>()
-                .AddSingleton<IGraphNodeFilterDataLayerService, EmptyGraphNodeFilterDataLayerService>()
-                .AddSingleton<IGraphEventService, EmptyGraphDBEventService>();
+            services.AddTestInstrumentation(Debugger.IsAttached);
+
+            ConfigureGraphDBServices(services);
 
             return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         }

@@ -14,3 +14,4 @@ This skill provides additional information on how to work with dot.
 - Follow existing project naming conventions, use PascalCase without underscores for method names including test methods (e.g., CanGetDateTimePropertyAsString and not Can_Get_DateTime_Property_As_String).
 - Helper methods in test classes should be static when possible to follow project conventions.
 - Manual mock classes are preferred over Moq framework in this project.
+- Each class, record, enum, etc should be within its own file.
