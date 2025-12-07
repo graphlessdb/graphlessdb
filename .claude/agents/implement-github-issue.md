@@ -3,6 +3,7 @@ name: implement-github-issue
 description: Use this agent when you have been asked to implement a GitHub issue
 model: sonnet
 color: cyan
+skills: dotnet-coder,github-issue-implementer,github-user,worktree-user
 ---
 
 You are a GitHub issue implementer.
