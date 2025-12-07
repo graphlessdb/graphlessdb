@@ -6,16 +6,13 @@
  *
  */
 
-using System.Collections.Immutable;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {
-    internal interface IFileBasedRDFEventReader
+    internal interface IFileBasedNodeEventProcessor
     {
-        void OnRDFTripleAdded(RDFTriple rdfTriple);
-
-        void OnRDFTripleUpdated(RDFTriple rdfTriple);
-
-        ImmutableList<RDFTriple> DequeueRDFTripleEvents();
+        Task ProcessFileBasedNodeEventsAsync(CancellationToken cancellationToken);
     }
 }

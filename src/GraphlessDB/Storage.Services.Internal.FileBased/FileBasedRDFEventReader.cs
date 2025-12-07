@@ -6,16 +6,48 @@
  *
  */
 
+using System;
+using System.Collections.Immutable;
+using GraphlessDB.Threading;
+using Microsoft.Extensions.Options;
+
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {
-    internal sealed class FileBasedRDFEventReader : IFileBasedRDFEventReader
+    internal sealed class FileBasedRDFEventReader(IOptions<GraphOptions> options) : IFileBasedRDFEventReader
     {
-        public void OnRDFTripleAdded(RDFTriple rdfTriple)
+        private ImmutableList<RDFTriple> _events = [];
+        private readonly Lock _locker = new();
+
+        public void OnRDFTripleAdded(RDFTriple value)
         {
+            if (value.Predicate.StartsWith(HasType.ByGraphName(options.Value.GraphName), StringComparison.Ordinal))
+            {
+                lock (_locker)
+                {
+                    _events = _events.Add(value);
+                }
+            }
         }
 
-        public void OnRDFTripleUpdated(RDFTriple rdfTriple)
+        public void OnRDFTripleUpdated(RDFTriple value)
         {
+            if (value.Predicate.StartsWith(HasType.ByGraphName(options.Value.GraphName), StringComparison.Ordinal))
+            {
+                lock (_locker)
+                {
+                    _events = _events.Add(value);
+                }
+            }
+        }
+
+        public ImmutableList<RDFTriple> DequeueRDFTripleEvents()
+        {
+            lock (_locker)
+            {
+                var events = _events;
+                _events = [];
+                return events;
+            }
         }
     }
 }
