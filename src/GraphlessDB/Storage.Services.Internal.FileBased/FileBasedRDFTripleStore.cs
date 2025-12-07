@@ -126,7 +126,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
                     {
                         filteredTriples = request.ScanIndexForward 
                             ? filteredTriples.Skip(startIndex + 1).ToList()
-                            : filteredTriples.Take(startIndex).Reverse().ToList();
+                            : filteredTriples.Take(startIndex).ToList();
                     }
                 }
 
