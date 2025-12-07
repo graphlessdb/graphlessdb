@@ -8,6 +8,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,16 @@ namespace GraphlessDB.DependencyInjection
                 .ServiceProvider
                 .GetRequiredService<IInMemoryNodeEventProcessor>()
                 .ProcessInMemoryNodeEventsAsync(cancellationToken);
+        }
+
+        public static async Task ProcessFileBasedNodeEventsAsync(
+            this IServiceScope source,
+            CancellationToken cancellationToken)
+        {
+            await source
+                .ServiceProvider
+                .GetRequiredService<IFileBasedNodeEventProcessor>()
+                .ProcessFileBasedNodeEventsAsync(cancellationToken);
         }
     }
 }

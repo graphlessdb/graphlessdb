@@ -15,6 +15,7 @@ using GraphlessDB.Query.Services.Internal;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Services;
 using GraphlessDB.Storage.Services.Internal;
+using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,16 @@ namespace GraphlessDB.DependencyInjection
                 .AddSingleton<IRDFTripleStore<StoreType.Data>, InMemoryRDFTripleStore>()
                 .AddSingleton<IInMemoryRDFEventReader, InMemoryRDFEventReader>()
                 .AddScoped<IInMemoryNodeEventProcessor, InMemoryNodeEventProcessor>();
+        }
+
+        public static IServiceCollection AddGraphlessDBWithFileBasedDB(
+            this IServiceCollection source)
+        {
+            return source
+                .AddGraphlessDBCore()
+                .AddSingleton<IRDFTripleStore<StoreType.Data>, FileBasedRDFTripleStore>()
+                .AddSingleton<IFileBasedRDFEventReader, FileBasedRDFEventReader>()
+                .AddScoped<IFileBasedNodeEventProcessor, FileBasedNodeEventProcessor>();
         }
 
         public static IServiceCollection AddGraphlessDBCore(
@@ -116,6 +127,19 @@ namespace GraphlessDB.DependencyInjection
             source
                 .AddOptions<GraphEntitySerializationServiceOptions>()
                 .Configure(configureOptions);
+
+            return source;
+        }
+
+        public static IServiceCollection AddFileBasedRDFTripleStoreOptions(this IServiceCollection source, Action<FileBasedRDFTripleStoreOptions> configureOptions)
+        {
+            source
+                .AddOptions<FileBasedRDFTripleStoreOptions>()
+                .Configure(configureOptions)
+                .Validate(options =>
+                {
+                    return !string.IsNullOrWhiteSpace(options.StoragePath);
+                });
 
             return source;
         }
