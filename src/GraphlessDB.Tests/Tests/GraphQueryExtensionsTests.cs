@@ -250,7 +250,7 @@ namespace GraphlessDB.Tests
             var result = tree.WithIntermediateConnectionSize(50);
 
             var resultNode = result.GetNode("other");
-            Assert.IsInstanceOfType(resultNode.Query, typeof(NodeByIdQuery));
+            Assert.IsInstanceOfType<NodeByIdQuery>(resultNode.Query);
         }
 
         #endregion
@@ -311,7 +311,7 @@ namespace GraphlessDB.Tests
             Assert.AreEqual(100, connectionQuery.PreFilteredPageSize);
 
             var otherResult = result.GetNode("other");
-            Assert.IsInstanceOfType(otherResult.Query, typeof(NodeByIdQuery));
+            Assert.IsInstanceOfType<NodeByIdQuery>(otherResult.Query);
         }
 
         #endregion
@@ -328,7 +328,7 @@ namespace GraphlessDB.Tests
             var result = tree.WithConnectionArguments(newArgs);
 
             var resultNode = result.GetNode("key1");
-            Assert.IsInstanceOfType(resultNode.Query, typeof(NodeByIdQuery));
+            Assert.IsInstanceOfType<NodeByIdQuery>(resultNode.Query);
         }
 
         [TestMethod]

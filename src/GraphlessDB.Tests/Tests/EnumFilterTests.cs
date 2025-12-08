@@ -32,7 +32,7 @@ namespace GraphlessDB.Tests
             var result = filter.GetValueFilter();
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(EnumFilter));
+            Assert.IsInstanceOfType<EnumFilter>(result);
             var enumFilter = (EnumFilter)result;
             Assert.AreEqual(TestStatus.Value1, enumFilter.Eq);
         }
@@ -44,7 +44,7 @@ namespace GraphlessDB.Tests
             var result = filter.GetValueFilter();
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(EnumFilter));
+            Assert.IsInstanceOfType<EnumFilter>(result);
             var enumFilter = (EnumFilter)result;
             Assert.IsNotNull(enumFilter.In);
             Assert.AreEqual(2, enumFilter.In.Length);
@@ -59,7 +59,7 @@ namespace GraphlessDB.Tests
             var result = filter.GetValueFilter();
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(EnumFilter));
+            Assert.IsInstanceOfType<EnumFilter>(result);
             var enumFilter = (EnumFilter)result;
             Assert.IsNull(enumFilter.Eq);
         }
@@ -71,7 +71,7 @@ namespace GraphlessDB.Tests
             var result = filter.GetValueFilter();
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(EnumFilter));
+            Assert.IsInstanceOfType<EnumFilter>(result);
             var enumFilter = (EnumFilter)result;
             Assert.IsNull(enumFilter.In);
         }
