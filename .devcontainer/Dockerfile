@@ -71,10 +71,10 @@ RUN ARCH=$(dpkg --print-architecture) && \
   sudo dpkg -i "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" && \
   rm "git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb"
 
-# Install .NET SDK 8.0.416 as root before switching users
+# Install .NET SDK 10.0.100 as root before switching users
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
   && chmod +x dotnet-install.sh \
-  && ./dotnet-install.sh --version 8.0.416 --install-dir /usr/share/dotnet \
+  && ./dotnet-install.sh --version 10.0.100 --install-dir /usr/share/dotnet \
   && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
   && rm dotnet-install.sh
 
