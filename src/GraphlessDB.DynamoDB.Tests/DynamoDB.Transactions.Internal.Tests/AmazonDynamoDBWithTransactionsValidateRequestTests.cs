@@ -218,7 +218,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             var request = new ScanRequest { TableName = "TestTable" };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequest(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
         }
 
         // ValidateRequest(GetItemRequest) Tests
@@ -234,7 +234,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -248,7 +248,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -262,7 +262,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -276,7 +276,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("The request key cannot be empty", exception.InnerException.Message);
         }
 
@@ -293,7 +293,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -308,7 +308,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -326,7 +326,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestGetItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -355,7 +355,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -373,7 +373,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -387,7 +387,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -405,7 +405,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -420,7 +420,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -438,7 +438,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestPutItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -467,7 +467,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -485,7 +485,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -503,7 +503,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -517,7 +517,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -531,7 +531,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("The request key cannot be empty", exception.InnerException.Message);
         }
 
@@ -548,7 +548,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -563,7 +563,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -578,7 +578,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -596,7 +596,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestUpdateItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -625,7 +625,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -643,7 +643,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
             Assert.AreEqual("Legacy attributes on requests are not supported", exception.InnerException.Message);
         }
 
@@ -657,7 +657,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -671,7 +671,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("The request key cannot be empty", exception.InnerException.Message);
         }
 
@@ -688,7 +688,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -703,7 +703,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -721,7 +721,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestDeleteItem(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -758,7 +758,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactGetItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -781,7 +781,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactGetItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("The request key cannot be empty", exception.InnerException.Message);
         }
 
@@ -807,7 +807,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactGetItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -853,7 +853,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -876,7 +876,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -899,7 +899,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -922,7 +922,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("TableName must not be null", exception.InnerException.Message);
         }
 
@@ -945,7 +945,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("The request key cannot be empty", exception.InnerException.Message);
         }
 
@@ -972,7 +972,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallValidateRequestTransactWriteItems(request));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(exception.InnerException);
             Assert.AreEqual("Request must not contain a reserved attribute", exception.InnerException.Message);
         }
 
@@ -1117,7 +1117,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             var item = new TransactWriteItem();
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallIsKeyNull(item));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
         }
 
         // HasReservedAttribute(TransactGetItem) Tests
@@ -1497,7 +1497,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             var item = new TransactWriteItem();
 
             var exception = Assert.ThrowsException<TargetInvocationException>(() => CallHasReservedAttributeTransactWriteItem(item));
-            Assert.IsInstanceOfType(exception.InnerException, typeof(NotSupportedException));
+            Assert.IsInstanceOfType<NotSupportedException>(exception.InnerException);
         }
     }
 }

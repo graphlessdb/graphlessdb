@@ -641,7 +641,7 @@ namespace GraphlessDB.DynamoDB.Storage.Services.Tests
             });
 
             Assert.IsNotNull(exception.InnerException);
-            Assert.IsInstanceOfType(exception.InnerException, typeof(InternalServerErrorException));
+            Assert.IsInstanceOfType<InternalServerErrorException>(exception.InnerException);
         }
 
         [TestMethod]

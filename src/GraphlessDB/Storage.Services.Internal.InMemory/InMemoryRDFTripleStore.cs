@@ -22,12 +22,12 @@ namespace GraphlessDB.Storage.Services.Internal.InMemory
     {
         private readonly Dictionary<string, InMemoryRDFTripleStoreTable> _tables;
         private readonly Dictionary<string, InMemoryRDFTripleStoreIndexTable> _indexes;
-        private readonly Lock _locker;
+        private readonly GraphlessDB.Threading.Lock _locker;
         private readonly IInMemoryRDFEventReader _rdfEventHandler;
 
         public InMemoryRDFTripleStore(IOptions<GraphOptions> graphOptions, IInMemoryRDFEventReader rdfEventHandler)
         {
-            _locker = new Lock();
+            _locker = new GraphlessDB.Threading.Lock();
 
             _tables = new Dictionary<string, InMemoryRDFTripleStoreTable>
             {

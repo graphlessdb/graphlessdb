@@ -26,7 +26,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeConnectionQuery));
+            Assert.IsInstanceOfType<NodeConnectionQuery>(result.Query);
             var resultQuery = (NodeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -38,7 +38,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -50,7 +50,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -62,7 +62,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(OutToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<OutToEdgeConnectionQuery>(result.Query);
             var resultQuery = (OutToEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -74,7 +74,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(OutToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<OutToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (OutToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -86,7 +86,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(InAndOutToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InAndOutToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InAndOutToEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -98,7 +98,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(ZipNodeConnectionQuery));
+            Assert.IsInstanceOfType<ZipNodeConnectionQuery>(result.Query);
             var resultQuery = (ZipNodeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -110,7 +110,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(WhereNodeConnectionQuery));
+            Assert.IsInstanceOfType<WhereNodeConnectionQuery>(result.Query);
             var resultQuery = (WhereNodeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -122,7 +122,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithCursor("test-cursor");
 
-            Assert.IsInstanceOfType(result.Query, typeof(WhereEdgeConnectionQuery));
+            Assert.IsInstanceOfType<WhereEdgeConnectionQuery>(result.Query);
             var resultQuery = (WhereEdgeConnectionQuery)result.Query;
             Assert.AreEqual("test-cursor", resultQuery.Page.After);
         }
@@ -310,7 +310,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(50);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeConnectionQuery));
+            Assert.IsInstanceOfType<NodeConnectionQuery>(result.Query);
             var resultQuery = (NodeConnectionQuery)result.Query;
             Assert.AreEqual(50, resultQuery.Page.First);
         }
@@ -322,7 +322,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(100);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToEdgeConnectionQuery)result.Query;
             Assert.AreEqual(100, resultQuery.Page.First);
         }
@@ -334,7 +334,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(75);
 
-            Assert.IsInstanceOfType(result.Query, typeof(WhereEdgeConnectionQuery));
+            Assert.IsInstanceOfType<WhereEdgeConnectionQuery>(result.Query);
             var resultQuery = (WhereEdgeConnectionQuery)result.Query;
             Assert.AreEqual(75, resultQuery.Page.First);
         }
@@ -346,7 +346,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(65);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual(65, resultQuery.Page.First);
         }
@@ -358,7 +358,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(60);
 
-            Assert.IsInstanceOfType(result.Query, typeof(OutToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<OutToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (OutToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual(60, resultQuery.Page.First);
         }
@@ -370,7 +370,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(90);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InAndOutToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InAndOutToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InAndOutToEdgeConnectionQuery)result.Query;
             Assert.AreEqual(90, resultQuery.Page.First);
         }
@@ -382,7 +382,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(80);
 
-            Assert.IsInstanceOfType(result.Query, typeof(ZipNodeConnectionQuery));
+            Assert.IsInstanceOfType<ZipNodeConnectionQuery>(result.Query);
             var resultQuery = (ZipNodeConnectionQuery)result.Query;
             Assert.AreEqual(80, resultQuery.Page.First);
         }
@@ -394,7 +394,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConnectionSize(55);
 
-            Assert.IsInstanceOfType(result.Query, typeof(WhereNodeConnectionQuery));
+            Assert.IsInstanceOfType<WhereNodeConnectionQuery>(result.Query);
             var resultQuery = (WhereNodeConnectionQuery)result.Query;
             Assert.AreEqual(55, resultQuery.Page.First);
         }
@@ -419,7 +419,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(100);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeConnectionQuery));
+            Assert.IsInstanceOfType<NodeConnectionQuery>(result.Query);
             var resultQuery = (NodeConnectionQuery)result.Query;
             Assert.AreEqual(100, resultQuery.PreFilteredPageSize);
         }
@@ -431,7 +431,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(200);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToEdgeConnectionQuery)result.Query;
             Assert.AreEqual(200, resultQuery.PreFilteredPageSize);
         }
@@ -443,7 +443,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(150);
 
-            Assert.IsInstanceOfType(result.Query, typeof(ZipNodeConnectionQuery));
+            Assert.IsInstanceOfType<ZipNodeConnectionQuery>(result.Query);
             var resultQuery = (ZipNodeConnectionQuery)result.Query;
             Assert.AreEqual(150, resultQuery.PreFilteredPageSize);
         }
@@ -455,7 +455,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(175);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual(175, resultQuery.PreFilteredPageSize);
         }
@@ -467,7 +467,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(125);
 
-            Assert.IsInstanceOfType(result.Query, typeof(OutToAllEdgeConnectionQuery));
+            Assert.IsInstanceOfType<OutToAllEdgeConnectionQuery>(result.Query);
             var resultQuery = (OutToAllEdgeConnectionQuery)result.Query;
             Assert.AreEqual(125, resultQuery.PreFilteredPageSize);
         }
@@ -479,7 +479,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithPreFilteredConnectionSize(165);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InAndOutToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InAndOutToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InAndOutToEdgeConnectionQuery)result.Query;
             Assert.AreEqual(165, resultQuery.PreFilteredPageSize);
         }
@@ -505,7 +505,7 @@ namespace GraphlessDB.Tests
             var newPage = ConnectionArguments.GetFirst(50, "new-cursor");
             var result = node.WithConnectionArguments(newPage);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeConnectionQuery));
+            Assert.IsInstanceOfType<NodeConnectionQuery>(result.Query);
             var resultQuery = (NodeConnectionQuery)result.Query;
             Assert.AreEqual(newPage, resultQuery.Page);
         }
@@ -518,7 +518,7 @@ namespace GraphlessDB.Tests
             var newPage = ConnectionArguments.GetFirst(75, "edge-cursor");
             var result = node.WithConnectionArguments(newPage);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToEdgeConnectionQuery)result.Query;
             Assert.AreEqual(newPage, resultQuery.Page);
         }
@@ -531,7 +531,7 @@ namespace GraphlessDB.Tests
             var newPage = ConnectionArguments.GetFirst(30);
             var result = node.WithConnectionArguments(newPage);
 
-            Assert.IsInstanceOfType(result.Query, typeof(WhereNodeConnectionQuery));
+            Assert.IsInstanceOfType<WhereNodeConnectionQuery>(result.Query);
             var resultQuery = (WhereNodeConnectionQuery)result.Query;
             Assert.AreEqual(newPage, resultQuery.Page);
         }
@@ -577,7 +577,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InFromEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InFromEdgeConnectionQuery>(result.Query);
             var resultQuery = (InFromEdgeConnectionQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -589,7 +589,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InFromEdgeQuery));
+            Assert.IsInstanceOfType<InFromEdgeQuery>(result.Query);
             var resultQuery = (InFromEdgeQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -601,7 +601,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(InToEdgeConnectionQuery));
+            Assert.IsInstanceOfType<InToEdgeConnectionQuery>(result.Query);
             var resultQuery = (InToEdgeConnectionQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -613,7 +613,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeByIdQuery));
+            Assert.IsInstanceOfType<NodeByIdQuery>(result.Query);
             var resultQuery = (NodeByIdQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -626,7 +626,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeByNodeQuery));
+            Assert.IsInstanceOfType<NodeByNodeQuery>(result.Query);
             var resultQuery = (NodeByNodeQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -638,7 +638,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeOrDefaultByIdQuery));
+            Assert.IsInstanceOfType<NodeOrDefaultByIdQuery>(result.Query);
             var resultQuery = (NodeOrDefaultByIdQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -650,7 +650,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeVersionByIdQuery));
+            Assert.IsInstanceOfType<NodeVersionByIdQuery>(result.Query);
             var resultQuery = (NodeVersionByIdQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -752,7 +752,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(EdgeByIdQuery));
+            Assert.IsInstanceOfType<EdgeByIdQuery>(result.Query);
             var resultQuery = (EdgeByIdQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -764,7 +764,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(EdgeOrDefaultByIdQuery));
+            Assert.IsInstanceOfType<EdgeOrDefaultByIdQuery>(result.Query);
             var resultQuery = (EdgeOrDefaultByIdQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }
@@ -776,7 +776,7 @@ namespace GraphlessDB.Tests
             var node = new GraphQueryNode(query);
             var result = node.WithConsistentRead(true);
 
-            Assert.IsInstanceOfType(result.Query, typeof(NodeConnectionQuery));
+            Assert.IsInstanceOfType<NodeConnectionQuery>(result.Query);
             var resultQuery = (NodeConnectionQuery)result.Query;
             Assert.IsTrue(resultQuery.ConsistentRead);
         }

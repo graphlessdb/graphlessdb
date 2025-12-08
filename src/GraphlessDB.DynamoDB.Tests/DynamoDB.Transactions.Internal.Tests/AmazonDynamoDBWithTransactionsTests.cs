@@ -1747,7 +1747,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             Assert.AreEqual(1, result.Items.Count);
             Assert.AreEqual(HouseKeepTransactionAction.None, result.Items[0].Action);
             Assert.IsNotNull(result.Items[0].Error);
-            Assert.IsInstanceOfType(result.Items[0].Error, typeof(TransactionAssertionException));
+            Assert.IsInstanceOfType<TransactionAssertionException>(result.Items[0].Error);
         }
 
         [TestMethod]
@@ -1767,7 +1767,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             Assert.AreEqual(1, result.Items.Count);
             Assert.AreEqual(HouseKeepTransactionAction.None, result.Items[0].Action);
             Assert.IsNotNull(result.Items[0].Error);
-            Assert.IsInstanceOfType(result.Items[0].Error, typeof(InvalidOperationException));
+            Assert.IsInstanceOfType<InvalidOperationException>(result.Items[0].Error);
             Assert.AreEqual("Test exception", result.Items[0].Error!.Message);
         }
 
@@ -5129,7 +5129,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             });
 
             Assert.IsNotNull(capturedRequest);
-            Assert.IsInstanceOfType(capturedRequest, typeof(TransactWriteItemsRequest));
+            Assert.IsInstanceOfType<TransactWriteItemsRequest>(capturedRequest);
         }
 
         [TestMethod]

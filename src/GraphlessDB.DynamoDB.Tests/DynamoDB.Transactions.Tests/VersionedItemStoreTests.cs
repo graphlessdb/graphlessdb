@@ -562,7 +562,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(PutItemResponse));
+            Assert.IsInstanceOfType<PutItemResponse>(result);
         }
 
         [TestMethod]
@@ -612,7 +612,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof(UpdateItemResponse));
+            Assert.IsInstanceOfType<UpdateItemResponse>(result);
         }
 
 
@@ -2541,7 +2541,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var getItemResponse = (GetItemResponse)result;
             Assert.AreEqual(0, getItemResponse.Item.Count);
         }
@@ -2580,7 +2580,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var getItemResponse = (GetItemResponse)result;
             Assert.AreEqual(2, getItemResponse.Item.Count);
             Assert.IsTrue(getItemResponse.Item.ContainsKey("Field1"));
@@ -2625,7 +2625,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var getItemResponse = (GetItemResponse)result;
             Assert.AreEqual(1, getItemResponse.Item.Count);
             Assert.IsTrue(getItemResponse.Item.ContainsKey("status"));
@@ -2718,7 +2718,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactGetItemsResponse));
+            Assert.IsInstanceOfType<TransactGetItemsResponse>(result);
             var response = (TransactGetItemsResponse)result;
             Assert.AreEqual(1, response.Responses.Count);
             Assert.AreEqual(0, response.Responses[0].Item.Count);
@@ -2773,7 +2773,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactGetItemsResponse));
+            Assert.IsInstanceOfType<TransactGetItemsResponse>(result);
             var response = (TransactGetItemsResponse)result;
             Assert.AreEqual(1, response.Responses.Count);
             Assert.AreEqual(0, response.Responses[0].Item.Count);
@@ -2825,7 +2825,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactGetItemsResponse));
+            Assert.IsInstanceOfType<TransactGetItemsResponse>(result);
             var response = (TransactGetItemsResponse)result;
             Assert.AreEqual(1, response.Responses.Count);
             Assert.AreEqual(1, response.Responses[0].Item.Count);
@@ -2885,7 +2885,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactGetItemsResponse));
+            Assert.IsInstanceOfType<TransactGetItemsResponse>(result);
             var response = (TransactGetItemsResponse)result;
             Assert.AreEqual(1, response.Responses.Count);
             Assert.AreEqual(1, response.Responses[0].Item.Count);
@@ -2924,7 +2924,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(DeleteItemResponse));
+            Assert.IsInstanceOfType<DeleteItemResponse>(result);
             var response = (DeleteItemResponse)result;
             Assert.AreEqual(0, response.Attributes.Count);
         }
@@ -2970,7 +2970,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(DeleteItemResponse));
+            Assert.IsInstanceOfType<DeleteItemResponse>(result);
             var response = (DeleteItemResponse)result;
             Assert.AreEqual(2, response.Attributes.Count);
             Assert.IsTrue(response.Attributes.ContainsKey("Id"));
@@ -3064,7 +3064,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3120,7 +3120,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3333,7 +3333,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3401,7 +3401,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3474,7 +3474,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3542,7 +3542,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3610,7 +3610,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3682,7 +3682,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3754,7 +3754,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3822,7 +3822,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(TransactWriteItemsResponse));
+            Assert.IsInstanceOfType<TransactWriteItemsResponse>(result);
         }
 
         [TestMethod]
@@ -3871,7 +3871,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var response = (GetItemResponse)result;
             Assert.AreEqual(2, response.Item.Count);
             Assert.IsTrue(response.Item.ContainsKey("Name"));
@@ -3911,7 +3911,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var response = (GetItemResponse)result;
             Assert.AreEqual(0, response.Item.Count);
         }
@@ -3948,7 +3948,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
             var result = await store.ApplyRequestAsync(applyRequest, CancellationToken.None);
 
-            Assert.IsInstanceOfType(result, typeof(GetItemResponse));
+            Assert.IsInstanceOfType<GetItemResponse>(result);
             var response = (GetItemResponse)result;
             Assert.AreEqual(0, response.Item.Count);
         }

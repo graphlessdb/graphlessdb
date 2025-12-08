@@ -15,12 +15,12 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal
 {
     public sealed class InMemoryFullyAppliedRequestService : IFullyAppliedRequestService
     {
-        private readonly Lock _lock;
+        private readonly GraphlessDB.Threading.Lock _lock;
         private ImmutableHashSet<TransactionVersion> _cache;
 
         public InMemoryFullyAppliedRequestService()
         {
-            _lock = new Lock();
+            _lock = new GraphlessDB.Threading.Lock();
             _cache = [];
         }
 

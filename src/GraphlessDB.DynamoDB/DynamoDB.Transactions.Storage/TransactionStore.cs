@@ -29,7 +29,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Storage
         public const string StateCommitted = "C";
         public const string StateRolledBack = "R";
 
-        private readonly Lock _locker = new();
+        private readonly GraphlessDB.Threading.Lock _locker = new();
         private ImmutableDictionary<TransactionId, Transaction> _transactionsById = ImmutableDictionary<TransactionId, Transaction>.Empty;
 
         public async Task<ImmutableList<Transaction>> ListAsync(int limit, CancellationToken cancellationToken)

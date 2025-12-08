@@ -90,7 +90,7 @@ namespace GraphlessDB.Tests
         public void ImplementsIValueFilter()
         {
             var filter = new IntFilter();
-            Assert.IsInstanceOfType(filter, typeof(IValueFilter));
+            Assert.IsInstanceOfType<IValueFilter>(filter);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
     {
         private readonly string _storagePath;
         private readonly int _partitionCount;
-        private readonly Lock _locker;
+        private readonly GraphlessDB.Threading.Lock _locker;
         private readonly IFileBasedRDFEventReader _rdfEventHandler;
 
         public FileBasedRDFTripleStore(
@@ -32,7 +32,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             IOptions<FileBasedRDFTripleStoreOptions> storageOptions,
             IFileBasedRDFEventReader rdfEventHandler)
         {
-            _locker = new Lock();
+            _locker = new GraphlessDB.Threading.Lock();
             _partitionCount = graphOptions.Value.PartitionCount;
             _storagePath = storageOptions.Value.StoragePath;
             _rdfEventHandler = rdfEventHandler ?? throw new ArgumentNullException(nameof(rdfEventHandler));
