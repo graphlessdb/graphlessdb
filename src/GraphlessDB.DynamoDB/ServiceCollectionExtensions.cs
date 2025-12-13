@@ -12,6 +12,7 @@ using GraphlessDB.Storage;
 using GraphlessDB.Storage.Services;
 using GraphlessDB.Storage.Services.DynamoDB;
 using Microsoft.Extensions.DependencyInjection;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB
 {

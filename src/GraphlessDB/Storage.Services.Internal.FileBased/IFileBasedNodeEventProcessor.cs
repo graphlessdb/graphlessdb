@@ -8,6 +8,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {

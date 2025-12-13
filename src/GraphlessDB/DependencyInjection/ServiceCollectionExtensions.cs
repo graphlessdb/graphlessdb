@@ -13,7 +13,7 @@ using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Services;
+using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Storage.Services.Internal;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;

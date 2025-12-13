@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {

@@ -23,6 +23,7 @@ using GraphlessDB.Linq;
 using GraphlessDB.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.DynamoDB
 {

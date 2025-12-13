@@ -23,6 +23,7 @@ using GraphlessDB.Storage.Services.DynamoDB;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.DynamoDB.Storage.Services.Tests
 {

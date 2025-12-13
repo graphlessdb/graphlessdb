@@ -17,6 +17,7 @@ using Amazon.DynamoDBv2.Model;
 using GraphlessDB;
 using GraphlessDB.DynamoDB;
 using GraphlessDB.Graph.Services;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.DynamoDB
 {

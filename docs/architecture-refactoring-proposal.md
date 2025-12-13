@@ -402,24 +402,28 @@ This migration is divided into stages that can be completed incrementally. Each 
 ### Stage 2: Create GraphlessDB.Storage Abstractions
 **Goal**: Extract storage abstractions (interfaces and models only, no implementations)
 
-- [ ] Create new project: `src/GraphlessDB.Storage/GraphlessDB.Storage.csproj` (net10.0)
-- [ ] Add project reference from GraphlessDB.Storage to GraphlessDB.Core
-- [ ] Move `RDFTriple.cs` to GraphlessDB.Storage
-- [ ] Move all predicate types to `GraphlessDB.Storage/Predicates/`
-- [ ] Create `GraphlessDB.Storage.Interfaces` namespace
-- [ ] Move `IRDFTripleStore.cs` to GraphlessDB.Storage.Interfaces
-- [ ] Move `IRDFTripleKeyValueStore.cs` to GraphlessDB.Storage.Interfaces
-- [ ] Move `IMemoryCache.cs` to GraphlessDB.Storage.Interfaces
-- [ ] Move `IRDFTripleIntegrityChecker.cs` to GraphlessDB.Storage.Interfaces
-- [ ] Create `GraphlessDB.Storage.Requests` namespace
-- [ ] Move all Request/Response DTOs to GraphlessDB.Storage.Requests
-- [ ] Add project reference from GraphlessDB to GraphlessDB.Storage
-- [ ] Update all internal references in GraphlessDB project
-- [ ] Run `dotnet build` - ensure solution compiles
-- [ ] Run `dotnet test` - ensure all tests pass
-- [ ] Commit: "Stage 2: Extract GraphlessDB.Storage abstractions"
+- [x] Create new project: `src/GraphlessDB.Storage/GraphlessDB.Storage.csproj` (net10.0)
+- [x] Add project reference from GraphlessDB.Storage to GraphlessDB.Core
+- [x] Move entire `Storage` directory to GraphlessDB.Storage (RDFTriple, predicates, all storage models)
+- [x] Move `Storage.Services` interfaces to `GraphlessDB.Storage/Interfaces/`
+- [x] Update namespace from `GraphlessDB.Storage.Services` to `GraphlessDB.Storage.Interfaces`
+- [x] Move supporting types: `VersionDetail`, `PropertyOperator`, `PartitionPosition` to GraphlessDB.Storage
+- [x] Move exception types: `GraphlessDBException`, `GraphlessDBOperationException` to GraphlessDB.Storage
+- [x] Add project reference from GraphlessDB to GraphlessDB.Storage
+- [x] Add project reference from GraphlessDB.DynamoDB to GraphlessDB (transitive to Storage)
+- [x] Update all using statements across projects (GraphlessDB, Tests, DynamoDB)
+- [x] Add GraphlessDB.Storage to solution file
+- [x] Run `dotnet build` - ensure solution compiles
+- [x] Run `dotnet test` - ensure all tests pass
+- [x] Commit: "Stage 2: Extract GraphlessDB.Storage abstractions"
 
-**Validation Checkpoint**: Solution compiles, all tests pass
+**Validation Checkpoint**: ✅ Solution compiles (0 errors, 0 warnings), all 3,012 tests pass
+
+**Files Moved**:
+- Storage models (47 files): RDFTriple, predicates (HasType, HasProp, Has*Edge, etc.), DTOs
+- Storage interfaces (5 files): IRDFTripleStore, IRDFTripleKeyValueStore, IMemoryCache, etc.
+- Supporting types: VersionDetail, PropertyOperator, PartitionPosition
+- Exceptions: GraphlessDBException, GraphlessDBOperationException
 
 ### Stage 3: Create GraphlessDB.Storage.InMemory Project
 **Goal**: Extract in-memory storage implementation to separate project

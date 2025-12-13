@@ -9,7 +9,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GraphlessDB.Storage.Services
+namespace GraphlessDB.Storage.Interfaces
 {
     public interface IRDFTripleKeyValueStore
     {

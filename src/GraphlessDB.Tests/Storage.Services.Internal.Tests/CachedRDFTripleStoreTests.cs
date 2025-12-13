@@ -15,6 +15,7 @@ using GraphlessDB.Storage;
 using GraphlessDB.Storage.Services;
 using GraphlessDB.Storage.Services.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal.Tests
 {

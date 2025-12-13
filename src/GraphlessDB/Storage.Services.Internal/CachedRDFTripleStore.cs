@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal
 {

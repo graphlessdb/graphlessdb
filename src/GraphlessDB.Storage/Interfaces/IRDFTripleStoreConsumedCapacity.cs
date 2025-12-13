@@ -6,7 +6,7 @@
  *
  */
 
-namespace GraphlessDB.Storage.Services
+namespace GraphlessDB.Storage.Interfaces
 {
     public interface IRDFTripleStoreConsumedCapacity
     {

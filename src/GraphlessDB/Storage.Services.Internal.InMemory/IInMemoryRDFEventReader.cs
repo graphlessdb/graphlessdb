@@ -7,6 +7,7 @@
  */
 
 using System.Collections.Immutable;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory
 {

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
