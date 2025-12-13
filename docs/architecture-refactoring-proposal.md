@@ -382,20 +382,22 @@ This migration is divided into stages that can be completed incrementally. Each 
 ### Stage 1: Create GraphlessDB.Core Project
 **Goal**: Extract foundation utilities into separate project with no domain dependencies
 
-- [ ] Create new project: `src/GraphlessDB.Core/GraphlessDB.Core.csproj` (net10.0)
-- [ ] Move `GraphlessDB.Collections` namespace to GraphlessDB.Core
-- [ ] Move `GraphlessDB.Collections.Generic` namespace to GraphlessDB.Core
-- [ ] Move `GraphlessDB.Collections.Immutable` namespace to GraphlessDB.Core
-- [ ] Move `GraphlessDB.Threading` namespace to GraphlessDB.Core
-- [ ] Move `GraphlessDB.Linq` namespace to GraphlessDB.Core
-- [ ] Move `GraphlessDB.Logging` namespace to GraphlessDB.Core
-- [ ] Add project reference from GraphlessDB to GraphlessDB.Core
-- [ ] Update all internal references to use GraphlessDB.Core
-- [ ] Run `dotnet build` - ensure solution compiles
-- [ ] Run `dotnet test` - ensure all tests pass
-- [ ] Commit: "Stage 1: Extract GraphlessDB.Core foundation utilities"
+- [x] Create new project: `src/GraphlessDB.Core/GraphlessDB.Core.csproj` (net10.0)
+- [x] Move `GraphlessDB.Collections` namespace to GraphlessDB.Core
+- [x] Move `GraphlessDB.Collections.Generic` namespace to GraphlessDB.Core
+- [x] Move `GraphlessDB.Collections.Immutable` namespace to GraphlessDB.Core
+- [x] Move `GraphlessDB.Threading` namespace to GraphlessDB.Core
+- [x] Move `GraphlessDB.Linq` namespace to GraphlessDB.Core
+- [x] ~~Move `GraphlessDB.Logging` namespace to GraphlessDB.Core~~ (NOT moved - has domain dependencies on RDFTriple)
+- [x] Add project reference from GraphlessDB to GraphlessDB.Core
+- [x] Add GraphlessDB.Core to solution file
+- [x] Run `dotnet build` - ensure solution compiles
+- [x] Run `dotnet test` - ensure all tests pass
+- [x] Commit: "Stage 1: Extract GraphlessDB.Core foundation utilities"
 
-**Validation Checkpoint**: Solution compiles, all tests pass
+**Validation Checkpoint**: ✅ Solution compiles (0 errors, 0 warnings), all 3,012 tests pass
+
+**Note**: `GraphlessDB.Logging` was NOT moved to Core because it contains domain-specific logging methods that depend on `RDFTriple` and other storage types. It will remain in the main GraphlessDB project.
 
 ### Stage 2: Create GraphlessDB.Storage Abstractions
 **Goal**: Extract storage abstractions (interfaces and models only, no implementations)
