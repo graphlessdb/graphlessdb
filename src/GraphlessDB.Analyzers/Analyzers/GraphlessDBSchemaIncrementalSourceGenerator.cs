@@ -211,7 +211,7 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine("{");
             generatedString.AppendLine($"    public static class {graph.Name}GraphEntityTypeNativeServiceOptionsExtensions");
             generatedString.AppendLine("    {");
-            generatedString.AppendLine($"        public static void Add{graph.Name}EntityTypeMappings(this global::GraphlessDB.Domain.GraphEntityTypeNativeServiceOptions source)");
+            generatedString.AppendLine($"        public static void Add{graph.Name}EntityTypeMappings(this global::GraphlessDB.Domain.Graph.GraphEntityTypeNativeServiceOptions source)");
             generatedString.AppendLine("        {");
             foreach (var entity in graph.Entities.Items.OrderBy(v => v.Name))
             {
@@ -237,7 +237,7 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine();
             generatedString.AppendLine($"namespace {graph.Namespace}");
             generatedString.AppendLine("{");
-            generatedString.AppendLine($"    public sealed class {graph.Name}GraphQueryablePropertyService : global::GraphlessDB.Domain.Services.IGraphQueryablePropertyService");
+            generatedString.AppendLine($"    public sealed class {graph.Name}GraphQueryablePropertyService : global::GraphlessDB.Domain.Graph.Services.IGraphQueryablePropertyService");
             generatedString.AppendLine("    {");
             generatedString.AppendLine("        public bool IsQueryableProperty(string typeName, string propertyName)");
             generatedString.AppendLine("        {");
@@ -287,11 +287,11 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine("{");
             generatedString.AppendLine($"   public sealed class {node.Name}Order : global::GraphlessDB.INodeOrder");
             generatedString.AppendLine("   {");
-            generatedString.AppendLine("        public global::GraphlessDB.Domain.OrderDirection? Id { get; set; }");
+            generatedString.AppendLine("        public global::GraphlessDB.Domain.Graph.OrderDirection? Id { get; set; }");
             foreach (var property in node.Properties.Items)
             {
                 generatedString.AppendLine();
-                generatedString.AppendLine($"        public global::GraphlessDB.Domain.OrderDirection? {property.Name} {{ get; set; }}");
+                generatedString.AppendLine($"        public global::GraphlessDB.Domain.Graph.OrderDirection? {property.Name} {{ get; set; }}");
             }
             generatedString.AppendLine("   }");
             generatedString.AppendLine();
@@ -395,7 +395,7 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine("     {");
             foreach (var property in edge.Properties.Items)
             {
-                generatedString.AppendLine($"          public global::GraphlessDB.Domain.OrderDirection? {property.Name} {{ get; set; }}");
+                generatedString.AppendLine($"          public global::GraphlessDB.Domain.Graph.OrderDirection? {property.Name} {{ get; set; }}");
                 generatedString.AppendLine();
             }
             generatedString.AppendLine("     }");

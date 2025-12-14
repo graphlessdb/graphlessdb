@@ -10,6 +10,7 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Storage.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

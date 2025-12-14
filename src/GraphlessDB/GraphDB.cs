@@ -6,9 +6,6 @@
  *
  */
 
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Services;
 using GraphlessDB.Query.Services;
 
 namespace GraphlessDB

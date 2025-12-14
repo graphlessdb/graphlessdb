@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Collections;
-using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

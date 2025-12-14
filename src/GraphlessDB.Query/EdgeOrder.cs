@@ -6,7 +6,7 @@
  *
  */
 
-using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB
 {

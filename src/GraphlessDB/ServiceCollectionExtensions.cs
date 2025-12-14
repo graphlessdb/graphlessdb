@@ -7,16 +7,13 @@
  */
 
 using System;
-using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Internal;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Internal;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Interfaces;
-using GraphlessDB.Storage.Services.Internal;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;

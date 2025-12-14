@@ -8,8 +8,7 @@
 
 using System;
 using System.Linq;
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain.Graph.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Graph.Services.Internal.Tests

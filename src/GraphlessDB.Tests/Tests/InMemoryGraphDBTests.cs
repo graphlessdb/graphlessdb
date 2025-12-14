@@ -6,8 +6,8 @@
  *
  */
 
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query.Internal;
 using GraphlessDB.Query.Services;

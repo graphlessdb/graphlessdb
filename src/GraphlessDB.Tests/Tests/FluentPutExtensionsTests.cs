@@ -12,7 +12,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Collections;
-using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

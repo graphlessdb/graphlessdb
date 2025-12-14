@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests

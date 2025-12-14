@@ -7,7 +7,6 @@
  */
 
 using System.Linq;
-using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

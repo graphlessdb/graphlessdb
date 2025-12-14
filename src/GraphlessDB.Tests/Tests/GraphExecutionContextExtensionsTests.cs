@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GraphlessDB.Collections;
-using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal.Tests;

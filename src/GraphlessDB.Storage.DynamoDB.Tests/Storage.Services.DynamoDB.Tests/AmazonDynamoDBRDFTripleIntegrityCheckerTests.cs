@@ -14,8 +14,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.DynamoDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

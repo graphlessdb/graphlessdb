@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Storage.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
