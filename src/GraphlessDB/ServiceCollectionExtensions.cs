@@ -10,7 +10,6 @@ using System;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Query;
-using GraphlessDB.Query.Internal;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Interfaces;

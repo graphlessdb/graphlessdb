@@ -6,7 +6,6 @@
  *
  */
 
-using GraphlessDB.Query.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Query.Services.Internal.Tests
