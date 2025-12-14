@@ -6,8 +6,7 @@
  *
  */
 
-using System;
-using GraphlessDB;
+using GraphlessDB.Domain.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests

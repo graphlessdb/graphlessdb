@@ -7,6 +7,7 @@
  */
 
 using System;
+using GraphlessDB.Domain.Graph.Services;
 
 namespace GraphlessDB.Graph.Services
 {

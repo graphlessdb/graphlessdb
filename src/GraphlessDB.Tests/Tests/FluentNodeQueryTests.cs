@@ -11,14 +11,12 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
 using GraphlessDB.Graph.Services.Internal.Tests;
+using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

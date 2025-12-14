@@ -7,7 +7,7 @@
  */
 
 using System;
-using GraphlessDB;
+using GraphlessDB.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests

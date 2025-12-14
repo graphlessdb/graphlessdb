@@ -7,6 +7,7 @@
  */
 
 using System;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Tests
 {

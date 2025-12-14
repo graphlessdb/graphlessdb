@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -6,8 +6,8 @@
  *
  */
 
-using System.Collections.Immutable;
 using GraphlessDB.Collections;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

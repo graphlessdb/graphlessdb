@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -6,7 +6,7 @@
  *
  */
 
-using System;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,7 +21,7 @@ namespace GraphlessDB.Tests
             var connection = new Connection<RelayEdge<INode>, INode>(
                 System.Collections.Immutable.ImmutableList<RelayEdge<INode>>.Empty,
                 new PageInfo(false, false, "start", "end"));
-            
+
             var result = new NodeConnectionResult(
                 ChildCursor: "child-cursor",
                 Cursor: "cursor",
@@ -40,7 +40,7 @@ namespace GraphlessDB.Tests
             var connection = new Connection<RelayEdge<INode>, INode>(
                 System.Collections.Immutable.ImmutableList<RelayEdge<INode>>.Empty,
                 new PageInfo(false, false, "start", "end"));
-            
+
             var result = new NodeConnectionResult(
                 ChildCursor: string.Empty,
                 Cursor: "cursor",
@@ -58,7 +58,7 @@ namespace GraphlessDB.Tests
             var connection = new Connection<RelayEdge<INode>, INode>(
                 System.Collections.Immutable.ImmutableList<RelayEdge<INode>>.Empty,
                 new PageInfo(false, false, "start", "end"));
-            
+
             var result = new NodeConnectionResult(
                 ChildCursor: "child-cursor",
                 Cursor: string.Empty,
@@ -76,7 +76,7 @@ namespace GraphlessDB.Tests
             var connection = new Connection<RelayEdge<INode>, INode>(
                 System.Collections.Immutable.ImmutableList<RelayEdge<INode>>.Empty,
                 new PageInfo(false, false, "start", "end"));
-            
+
             var result = new NodeConnectionResult(
                 ChildCursor: null,
                 Cursor: "cursor",

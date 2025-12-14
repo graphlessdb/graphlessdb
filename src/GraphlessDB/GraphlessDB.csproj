@@ -17,6 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage.InMemory\GraphlessDB.Storage.InMemory.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage.FileBased\GraphlessDB.Storage.FileBased.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Query\GraphlessDB.Query.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -8,8 +8,6 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using GraphlessDB.Storage;
-using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory.Tests

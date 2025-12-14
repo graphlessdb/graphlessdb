@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Linq;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Services;
+using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

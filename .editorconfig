@@ -38,6 +38,9 @@ indent_size = 2
 # Dotnet code style settings:
 [*.{cs,vb}]
 
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = warning
+
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = none
 
@@ -244,6 +247,8 @@ csharp_prefer_braces = true:silent
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
+dotnet_diagnostic.IDE0005.severity = warning
+
 [src/CodeStyle/**.{cs,vb}]
 # warning RS0005: Do not use generic CodeAction.Create to create CodeAction
 dotnet_diagnostic.RS0005.severity = none
@@ -291,7 +296,6 @@ csharp_style_var_elsewhere = true:warning
 dotnet_diagnostic.CA1822.severity = suggestion
 
 [**/*Tests/**/*.{cs,vb}]
-dotnet_diagnostic.IDE0005.severity = suggestion
 dotnet_diagnostic.CA1305.severity = suggestion
 
 [**/*.{cs,vb}]

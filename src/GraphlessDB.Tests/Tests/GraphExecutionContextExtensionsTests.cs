@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using GraphlessDB.Collections;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal.Tests;
@@ -163,7 +164,7 @@ namespace GraphlessDB.Tests
 
             // This will throw because GetResult is called on line 37 when parentKey exists
             // but the result is not in ResultItems
-            Assert.ThrowsException<KeyNotFoundException>(() => 
+            Assert.ThrowsException<KeyNotFoundException>(() =>
                 context.TryGetParentResult<TestGraphResult>(childKey));
         }
 
@@ -610,7 +611,7 @@ namespace GraphlessDB.Tests
             var rootKey = "root";
             var childKey1 = "child1";
             var grandchildKey = "grandchild1";
-            
+
             var query = new NodeConnectionQuery("User", null, null, ConnectionArguments.Default, 25, true, null);
             var tree = ImmutableTree<string, GraphQueryNode>
                 .Empty
@@ -619,7 +620,7 @@ namespace GraphlessDB.Tests
                 .AddNode(grandchildKey, new GraphQueryNode(query))
                 .AddEdge(childKey1, rootKey)
                 .AddEdge(grandchildKey, childKey1);
-            
+
             var context = CreateContextWithResults(tree);
 
             var found = context.TryFindResult(k => k == grandchildKey, out var resultKey);

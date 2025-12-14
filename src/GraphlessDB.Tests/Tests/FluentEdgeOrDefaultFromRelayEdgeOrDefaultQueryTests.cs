@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -11,16 +11,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB;
 using GraphlessDB.Collections;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -107,15 +104,13 @@ namespace GraphlessDB.Tests
             var edge = UserOwnsCarEdge.New(johnsmith.Id, car.Id);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
-                .ExecuteAsync(cancellationToken);
+            var scope = services.CreateScope();
+            await scope.GraphDB()
+            .Graph<TestGraph>()
+            .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
+            .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";
@@ -146,15 +141,13 @@ namespace GraphlessDB.Tests
             var edge = UserOwnsCarEdge.New(johnsmith.Id, car.Id);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
-                .ExecuteAsync(cancellationToken);
+            var scope = services.CreateScope();
+            await scope.GraphDB()
+            .Graph<TestGraph>()
+            .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
+            .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";

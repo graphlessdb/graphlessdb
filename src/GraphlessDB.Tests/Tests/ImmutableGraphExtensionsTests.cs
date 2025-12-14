@@ -7,8 +7,6 @@
  */
 
 using System;
-using System.Collections.Immutable;
-using System.Linq;
 using GraphlessDB.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,3 +1,8 @@
+﻿
+
+using GraphlessDB.Query;
+
+
 /**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
@@ -5,7 +10,6 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 namespace GraphlessDB
 {
     public sealed class DefaultGraph : IGraph

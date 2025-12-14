@@ -8,7 +8,9 @@
 
 using System;
 using System.Collections.Immutable;
-using GraphlessDB.Graph;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Graph.Services;
+using GraphlessDB.Storage;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
