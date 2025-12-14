@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -6,8 +6,8 @@
  *
  */
 
-using GraphlessDB.Storage;
 using GraphlessDB.Domain.Graph;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Domain.Services
 {

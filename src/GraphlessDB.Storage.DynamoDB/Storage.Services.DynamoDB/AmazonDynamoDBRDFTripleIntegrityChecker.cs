@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using GraphlessDB;
-using GraphlessDB.DynamoDB;
-using GraphlessDB.Domain.Services;
 using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.DynamoDB;
 using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.DynamoDB

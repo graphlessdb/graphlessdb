@@ -11,14 +11,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Storage;
-using GraphlessDB.Storage.Services;
-using GraphlessDB.Storage.Services.Internal;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Domain;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Storage.Interfaces;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Storage.Services.Internal.Tests
 {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -15,8 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using GraphlessDB.DynamoDB.Transactions;
-using GraphlessDB.DynamoDB.Transactions.Internal;
 using GraphlessDB.DynamoDB.Transactions.Storage;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -143,13 +141,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingGetRequest = new GetItemRequest
             {
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -201,13 +199,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingGetRequest = new GetItemRequest
             {
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -228,14 +226,14 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public async Task ValidateAppendRequestAsyncInvalidPreviousRequestPatternThrowsException()
         {
             var itemKey = CreateItemKey("TestTable", "item-a");
-            
+
             var putDetail = new ItemRequestDetail(
                 itemKey,
                 RequestAction.Put,
                 null,
                 ImmutableDictionary<string, string>.Empty,
                 ImmutableDictionary<string, ImmutableAttributeValue>.Empty);
-            
+
             var updateDetail = new ItemRequestDetail(
                 itemKey,
                 RequestAction.Update,
@@ -265,7 +263,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequest = new PutItemRequest
             {
                 TableName = "TestTable",
@@ -276,7 +274,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -331,13 +329,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequest = new PutItemRequest
             {
                 TableName = "TestTable",
                 Item = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -359,7 +357,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var itemKeyA = CreateItemKey("TestTable", "item-a");
             var itemKeyC = CreateItemKey("TestTable", "item-c");
-            
+
             var putDetailA = new ItemRequestDetail(
                 itemKeyA,
                 RequestAction.Put,
@@ -391,13 +389,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequest = new PutItemRequest
             {
                 TableName = "TestTable",
                 Item = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -434,13 +432,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequest = new PutItemRequest
             {
                 TableName = "TestTable",
                 Item = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -493,13 +491,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingUpdateRequest = new UpdateItemRequest
             {
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -552,13 +550,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingDeleteRequest = new DeleteItemRequest
             {
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -634,7 +632,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingGetRequest = new GetItemRequest
             {
                 TableName = "TestTable",
@@ -650,7 +648,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
                 TableName = "TestTable",
                 Key = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-c" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -729,7 +727,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequestA = new PutItemRequest
             {
                 TableName = "TestTable",
@@ -745,7 +743,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
                 TableName = "TestTable",
                 Item = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-c" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,
@@ -800,13 +798,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
             };
 
             var service = CreateServiceWithRequestService(requestService);
-            
+
             var existingPutRequest = new PutItemRequest
             {
                 TableName = "TestTable",
                 Item = new Dictionary<string, AttributeValue> { { "id", new AttributeValue { S = "item-a" } } }
             };
-            
+
             var transaction = new Transaction(
                 "test-id",
                 TransactionState.Active,

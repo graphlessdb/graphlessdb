@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reflection;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using GraphlessDB.DynamoDB.Transactions.Internal;
 using GraphlessDB.DynamoDB.Transactions.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

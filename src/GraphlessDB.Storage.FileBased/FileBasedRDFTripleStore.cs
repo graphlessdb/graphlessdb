@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -15,12 +15,12 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Threading;
-using Microsoft.Extensions.Options;
-using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Services;
+using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Threading;
+using Microsoft.Extensions.Options;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {
@@ -64,12 +64,12 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             lock (_locker)
             {
                 var allTriples = new List<RDFTriple>();
-                
+
                 for (int i = 0; i < _partitionCount; i++)
                 {
                     var partitionTriples = LoadPartitionData(i);
                     allTriples.AddRange(partitionTriples);
-                    
+
                     if (allTriples.Count >= request.Limit)
                     {
                         break;
@@ -78,7 +78,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
                 var hasNextPage = allTriples.Count > request.Limit;
                 var items = allTriples.Take(request.Limit).ToImmutableList();
-                
+
                 return Task.FromResult(new ScanRDFTriplesResponse(
                     items,
                     hasNextPage,
@@ -105,7 +105,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             {
                 var partitionIndex = GetPartitionIndex(request.Subject);
                 var partition = LoadPartitionData(partitionIndex);
-                
+
                 var subjectTriples = partition
                     .Where(t => t.Subject == request.Subject)
                     .OrderBy(t => t.Predicate)
@@ -122,13 +122,13 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
                 if (request.ExclusiveStartKey != null)
                 {
-                    var startIndex = filteredTriples.FindIndex(t => 
-                        t.Subject == request.ExclusiveStartKey.Subject && 
+                    var startIndex = filteredTriples.FindIndex(t =>
+                        t.Subject == request.ExclusiveStartKey.Subject &&
                         t.Predicate == request.ExclusiveStartKey.Predicate);
-                    
+
                     if (startIndex >= 0)
                     {
-                        filteredTriples = request.ScanIndexForward 
+                        filteredTriples = request.ScanIndexForward
                             ? filteredTriples.Skip(startIndex + 1).ToList()
                             : filteredTriples.Take(startIndex).ToList();
                     }
@@ -157,7 +157,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             lock (_locker)
             {
                 var index = LoadPredicateIndex(GetPartitionIndex(request.Partition));
-                
+
                 var matchingEntries = index
                     .Where(e => e.Partition == request.Partition)
                     .Where(e => e.Predicate.StartsWith(request.PredicateBeginsWith, StringComparison.Ordinal))
@@ -167,13 +167,13 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
                 if (request.ExclusiveStartKey != null)
                 {
-                    var startIndex = matchingEntries.FindIndex(e => 
-                        e.Subject == request.ExclusiveStartKey.Subject && 
+                    var startIndex = matchingEntries.FindIndex(e =>
+                        e.Subject == request.ExclusiveStartKey.Subject &&
                         e.Predicate == request.ExclusiveStartKey.Predicate);
-                    
+
                     if (startIndex >= 0)
                     {
-                        matchingEntries = request.ScanIndexForward 
+                        matchingEntries = request.ScanIndexForward
                             ? matchingEntries.Skip(startIndex + 1).ToList()
                             : matchingEntries.Take(startIndex).Reverse().ToList();
                     }
@@ -216,12 +216,12 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             {
                 var dataFile = GetDataFilePath(i);
                 var indexFile = GetPredicateIndexFilePath(i);
-                
+
                 if (!File.Exists(dataFile))
                 {
                     File.WriteAllText(dataFile, string.Empty);
                 }
-                
+
                 if (!File.Exists(indexFile))
                 {
                     File.WriteAllText(indexFile, string.Empty);
@@ -250,7 +250,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
             var triples = new List<RDFTriple>();
             var lines = File.ReadAllLines(filePath);
-            
+
             foreach (var line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -285,7 +285,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
             var entries = new List<PredicateIndexEntry>();
             var lines = File.ReadAllLines(filePath);
-            
+
             foreach (var line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -424,7 +424,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Item.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
+
             if (triples.Any(t => t.Subject == request.Item.Subject && t.Predicate == request.Item.Predicate))
             {
                 throw new GraphlessDBOperationException("Item already exists");
@@ -446,10 +446,10 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Item.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
-            var existingIndex = triples.FindIndex(t => 
+
+            var existingIndex = triples.FindIndex(t =>
                 t.Subject == request.Item.Subject && t.Predicate == request.Item.Predicate);
-            
+
             if (existingIndex < 0)
             {
                 throw new GraphlessDBOperationException("Item does not exist");
@@ -457,13 +457,13 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
             var existing = triples[existingIndex];
 
-            if (request.VersionDetailCondition.NodeVersion.HasValue && 
+            if (request.VersionDetailCondition.NodeVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.NodeVersion.Value != existing.VersionDetail.NodeVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
             }
 
-            if (request.VersionDetailCondition.AllEdgesVersion.HasValue && 
+            if (request.VersionDetailCondition.AllEdgesVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.AllEdgesVersion.Value != existing.VersionDetail.AllEdgesVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
@@ -477,10 +477,10 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Key.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
-            var existingIndex = triples.FindIndex(t => 
+
+            var existingIndex = triples.FindIndex(t =>
                 t.Subject == request.Key.Subject && t.Predicate == request.Key.Predicate);
-            
+
             if (existingIndex < 0)
             {
                 throw new GraphlessDBOperationException("Item does not exist");
@@ -488,13 +488,13 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
             var existing = triples[existingIndex];
 
-            if (request.VersionDetailCondition.NodeVersion.HasValue && 
+            if (request.VersionDetailCondition.NodeVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.NodeVersion.Value != existing.VersionDetail.NodeVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
             }
 
-            if (request.VersionDetailCondition.AllEdgesVersion.HasValue && 
+            if (request.VersionDetailCondition.AllEdgesVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.AllEdgesVersion.Value != existing.VersionDetail.AllEdgesVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
@@ -512,10 +512,10 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Key.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
-            var existingIndex = triples.FindIndex(t => 
+
+            var existingIndex = triples.FindIndex(t =>
                 t.Subject == request.Key.Subject && t.Predicate == request.Key.Predicate);
-            
+
             if (existingIndex < 0)
             {
                 throw new GraphlessDBOperationException("Item does not exist");
@@ -523,13 +523,13 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
 
             var existing = triples[existingIndex];
 
-            if (request.VersionDetailCondition.NodeVersion.HasValue && 
+            if (request.VersionDetailCondition.NodeVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.NodeVersion.Value != existing.VersionDetail.NodeVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
             }
 
-            if (request.VersionDetailCondition.AllEdgesVersion.HasValue && 
+            if (request.VersionDetailCondition.AllEdgesVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.AllEdgesVersion.Value != existing.VersionDetail.AllEdgesVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
@@ -550,7 +550,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
                 {
                     AllEdgesVersion = request.AllEdgesVersion
                 });
-            
+
             SavePartitionData(partitionIndex, triples);
         }
 
@@ -558,10 +558,10 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Key.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
-            var existingIndex = triples.FindIndex(t => 
+
+            var existingIndex = triples.FindIndex(t =>
                 t.Subject == request.Key.Subject && t.Predicate == request.Key.Predicate);
-            
+
             if (existingIndex < 0)
             {
                 throw new GraphlessDBOperationException("Item does not exist");
@@ -584,7 +584,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
                 {
                     AllEdgesVersion = existing.VersionDetail.AllEdgesVersion + 1
                 });
-            
+
             SavePartitionData(partitionIndex, triples);
         }
 
@@ -592,22 +592,22 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
         {
             var partitionIndex = GetPartitionIndex(request.Key.Subject);
             var triples = LoadPartitionData(partitionIndex);
-            
-            var existing = triples.FirstOrDefault(t => 
+
+            var existing = triples.FirstOrDefault(t =>
                 t.Subject == request.Key.Subject && t.Predicate == request.Key.Predicate);
-            
+
             if (existing == null)
             {
                 throw new GraphlessDBOperationException("Item does not exist");
             }
 
-            if (request.VersionDetailCondition.NodeVersion.HasValue && 
+            if (request.VersionDetailCondition.NodeVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.NodeVersion.Value != existing.VersionDetail.NodeVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");
             }
 
-            if (request.VersionDetailCondition.AllEdgesVersion.HasValue && 
+            if (request.VersionDetailCondition.AllEdgesVersion.HasValue &&
                 (existing.VersionDetail == null || request.VersionDetailCondition.AllEdgesVersion.Value != existing.VersionDetail.AllEdgesVersion))
             {
                 throw new GraphlessDBConcurrencyException("Version constraint not matched");

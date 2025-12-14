@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -10,9 +10,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
-using GraphlessDB.DynamoDB.Transactions;
-using GraphlessDB.DynamoDB.Transactions.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
@@ -24,7 +21,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnResumeTransactionFinishAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnResumeTransactionFinishAsync);
         }
 
@@ -33,9 +30,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, CancellationToken, Task> handler = (id, ct) => Task.CompletedTask;
-            
+
             events.OnResumeTransactionFinishAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnResumeTransactionFinishAsync);
         }
 
@@ -43,7 +40,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnApplyRequestAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnApplyRequestAsync);
         }
 
@@ -52,9 +49,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, AmazonDynamoDBRequest, CancellationToken, Task> handler = (id, req, ct) => Task.CompletedTask;
-            
+
             events.OnApplyRequestAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnApplyRequestAsync);
         }
 
@@ -62,7 +59,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnUpdateFullyAppliedRequestsBeginAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnUpdateFullyAppliedRequestsBeginAsync);
         }
 
@@ -71,9 +68,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionVersion, CancellationToken, Task> handler = (ver, ct) => Task.CompletedTask;
-            
+
             events.OnUpdateFullyAppliedRequestsBeginAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnUpdateFullyAppliedRequestsBeginAsync);
         }
 
@@ -81,7 +78,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnAcquireLockAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnAcquireLockAsync);
         }
 
@@ -90,9 +87,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, AmazonDynamoDBRequest, CancellationToken, Task> handler = (id, req, ct) => Task.CompletedTask;
-            
+
             events.OnAcquireLockAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnAcquireLockAsync);
         }
 
@@ -100,7 +97,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnBackupItemImagesAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnBackupItemImagesAsync);
         }
 
@@ -109,9 +106,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, CancellationToken, Task> handler = (id, ct) => Task.CompletedTask;
-            
+
             events.OnBackupItemImagesAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnBackupItemImagesAsync);
         }
 
@@ -119,7 +116,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnDoCommitBeginAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnDoCommitBeginAsync);
         }
 
@@ -128,9 +125,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, CancellationToken, Task<bool>> handler = (id, ct) => Task.FromResult(true);
-            
+
             events.OnDoCommitBeginAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnDoCommitBeginAsync);
         }
 
@@ -138,7 +135,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnDoRollbackBeginAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnDoRollbackBeginAsync);
         }
 
@@ -147,9 +144,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, CancellationToken, Task> handler = (id, ct) => Task.CompletedTask;
-            
+
             events.OnDoRollbackBeginAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnDoRollbackBeginAsync);
         }
 
@@ -157,7 +154,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnReleaseLocksAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnReleaseLocksAsync);
         }
 
@@ -166,9 +163,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, bool, CancellationToken, Task> handler = (id, b, ct) => Task.CompletedTask;
-            
+
             events.OnReleaseLocksAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnReleaseLocksAsync);
         }
 
@@ -176,7 +173,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         public void OnReleaseLockFromOtherTransactionAsyncInitiallyNull()
         {
             var events = new TransactionServiceEvents();
-            
+
             Assert.IsNull(events.OnReleaseLockFromOtherTransactionAsync);
         }
 
@@ -185,9 +182,9 @@ namespace GraphlessDB.DynamoDB.Transactions.Internal.Tests
         {
             var events = new TransactionServiceEvents();
             Func<TransactionId, TransactionId, CancellationToken, Task> handler = (id1, id2, ct) => Task.CompletedTask;
-            
+
             events.OnReleaseLockFromOtherTransactionAsync = handler;
-            
+
             Assert.AreEqual(handler, events.OnReleaseLockFromOtherTransactionAsync);
         }
     }

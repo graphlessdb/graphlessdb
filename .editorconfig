@@ -291,7 +291,7 @@ csharp_style_var_elsewhere = true:warning
 dotnet_diagnostic.CA1822.severity = suggestion
 
 [**/*Tests/**/*.{cs,vb}]
-dotnet_diagnostic.IDE0005.severity = suggestion
+dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.CA1305.severity = suggestion
 
 [**/*.{cs,vb}]

@@ -8,13 +8,12 @@
 
 using System;
 using System.Collections.Immutable;
-using GraphlessDB.Domain.Graph;
-using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GraphlessDB.Domain;
-using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Internal;
 using GraphlessDB.Storage;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Graph.Services.Internal.Tests
 {

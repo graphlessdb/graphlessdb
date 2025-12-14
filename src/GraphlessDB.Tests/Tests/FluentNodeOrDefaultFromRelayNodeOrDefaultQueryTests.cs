@@ -10,20 +10,16 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Internal;
 using GraphlessDB.Domain.Services;
 using GraphlessDB.Extensions.DependencyInjection;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query;
+using GraphlessDB.Query.Internal;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GraphlessDB.Query.Internal;
 
 namespace GraphlessDB.Tests
 {

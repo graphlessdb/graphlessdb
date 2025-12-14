@@ -11,13 +11,12 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Domain;
 using GraphlessDB.Domain.Services;
 using GraphlessDB.Graph.Services.Internal.Tests;
+using GraphlessDB.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GraphlessDB.Domain;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Query.Internal;
 
 namespace GraphlessDB.Query.Services.Internal.Tests
 {

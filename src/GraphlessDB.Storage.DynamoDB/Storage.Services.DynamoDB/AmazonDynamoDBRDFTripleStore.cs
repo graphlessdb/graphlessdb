@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -21,9 +21,9 @@ using GraphlessDB.DynamoDB.Transactions;
 using GraphlessDB.DynamoDB.Transactions.Storage;
 using GraphlessDB.Linq;
 using GraphlessDB.Logging;
+using GraphlessDB.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.DynamoDB
 {

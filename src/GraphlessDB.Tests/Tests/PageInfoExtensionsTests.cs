@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -6,11 +6,8 @@
  *
  */
 
-using GraphlessDB;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GraphlessDB.Domain;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Services;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests
 {

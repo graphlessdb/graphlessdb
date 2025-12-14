@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -7,10 +7,10 @@
  */
 
 using System.Collections.Concurrent;
-using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Services;
+using GraphlessDB.Storage.Interfaces;
 
 namespace GraphlessDB.Storage.Services.Internal
 {

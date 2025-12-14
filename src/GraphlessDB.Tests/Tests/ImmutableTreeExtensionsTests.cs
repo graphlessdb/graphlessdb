@@ -8,13 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using GraphlessDB.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Services;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests
 {

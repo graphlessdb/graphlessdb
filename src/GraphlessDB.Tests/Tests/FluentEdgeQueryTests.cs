@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -11,18 +11,14 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB;
-using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain;
 using GraphlessDB.Domain.Services;
-using GraphlessDB.Domain.Internal;
+using GraphlessDB.Extensions.DependencyInjection;
 using GraphlessDB.Graph.Services.Internal.Tests;
+using GraphlessDB.Query.Internal;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GraphlessDB.Domain;
-using GraphlessDB.Query.Internal;
 
 namespace GraphlessDB.Tests
 {

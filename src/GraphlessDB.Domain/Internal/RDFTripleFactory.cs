@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copyright (c) Small Trading Company Ltd (Destash.com).
  *
  * This source code is licensed under the MIT license found in the
@@ -12,9 +12,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using GraphlessDB;
-using GraphlessDB.Storage;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Services;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Domain.Internal
 {
