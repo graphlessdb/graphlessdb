@@ -18,6 +18,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using GraphlessDB;
+using GraphlessDB.Domain;
 using GraphlessDB.DynamoDB.Transactions.Internal;
 using GraphlessDB.DynamoDB.Transactions.Storage;
 using GraphlessDB.Storage;
@@ -935,7 +936,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
         {
             // Test reading an item while simulating another transaction committing concurrently.
             // To do this we skip cleanup, make the item image appear to be deleted,
-            // and then make the reader get the uncommitted version of the transaction 
+            // and then make the reader get the uncommitted version of the transaction
             // row for the first read and then actual updated version for later reads.
 
             var graphOptions = serviceProvider.GetRequiredService<IOptions<GraphOptions>>();
@@ -996,7 +997,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
                 ConsistentRead = true
             };
 
-            // Save the copy of the transaction before commit. 
+            // Save the copy of the transaction before commit.
             var uncommittedTransaction = await dynamoDB.GetItemAsync(transactionRequest, cancellationToken);
 
             await client1.CommitTransactionAsync(t1, cancellationToken);
@@ -1322,7 +1323,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
             var t2 = await client2.BeginTransactionAsync(cancellationToken);
             var t3 = await client3.BeginTransactionAsync(cancellationToken);
 
-            // Finish t1 
+            // Finish t1
             var t1Item = key1.Add("whoami", AttributeValueFactory.CreateS("t1"));
 
             await client1.PutItemAsync(t1, new PutItemRequest
@@ -1379,7 +1380,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
         }
 
         // This doesnt seem to fail when using expressions
-        // 
+        //
         public async Task FailValidationInApply(ServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
             using var scope1 = serviceProvider.CreateScope();
@@ -2491,7 +2492,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
 
         public async Task RollbackAfterReadLockUpgradeAttempt(ServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
-            // After getting a read lock, attempt to write an update to the item. 
+            // After getting a read lock, attempt to write an update to the item.
             // This will succeed in apply to the item, but will fail when trying to update the transaction item.
             // Scenario:
             // p1                    t1        i1           t2                 p2
@@ -2587,7 +2588,7 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
             var getTask = Task.Run(async () =>
             {
                 var t2 = await client2.BeginTransactionAsync(cancellationToken);
-                // This will stop pause on waitAfterResumeTransaction once it finds that key1 is already locked by t1. 
+                // This will stop pause on waitAfterResumeTransaction once it finds that key1 is already locked by t1.
                 var item1Returned = await client2.GetItemAsync(t2, new GetItemRequest
                 {
                     TableName = testDynamoDBService.GetTableName(),
@@ -2766,13 +2767,13 @@ namespace GraphlessDB.DynamoDB.Transactions.Tests
         * This test makes a transaction with two large items, each of which are just below
         * the DynamoDB item size limit (currently 400 KB).
 */
-        // 
+        //
         // public async Task TooMuchDataInTransaction()
         // {
-        //     
-        //     
-        //     
-        //     
+        //
+        //
+        //
+        //
         //     using var scope1 = serviceProvider.CreateScope();
         //     var client1 = scope1.ServiceProvider.GetRequiredService<ITransactionService>();
         //     var transactionStore = serviceProvider.GetRequiredService<ITransactionItemService>();

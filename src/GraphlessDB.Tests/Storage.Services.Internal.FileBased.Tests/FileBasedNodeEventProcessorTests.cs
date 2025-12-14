@@ -12,11 +12,13 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
-using GraphlessDB.Graph.Services;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased.Tests
 {

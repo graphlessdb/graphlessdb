@@ -11,6 +11,9 @@ using System.Collections.Immutable;
 using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
 using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {

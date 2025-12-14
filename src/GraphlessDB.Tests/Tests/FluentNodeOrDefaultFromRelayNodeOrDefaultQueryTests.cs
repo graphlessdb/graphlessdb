@@ -12,10 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Collections;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
@@ -101,18 +102,16 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
             var johnsmith = User.New("johnsmith");
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
+            await scope.GraphDB()
                 .Graph<TestGraph>()
                 .Put(johnsmith)
                 .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";
@@ -137,18 +136,16 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
             var johnsmith = User.New("johnsmith");
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
+            await scope.GraphDB()
                 .Graph<TestGraph>()
                 .Put(johnsmith)
                 .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";
@@ -171,8 +168,8 @@ namespace GraphlessDB.Tests
         {
             // Init
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
 
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateQuery(graphQueryService, "root");
 
@@ -187,8 +184,8 @@ namespace GraphlessDB.Tests
         {
             // Init
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
 
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateQuery(graphQueryService, "root");
 
@@ -203,8 +200,8 @@ namespace GraphlessDB.Tests
         {
             // Init
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
 
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateQuery(graphQueryService, "root");
 
@@ -219,8 +216,8 @@ namespace GraphlessDB.Tests
         {
             // Init
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
 
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateQuery(graphQueryService, "root");
 

@@ -9,12 +9,14 @@
 using System;
 using System.IO;
 using GraphlessDB.DependencyInjection;
-using GraphlessDB.Graph.Services;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Tests
 {

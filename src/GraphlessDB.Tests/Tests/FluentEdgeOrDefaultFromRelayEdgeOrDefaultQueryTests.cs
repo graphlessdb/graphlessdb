@@ -14,15 +14,16 @@ using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Collections;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Internal;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
 
 namespace GraphlessDB.Tests
 {
@@ -107,15 +108,13 @@ namespace GraphlessDB.Tests
             var edge = UserOwnsCarEdge.New(johnsmith.Id, car.Id);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
+            var scope = services.CreateScope();
+                await scope.GraphDB()
                 .Graph<TestGraph>()
                 .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
                 .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";
@@ -146,15 +145,13 @@ namespace GraphlessDB.Tests
             var edge = UserOwnsCarEdge.New(johnsmith.Id, car.Id);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
+            var scope = services.CreateScope();
+                await scope.GraphDB()
                 .Graph<TestGraph>()
                 .Put(ImmutableList.Create<IEntity>(johnsmith, car, edge))
                 .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
 
             var rootKey = "root";

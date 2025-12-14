@@ -8,8 +8,10 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Query.Services.Internal
 {

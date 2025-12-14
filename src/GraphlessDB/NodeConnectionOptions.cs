@@ -6,6 +6,8 @@
  *
  */
 
+using GraphlessDB.Domain;
+
 namespace GraphlessDB
 {
     public sealed record NodeConnectionOptions<TNodeFilter, TNodeOrder>(TNodeFilter? Filter, TNodeOrder? Order, string? Tag)

@@ -11,10 +11,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
 
 namespace GraphlessDB.Query.Services.Internal.Tests
 {

@@ -12,8 +12,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Collections;
-using GraphlessDB.Graph;
+using GraphlessDB.Domain.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Query.Services.Internal.Tests
 {

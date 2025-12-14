@@ -12,10 +12,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services.Internal;
-using GraphlessDB.Logging;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain.Logging;
 using Microsoft.Extensions.Logging;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Query.Services.Internal
 {

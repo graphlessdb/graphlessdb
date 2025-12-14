@@ -14,10 +14,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Collections;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Query.Services.Internal.Tests
 {

@@ -9,10 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Internal;
 using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Graph.Services.Internal.Tests
 {

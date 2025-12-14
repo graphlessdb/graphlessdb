@@ -7,6 +7,9 @@
  */
 
 using System.Linq;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB
 {

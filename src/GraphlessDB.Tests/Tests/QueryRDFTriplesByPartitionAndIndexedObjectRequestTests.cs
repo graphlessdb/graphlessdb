@@ -8,6 +8,9 @@
 
 using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Tests
 {

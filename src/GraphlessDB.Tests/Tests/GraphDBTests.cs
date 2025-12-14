@@ -15,10 +15,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Tests
 {

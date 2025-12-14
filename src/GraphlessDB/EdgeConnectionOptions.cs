@@ -6,6 +6,8 @@
  *
  */
 
+using GraphlessDB.Domain;
+
 namespace GraphlessDB
 {
     public sealed record EdgeConnectionOptions(IEdgeFilter? Filter, IEdgeOrder? Order, int PageSize, string? Tag)

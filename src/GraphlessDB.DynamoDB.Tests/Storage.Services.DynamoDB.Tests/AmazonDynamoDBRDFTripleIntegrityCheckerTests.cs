@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using GraphlessDB;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.DynamoDB;
 using GraphlessDB.Graph.Services;
 using GraphlessDB.Storage;

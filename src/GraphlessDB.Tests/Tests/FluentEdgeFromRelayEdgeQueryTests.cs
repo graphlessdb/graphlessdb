@@ -13,10 +13,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Collections;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
 using GraphlessDB.Graph.Services.Internal.Tests;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
@@ -101,15 +102,13 @@ namespace GraphlessDB.Tests
             var edge = UserLikesUserEdge.New(user1, user2);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
-                .ExecuteAsync(cancellationToken);
+            var scope = services.CreateScope();
+            await scope.GraphDB()
+            .Graph<TestGraph>()
+            .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
+            .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateNonGenericQuery(graphQueryService, edge);
 
@@ -127,12 +126,12 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
             var user1 = User.New("user1");
             var user2 = User.New("user2");
             var edge = UserLikesUserEdge.New(user1, user2);
 
             // Get without adding
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateNonGenericQuery(graphQueryService, edge);
 
@@ -149,20 +148,18 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
             var user1 = User.New("user1");
             var user2 = User.New("user2");
             var edge = UserLikesUserEdge.New(user1, user2);
 
             // Add
-            await services
-                .CreateScope()
-                .GraphDB()
-                .Graph<TestGraph>()
-                .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
-                .ExecuteAsync(cancellationToken);
+            await scope.GraphDB()
+            .Graph<TestGraph>()
+            .Put(ImmutableList.Create<IEntity>(user1, user2, edge))
+            .ExecuteAsync(cancellationToken);
 
             // Get
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateGenericQuery(graphQueryService, edge);
 
@@ -180,12 +177,12 @@ namespace GraphlessDB.Tests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var cancellationToken = Debugger.IsAttached ? CancellationToken.None : cancellationTokenSource.Token;
             var services = GetServiceProvider();
+            var scope = services.CreateScope();
             var user1 = User.New("user1");
             var user2 = User.New("user2");
             var edge = UserLikesUserEdge.New(user1, user2);
 
             // Get without adding
-            using var scope = services.CreateScope();
             var graphQueryService = scope.ServiceProvider.GetRequiredService<IGraphQueryExecutionService>();
             var query = CreateGenericQuery(graphQueryService, edge);
 

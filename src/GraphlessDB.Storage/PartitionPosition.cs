@@ -6,7 +6,7 @@
  *
  */
 
-namespace GraphlessDB.Graph
+namespace GraphlessDB.Storage
 {
     public enum PartitionPosition
     {

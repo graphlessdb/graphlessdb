@@ -8,6 +8,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB
 {

@@ -428,9 +428,19 @@ This migration is divided into stages that can be completed incrementally. Each 
 ### Stage 3: Create GraphlessDB.Storage.InMemory Project
 **Goal**: Extract in-memory storage implementation to separate project
 
+**⚠️ DEPENDENCY ISSUE DISCOVERED**: The InMemory storage implementation depends on domain types (INode, IGraphSettingsService, IRDFTripleFactory, GraphOptions) that are still in the main GraphlessDB project. We cannot extract storage implementations until the Domain layer is extracted first.
+
+**RESOLUTION**: Skip Stages 3-5 for now and proceed to Stage 6 (Create GraphlessDB.Domain). After Domain is extracted, we can return to extract storage implementations.
+
+**Revised Migration Order**:
+- ✅ Stages 0-2: Complete (Core, Storage abstractions)
+- ⏩ Skip to Stage 6: Create GraphlessDB.Domain first
+- ⏭️ Return to Stages 3-5: Extract storage implementations after Domain exists
+
 - [ ] Create new project: `src/GraphlessDB.Storage.InMemory/GraphlessDB.Storage.InMemory.csproj` (net10.0)
 - [ ] Add project reference to GraphlessDB.Storage
 - [ ] Add project reference to GraphlessDB.Core
+- [ ] Add project reference to GraphlessDB.Domain (required for INode, IRDFTripleFactory, etc.)
 - [ ] Move all files from `Storage.Services.Internal.InMemory` to new project
 - [ ] Update namespace to `GraphlessDB.Storage.InMemory.Internal`
 - [ ] Move `InMemoryRDFTripleStore.cs`

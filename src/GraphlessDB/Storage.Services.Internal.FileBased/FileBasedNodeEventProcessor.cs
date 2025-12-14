@@ -11,8 +11,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
-using GraphlessDB.Graph.Services;
+using GraphlessDB.Domain.Services;
 using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {

@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.DependencyInjection
 {

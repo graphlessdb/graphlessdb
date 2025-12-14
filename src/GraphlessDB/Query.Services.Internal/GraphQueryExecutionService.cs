@@ -15,11 +15,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB;
 using GraphlessDB.Collections;
-using GraphlessDB.Graph;
-using GraphlessDB.Graph.Services.Internal;
-using GraphlessDB.Logging;
+using GraphlessDB.Domain.Graph;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Domain.Logging;
 using GraphlessDB.Threading;
 using Microsoft.Extensions.Logging;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB.Query.Services.Internal
 {

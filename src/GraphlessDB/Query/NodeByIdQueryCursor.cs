@@ -6,6 +6,8 @@
  *
  */
 
+using GraphlessDB.Domain;
+
 namespace GraphlessDB.Query
 {
     public record NodeByIdQueryCursor(string Id) : IQueryCursor;

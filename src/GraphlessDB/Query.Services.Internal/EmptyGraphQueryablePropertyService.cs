@@ -6,7 +6,9 @@
  *
  */
 
-using GraphlessDB.Graph.Services;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.Query.Services.Internal
 {

@@ -6,8 +6,6 @@
  *
  */
 
-using GraphlessDB.Graph;
-
 namespace GraphlessDB.Storage
 {
     public sealed record RDFTripleQueryPosition(int Index, PartitionPosition Position, RDFTriple? RDFTriple);

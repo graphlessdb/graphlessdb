@@ -6,6 +6,8 @@
  *
  */
 
+using GraphlessDB.Domain;
+
 namespace GraphlessDB.Query
 {
     public record NodeByNodeQuery(INode Node, bool ConsistentRead, string? Tag) : GraphQuery;

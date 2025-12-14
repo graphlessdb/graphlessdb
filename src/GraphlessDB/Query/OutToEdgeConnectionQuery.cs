@@ -6,6 +6,8 @@
  *
  */
 
+using GraphlessDB.Domain;
+
 namespace GraphlessDB.Query
 {
     public sealed record OutToEdgeConnectionQuery(

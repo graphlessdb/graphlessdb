@@ -7,8 +7,8 @@
  */
 
 using System;
-using GraphlessDB.Graph.Services;
-using GraphlessDB.Graph.Services.Internal;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Internal;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Query.Services.Internal;
@@ -18,6 +18,8 @@ using GraphlessDB.Storage.Services.Internal;
 using GraphlessDB.Storage.Services.Internal.FileBased;
 using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
+using GraphlessDB.Domain;
+using GraphlessDB.Domain.Graph;
 
 namespace GraphlessDB.DependencyInjection
 {
