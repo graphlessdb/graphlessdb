@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Query\GraphlessDB.Query.csproj" />
     <ProjectReference Include="..\GraphlessDB\GraphlessDB.csproj" />
     <ProjectReference Include="..\GraphlessDB.Analyzers\GraphlessDB.Analyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
