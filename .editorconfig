@@ -38,6 +38,9 @@ indent_size = 2
 # Dotnet code style settings:
 [*.{cs,vb}]
 
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = warning
+
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = none
 
