@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GraphlessDB.Tests\GraphlessDB.Tests.csproj" />
-    <ProjectReference Include="..\GraphlessDB.DynamoDB\GraphlessDB.DynamoDB.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage.DynamoDB\GraphlessDB.Storage.DynamoDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>

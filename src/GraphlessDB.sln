@@ -7,9 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB", "GraphlessDB\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Analyzers", "GraphlessDB.Analyzers\GraphlessDB.Analyzers.csproj", "{5526CA4B-4526-442A-BA15-23C6B5CF0F95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.DynamoDB", "GraphlessDB.DynamoDB\GraphlessDB.DynamoDB.csproj", "{3639F944-384C-4A7C-AD26-5BC8FDAB9CE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Storage.DynamoDB", "GraphlessDB.Storage.DynamoDB\GraphlessDB.Storage.DynamoDB.csproj", "{3639F944-384C-4A7C-AD26-5BC8FDAB9CE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.DynamoDB.Tests", "GraphlessDB.DynamoDB.Tests\GraphlessDB.DynamoDB.Tests.csproj", "{ED286AD1-4D59-4FE7-B2DD-6D29E97DB1BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Storage.DynamoDB.Tests", "GraphlessDB.Storage.DynamoDB.Tests\GraphlessDB.Storage.DynamoDB.Tests.csproj", "{ED286AD1-4D59-4FE7-B2DD-6D29E97DB1BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Tests", "GraphlessDB.Tests\GraphlessDB.Tests.csproj", "{C9754D1B-BEE3-444E-B8E9-03EAF874C7A2}"
 EndProject

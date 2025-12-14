@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="GraphlessDB.DynamoDB.Tests" />
+    <InternalsVisibleTo Include="GraphlessDB.Storage.DynamoDB.Tests" />
   </ItemGroup>
 
   <ItemGroup>
