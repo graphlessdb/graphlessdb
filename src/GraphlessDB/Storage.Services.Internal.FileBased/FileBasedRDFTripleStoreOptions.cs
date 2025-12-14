@@ -8,7 +8,7 @@
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased
 {
-    internal sealed class FileBasedRDFTripleStoreOptions
+    public sealed class FileBasedRDFTripleStoreOptions
     {
         public FileBasedRDFTripleStoreOptions()
         {

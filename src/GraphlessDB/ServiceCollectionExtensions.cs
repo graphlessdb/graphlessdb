@@ -7,39 +7,143 @@
  */
 
 using System;
+using GraphlessDB.Domain.Services;
+using GraphlessDB.Domain.Internal;
+using GraphlessDB.Query;
+using GraphlessDB.Query.Services;
+using GraphlessDB.Query.Internal;
 using GraphlessDB.Storage;
+using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services.Internal;
+using GraphlessDB.Storage.Services.Internal.FileBased;
+using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Services;
 
 namespace GraphlessDB
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddGraphlessDBWithInMemoryDB(this IServiceCollection source)
+        public static IServiceCollection AddGraphlessDBWithInMemoryDB(
+            this IServiceCollection source)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBWithInMemoryDB(source);
+            return source
+                .AddGraphlessDBCore()
+                .AddSingleton<IRDFTripleStore<StoreType.Data>, InMemoryRDFTripleStore>()
+                .AddSingleton<IInMemoryRDFEventReader, InMemoryRDFEventReader>()
+                .AddScoped<IInMemoryNodeEventProcessor, InMemoryNodeEventProcessor>();
         }
 
-        public static IServiceCollection AddGraphlessDBCore(this IServiceCollection source)
+        public static IServiceCollection AddGraphlessDBWithFileBasedDB(
+            this IServiceCollection source)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBCore(source);
+            return source
+                .AddGraphlessDBCore()
+                .AddSingleton<IRDFTripleStore<StoreType.Data>, FileBasedRDFTripleStore>()
+                .AddSingleton<IFileBasedRDFEventReader, FileBasedRDFEventReader>()
+                .AddScoped<IFileBasedNodeEventProcessor, FileBasedNodeEventProcessor>();
+        }
+
+        public static IServiceCollection AddGraphlessDBCore(
+            this IServiceCollection source)
+        {
+            return source
+                .AddSingleton<IGraphCursorSerializationService, GraphCursorSerializationService>()
+                .AddSingleton<IGraphEntitySerializationService, GraphEntitySerializationService>()
+                .AddScoped<IGraphSerializationService, GraphSerializationService>()
+                .AddScoped<IGraphDB, GraphDB>()
+                .AddScoped<IGraphHouseKeepingService, GraphHouseKeepingService>()
+                .AddScoped<IRDFTripleFactory, RDFTripleFactory>()
+                .AddScoped<IGraphPartitionService, GraphPartitionService>()
+                .AddScoped<IGraphEntityTypeService, GraphEntityTypeNativeService>()
+                .AddScoped<IMemoryCache, ConcurrentMemoryCache>()
+                .AddScoped<IRDFTripleStoreConsumedCapacity, InMemoryRDFTripleStoreConsumedCapacity>()
+                .AddScoped<IGraphQueryExecutionService, GraphQueryExecutionService>()
+                .AddScoped<IGraphNodeFilterDataLayerService, EmptyGraphNodeFilterDataLayerService>()
+                .AddScoped<IGraphNodeFilterService, GraphNodeFilterService>()
+                .AddScoped<IGraphEdgeFilterService, GraphEdgeFilterService>()
+                .AddScoped<IFromEdgeQueryExecutor, FromEdgeQueryExecutor>()
+                .AddScoped<IFromEdgeConnectionQueryExecutor, FromEdgeConnectionQueryExecutor>()
+                .AddScoped<IToEdgeConnectionQueryExecutor, ToEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<NodeByIdQuery>, NodeByIdQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<NodeByNodeQuery>, NodeByNodeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<NodeOrDefaultByIdQuery>, NodeOrDefaultByIdQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<NodeVersionByIdQuery>, NodeVersionByIdQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<EdgeByIdQuery>, EdgeByIdQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<EdgeOrDefaultByIdQuery>, EdgeOrDefaultByIdQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<NodeConnectionQuery>, NodeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InToEdgeConnectionQuery>, InToEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InToAllEdgeConnectionQuery>, InToAllEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<OutToEdgeConnectionQuery>, OutToEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<OutToAllEdgeConnectionQuery>, OutToAllEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InFromEdgeConnectionQuery>, InFromEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InFromEdgeQuery>, InFromEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<OutFromEdgeConnectionQuery>, OutFromEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<OutFromEdgeQuery>, OutFromEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InAndOutToEdgeConnectionQuery>, InAndOutToEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<InAndOutFromEdgeConnectionQuery>, InAndOutFromEdgeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<SingleNodeQuery>, SingleNodeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<SingleOrDefaultNodeQuery>, SingleOrDefaultNodeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<FirstNodeQuery>, FirstNodeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<FirstOrDefaultNodeQuery>, FirstOrDefaultNodeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<SingleEdgeQuery>, SingleEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<SingleOrDefaultEdgeQuery>, SingleOrDefaultEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<FirstEdgeQuery>, FirstEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<FirstOrDefaultEdgeQuery>, FirstOrDefaultEdgeQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<ZipNodeConnectionQuery>, ZipNodeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<WhereNodeConnectionQuery>, WhereNodeConnectionQueryExecutor>()
+                .AddScoped<IGraphQueryNodeExecutionService<WhereEdgeConnectionQuery>, WhereEdgeConnectionQueryExecutor>()
+                .AddScoped<IRDFTripleExclusiveStartKeyService, RDFTripleExclusiveStartKeyService>()
+                .AddScoped<IGraphQueryService, RDFTripleGraphQueryService>()
+                .AddScoped<IRDFTripleStore, RDFTripleStore>()
+                .AddScoped<IRDFTripleStore<StoreType.Cached>, CachedRDFTripleStore>();
         }
 
         public static IServiceCollection AddGraphlessDBGraphOptions(this IServiceCollection source, Action<GraphOptions> configureOptions)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBGraphOptions(source, configureOptions);
+            source
+                .AddOptions<GraphOptions>()
+                .Configure(configureOptions)
+                .Validate(options =>
+                {
+                    return !(string.IsNullOrWhiteSpace(options.TableName) ||
+                        string.IsNullOrWhiteSpace(options.GraphName) ||
+                        options.PartitionCount < 1);
+                });
+
+            return source;
         }
 
         public static IServiceCollection AddGraphEntityTypeNativeServiceOptions(this IServiceCollection source, Action<GraphEntityTypeNativeServiceOptions> configureOptions)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphEntityTypeNativeServiceOptions(source, configureOptions);
+            source
+                .AddOptions<GraphEntityTypeNativeServiceOptions>()
+                .Configure(configureOptions);
+
+            return source;
         }
 
         public static IServiceCollection AddGraphlessDBEntitySerializerOptions(this IServiceCollection source, Action<GraphEntitySerializationServiceOptions> configureOptions)
         {
-            return DependencyInjection.ServiceCollectionExtensions.AddGraphlessDBEntitySerializerOptions(source, configureOptions);
+            source
+                .AddOptions<GraphEntitySerializationServiceOptions>()
+                .Configure(configureOptions);
+
+            return source;
+        }
+
+        public static IServiceCollection AddFileBasedRDFTripleStoreOptions(this IServiceCollection source, Action<FileBasedRDFTripleStoreOptions> configureOptions)
+        {
+            source
+                .AddOptions<FileBasedRDFTripleStoreOptions>()
+                .Configure(configureOptions)
+                .Validate(options =>
+                {
+                    return !string.IsNullOrWhiteSpace(options.StoragePath);
+                });
+
+            return source;
         }
     }
 }

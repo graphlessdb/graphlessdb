@@ -8,6 +8,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Storage.Services.Internal.FileBased;
+using GraphlessDB.Storage.Services.Internal.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using GraphlessDB.Domain;
 using GraphlessDB.Domain.Graph;
@@ -17,16 +19,29 @@ namespace GraphlessDB
 {
     public static class ServiceScopeExtensions
     {
-        public static Task ProcessInMemoryNodeEventsAsync(
-            this IServiceScope source,
-            CancellationToken cancellationToken)
-        {
-            return DependencyInjection.ServiceScopeExtensions.ProcessInMemoryNodeEventsAsync(source, cancellationToken);
-        }
-
         public static IGraphDB GraphDB(this IServiceScope source)
         {
             return source.ServiceProvider.GetRequiredService<IGraphDB>();
+        }
+
+        public static async Task ProcessInMemoryNodeEventsAsync(
+            this IServiceScope source,
+            CancellationToken cancellationToken)
+        {
+            await source
+                .ServiceProvider
+                .GetRequiredService<IInMemoryNodeEventProcessor>()
+                .ProcessInMemoryNodeEventsAsync(cancellationToken);
+        }
+
+        public static async Task ProcessFileBasedNodeEventsAsync(
+            this IServiceScope source,
+            CancellationToken cancellationToken)
+        {
+            await source
+                .ServiceProvider
+                .GetRequiredService<IFileBasedNodeEventProcessor>()
+                .ProcessFileBasedNodeEventsAsync(cancellationToken);
         }
     }
 }
