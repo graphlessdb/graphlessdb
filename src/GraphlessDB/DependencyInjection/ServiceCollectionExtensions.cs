@@ -11,7 +11,7 @@ using GraphlessDB.Domain.Services;
 using GraphlessDB.Domain.Internal;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal;
+using GraphlessDB.Query.Internal;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Storage.Services.Internal;

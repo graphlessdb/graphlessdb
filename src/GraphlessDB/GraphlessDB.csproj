@@ -20,6 +20,7 @@
     <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
     <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
     <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Query\GraphlessDB.Query.csproj" />
   </ItemGroup>
 
   <ItemGroup>

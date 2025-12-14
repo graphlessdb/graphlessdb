@@ -22,6 +22,7 @@ using GraphlessDB.Query.Services.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GraphlessDB.Domain;
+using GraphlessDB.Query.Internal;
 
 namespace GraphlessDB.Tests
 {

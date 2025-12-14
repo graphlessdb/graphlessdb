@@ -7,6 +7,7 @@ This skill provides additional information on how to work with dot.
 
 ## Dotnet / C# notes
 
+- dotnet build needs the following flags to ensure the process stops and returns immediately on completion.  -p:UseSharedCompilation=false -p:UseRazorBuildServer=false nodeReuse:false --verbosity quiet
 - Ensure that "export MSBUILDDISABLENODEREUSE=1" is run before any using and dotnet commands to ensure the called process finishes.
 - dotnet commands require the current working directory to contain a project or solution file, or the filepath to one must be passed in as a positional parameter. E.g. dotnet clean src/GraphlessDB.sln --nodereuse:false or dotnet build src/GraphlessDB.sln --nodereuse:false
 - Do not redirect output of dotnet commands to null using "> /dev/null 2>&1"

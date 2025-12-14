@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Storage", "Grap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Domain", "GraphlessDB.Domain\GraphlessDB.Domain.csproj", "{6E685902-BA74-4420-918C-16FB6266C33C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphlessDB.Query", "GraphlessDB.Query\GraphlessDB.Query.csproj", "{F7B65BC9-0390-405E-B08E-80F449C953AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,18 @@ Global
 		{6E685902-BA74-4420-918C-16FB6266C33C}.Release|x64.Build.0 = Release|Any CPU
 		{6E685902-BA74-4420-918C-16FB6266C33C}.Release|x86.ActiveCfg = Release|Any CPU
 		{6E685902-BA74-4420-918C-16FB6266C33C}.Release|x86.Build.0 = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|x64.ActiveCfg = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|x64.Build.0 = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7B65BC9-0390-405E-B08E-80F449C953AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
