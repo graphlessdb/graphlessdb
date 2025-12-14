@@ -9,10 +9,10 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
+using GraphlessDB.Query;
 
 namespace GraphlessDB.Query.Services
 {

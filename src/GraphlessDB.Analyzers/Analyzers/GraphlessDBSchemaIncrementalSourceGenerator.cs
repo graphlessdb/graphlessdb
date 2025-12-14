@@ -285,7 +285,7 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine();
             generatedString.AppendLine($"namespace {graph.Namespace}");
             generatedString.AppendLine("{");
-            generatedString.AppendLine($"   public sealed class {node.Name}Order : global::GraphlessDB.INodeOrder");
+            generatedString.AppendLine($"   public sealed class {node.Name}Order : global::GraphlessDB.Query.INodeOrder");
             generatedString.AppendLine("   {");
             generatedString.AppendLine("        public global::GraphlessDB.Domain.Graph.OrderDirection? Id { get; set; }");
             foreach (var property in node.Properties.Items)
@@ -295,13 +295,13 @@ namespace GraphlessDB.Analyzers
             }
             generatedString.AppendLine("   }");
             generatedString.AppendLine();
-            generatedString.AppendLine($"   public sealed class {node.Name}Filter : global::GraphlessDB.INodeFilter");
+            generatedString.AppendLine($"   public sealed class {node.Name}Filter : global::GraphlessDB.Query.INodeFilter");
             generatedString.AppendLine("   {");
-            generatedString.AppendLine("        public global::GraphlessDB.IdFilter? Id { get; set; }");
+            generatedString.AppendLine("        public global::GraphlessDB.Query.IdFilter? Id { get; set; }");
             foreach (var property in node.Properties.Items)
             {
                 generatedString.AppendLine();
-                generatedString.AppendLine($"        public global::GraphlessDB.{GetFilterType(graph, property.Type)}? {property.Name} {{ get; set; }}");
+                generatedString.AppendLine($"        public global::GraphlessDB.Query.{GetFilterType(graph, property.Type)}? {property.Name} {{ get; set; }}");
             }
             generatedString.AppendLine("   }");
             generatedString.AppendLine("}");
@@ -311,20 +311,20 @@ namespace GraphlessDB.Analyzers
             generatedString.AppendLine($"    public static partial class FluentGraphQueryExtensions");
             generatedString.AppendLine("    {");
             generatedString.AppendLine(
-        @$"        public static global::GraphlessDB.FluentNodeQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}(
-            this global::GraphlessDB.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source, string id)
+        @$"        public static global::GraphlessDB.Query.FluentNodeQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}(
+            this global::GraphlessDB.Query.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source, string id)
         {{
             return source.Node<global::{graph.Namespace}.{node.Name}>(id);
         }}
 
-        public static global::GraphlessDB.FluentNodeOrDefaultQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}OrDefault(
-            this global::GraphlessDB.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source, string id)
+        public static global::GraphlessDB.Query.FluentNodeOrDefaultQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}OrDefault(
+            this global::GraphlessDB.Query.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source, string id)
         {{
             return source.NodeOrDefault<global::{graph.Namespace}.{node.Name}>(id);
         }}
 
-        public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}s(
-            this global::GraphlessDB.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source,
+        public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{node.Name}> {node.Name}s(
+            this global::GraphlessDB.Query.FluentGraphQuery<global::{graph.Namespace}.{graph.Name}> source,
             global::{graph.Namespace}.{node.Name}Order? order = null,
             global::{graph.Namespace}.{node.Name}Filter? filter = null)
         {{
@@ -369,20 +369,20 @@ namespace GraphlessDB.Analyzers
 
         private static void GenerateEdgeFilter(GraphSchema graph, Edge edge, StringBuilder generatedString)
         {
-            generatedString.AppendLine($"     public sealed class {edge.Name}EdgeFilter : global::GraphlessDB.IEdgeFilter");
+            generatedString.AppendLine($"     public sealed class {edge.Name}EdgeFilter : global::GraphlessDB.Query.IEdgeFilter");
             generatedString.AppendLine("     {");
             foreach (var property in edge.Properties.Items)
             {
-                generatedString.AppendLine($"          public global::GraphlessDB.{GetFilterType(graph, property.Type)}? {property.Name} {{ get; set; }}");
+                generatedString.AppendLine($"          public global::GraphlessDB.Query.{GetFilterType(graph, property.Type)}? {property.Name} {{ get; set; }}");
                 generatedString.AppendLine();
             }
-            generatedString.AppendLine($"          public global::GraphlessDB.EdgeFilter? GetEdgeFilter()");
+            generatedString.AppendLine($"          public global::GraphlessDB.Query.EdgeFilter? GetEdgeFilter()");
             generatedString.AppendLine($"          {{");
-            generatedString.AppendLine($"               return new global::GraphlessDB.EdgeFilter(\"{edge.Name}\",\"{edge.In.NodeName}\",\"{edge.Out.NodeName}\", null, null,");
-            generatedString.AppendLine($"                    global::System.Collections.Immutable.ImmutableList<global::GraphlessDB.ValueFilterItem>.Empty");
+            generatedString.AppendLine($"               return new global::GraphlessDB.Query.EdgeFilter(\"{edge.Name}\",\"{edge.In.NodeName}\",\"{edge.Out.NodeName}\", null, null,");
+            generatedString.AppendLine($"                    global::System.Collections.Immutable.ImmutableList<global::GraphlessDB.Query.ValueFilterItem>.Empty");
             foreach (var property in edge.Properties.Items)
             {
-                generatedString.AppendLine($"                         .AddIf({property.Name} != null, new global::GraphlessDB.ValueFilterItem(\"{property.Name}\", {property.Name}))");
+                generatedString.AppendLine($"                         .AddIf({property.Name} != null, new global::GraphlessDB.Query.ValueFilterItem(\"{property.Name}\", {property.Name}))");
             }
             generatedString.AppendLine($"                    );");
             generatedString.AppendLine($"          }}");
@@ -391,7 +391,7 @@ namespace GraphlessDB.Analyzers
 
         private static void GenerateEdgeOrder(Edge edge, StringBuilder generatedString)
         {
-            generatedString.AppendLine($"     public sealed class {edge.Name}EdgeOrder : global::GraphlessDB.IEdgeOrder");
+            generatedString.AppendLine($"     public sealed class {edge.Name}EdgeOrder : global::GraphlessDB.Query.IEdgeOrder");
             generatedString.AppendLine("     {");
             foreach (var property in edge.Properties.Items)
             {
@@ -405,42 +405,42 @@ namespace GraphlessDB.Analyzers
         {
             generatedString.AppendLine("     public static partial class FluentNodeConnectionQueryExtensions");
             generatedString.AppendLine("     {");
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}Edges(");
-            generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}Edges(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("           {");
             generatedString.AppendLine($"               return source.InToEdges<global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.Out.NodeName}>(c => c with {{ Order = order, Filter = filter }});");
             generatedString.AppendLine("           }");
             generatedString.AppendLine();
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}Edges(");
-            generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}Edges(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("           {");
             generatedString.AppendLine($"               return source.OutToEdges<global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}>(c => c with {{ Order = order, Filter = filter }});");
             generatedString.AppendLine("           }");
             generatedString.AppendLine();
             if (edge.In.NodeName == edge.Out.NodeName)
             {
-                generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(");
-                generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+                generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(");
+                generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
                 generatedString.AppendLine("           {");
                 generatedString.AppendLine($"               return source.InAndOutToEdges<global::{graph.Namespace}.{edge.Name}Edge>(c => c with {{ Order = order, Filter = filter }});");
                 generatedString.AppendLine("           }");
                 generatedString.AppendLine();
             }
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}(");
-            generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("          {");
             generatedString.AppendLine($"               return source.{edge.Out.FriendlyName}Edges(order, filter).OutFromEdges();");
             generatedString.AppendLine("          }");
             generatedString.AppendLine();
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}(");
-            generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("          {");
             generatedString.AppendLine($"               return source.{edge.In.FriendlyName}Edges(order, filter).InFromEdges();");
             generatedString.AppendLine("          }");
             if (edge.In.NodeName == edge.Out.NodeName)
             {
-                generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}(");
-                generatedString.AppendLine($"               this global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+                generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}(");
+                generatedString.AppendLine($"               this global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
                 generatedString.AppendLine("          {");
                 generatedString.AppendLine($"               return source.{edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(order, filter).InAndOutFromEdges();");
                 generatedString.AppendLine("          }");
@@ -452,43 +452,43 @@ namespace GraphlessDB.Analyzers
         {
             generatedString.AppendLine($"     public static partial class {sourceTypeName}Extensions");
             generatedString.AppendLine("     {");
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}Edges(");
-            generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}Edges(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("           {");
             generatedString.AppendLine($"               return source.InToEdges<global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.Out.NodeName}>(c => c with {{ Order = order, Filter = filter }});");
             generatedString.AppendLine("           }");
             generatedString.AppendLine();
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}Edges(");
-            generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}Edges(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("           {");
             generatedString.AppendLine($"               return source.OutToEdges<global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}>(c => c with {{ Order = order, Filter = filter }});");
             generatedString.AppendLine("           }");
             generatedString.AppendLine();
             if (edge.In.NodeName == edge.Out.NodeName)
             {
-                generatedString.AppendLine($"          public static global::GraphlessDB.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(");
-                generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+                generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentEdgeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Name}Edge, global::{graph.Namespace}.{edge.In.NodeName}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(");
+                generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
                 generatedString.AppendLine("           {");
                 generatedString.AppendLine($"               return source.InAndOutToEdges<global::{graph.Namespace}.{edge.Name}Edge>(c => c with {{ Order = order, Filter = filter }});");
                 generatedString.AppendLine("           }");
                 generatedString.AppendLine();
             }
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}(");
-            generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> {edge.Out.FriendlyName}(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("          {");
             generatedString.AppendLine($"               return source.{edge.Out.FriendlyName}Edges(order, filter).OutFromEdges();");
             generatedString.AppendLine("          }");
             generatedString.AppendLine();
-            generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}(");
-            generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+            generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}(");
+            generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
             generatedString.AppendLine("          {");
             generatedString.AppendLine($"               return source.{edge.In.FriendlyName}Edges(order, filter).InFromEdges();");
             generatedString.AppendLine("          }");
             generatedString.AppendLine();
             if (edge.In.NodeName == edge.Out.NodeName)
             {
-                generatedString.AppendLine($"          public static global::GraphlessDB.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}(");
-                generatedString.AppendLine($"               this global::GraphlessDB.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
+                generatedString.AppendLine($"          public static global::GraphlessDB.Query.FluentNodeConnectionQuery<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.In.NodeName}> {edge.In.FriendlyName}And{edge.Out.FriendlyName}(");
+                generatedString.AppendLine($"               this global::GraphlessDB.Query.{sourceTypeName}<global::{graph.Namespace}.{graph.Name}, global::{graph.Namespace}.{edge.Out.NodeName}> source, global::{graph.Namespace}.{edge.Name}EdgeOrder? order = null, global::{graph.Namespace}.{edge.Name}EdgeFilter? filter = null)");
                 generatedString.AppendLine("          {");
                 generatedString.AppendLine($"               return source.{edge.In.FriendlyName}And{edge.Out.FriendlyName}Edges(order, filter).InAndOutFromEdges();");
                 generatedString.AppendLine("          }");

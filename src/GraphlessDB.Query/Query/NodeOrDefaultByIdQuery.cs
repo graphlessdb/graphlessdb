@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 namespace GraphlessDB.Query
 {
     public sealed record NodeOrDefaultByIdQuery(string Id, bool ConsistentRead, string? Tag) : GraphQuery;
