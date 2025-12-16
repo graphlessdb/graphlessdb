@@ -6,10 +6,9 @@
  *
  */
 
-using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Threading;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
     internal sealed class InMemoryRDFTripleStoreConsumedCapacity : IRDFTripleStoreConsumedCapacity
     {

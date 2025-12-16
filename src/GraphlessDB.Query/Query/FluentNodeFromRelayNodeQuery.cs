@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query.Services;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Query
 {

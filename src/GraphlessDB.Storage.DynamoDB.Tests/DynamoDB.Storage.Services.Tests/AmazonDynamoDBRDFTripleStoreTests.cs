@@ -16,7 +16,7 @@ using Amazon.DynamoDBv2.Model;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.DynamoDB.Transactions;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services;
 using GraphlessDB.Storage.Services.DynamoDB;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

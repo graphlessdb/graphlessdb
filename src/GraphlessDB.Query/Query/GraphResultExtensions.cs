@@ -8,6 +8,7 @@
 
 using System;
 using GraphlessDB.Domain.Graph;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Query
 {

@@ -9,7 +9,7 @@
 using System.Linq;
 using GraphlessDB.DynamoDB.Transactions.Internal;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services;
 using GraphlessDB.Storage.Services.DynamoDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

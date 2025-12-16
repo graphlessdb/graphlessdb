@@ -7,6 +7,7 @@
  */
 
 using System.Collections.Immutable;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Domain.Graph
 {

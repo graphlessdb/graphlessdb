@@ -7,7 +7,7 @@
  */
 
 using System.Collections.Concurrent;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services;
 
 namespace GraphlessDB.Domain.Graph.Services
 {

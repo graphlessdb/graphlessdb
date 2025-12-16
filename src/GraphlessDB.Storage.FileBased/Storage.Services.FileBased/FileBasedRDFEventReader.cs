@@ -12,9 +12,9 @@ using GraphlessDB.Domain.Graph;
 using GraphlessDB.Threading;
 using Microsoft.Extensions.Options;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.FileBased
 {
-    internal sealed class InMemoryRDFEventReader(IOptions<GraphOptions> options) : IInMemoryRDFEventReader
+    internal sealed class FileBasedRDFEventReader(IOptions<GraphOptions> options) : IFileBasedRDFEventReader
     {
         private ImmutableList<RDFTriple> _events = [];
         private readonly Lock _locker = new();
@@ -29,6 +29,7 @@ namespace GraphlessDB.Storage.Services.Internal.InMemory
                 }
             }
         }
+
         public void OnRDFTripleUpdated(RDFTriple value)
         {
             if (value.Predicate.StartsWith(HasType.ByGraphName(options.Value.GraphName), StringComparison.Ordinal))

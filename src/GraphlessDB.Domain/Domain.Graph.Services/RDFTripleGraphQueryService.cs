@@ -16,7 +16,7 @@ using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Logging;
 using GraphlessDB.Linq;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services;
 using Microsoft.Extensions.Logging;
 
 namespace GraphlessDB.Domain.Graph.Services

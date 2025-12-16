@@ -6,10 +6,9 @@
  *
  */
 
-using GraphlessDB.Storage.Interfaces;
 using GraphlessDB.Threading;
 
-namespace GraphlessDB.Storage.Services.Internal.FileBased
+namespace GraphlessDB.Storage.Services.FileBased
 {
     internal sealed class FileBasedRDFTripleStoreConsumedCapacity : IRDFTripleStoreConsumedCapacity
     {

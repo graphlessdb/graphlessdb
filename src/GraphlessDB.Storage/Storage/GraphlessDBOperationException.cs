@@ -6,11 +6,9 @@
  *
  */
 
-namespace GraphlessDB
+using System;
+
+namespace GraphlessDB.Storage
 {
-    public enum PropertyOperator
-    {
-        Equals,
-        StartsWith,
-    }
+    public class GraphlessDBOperationException(string? message = null, Exception? innerException = null) : GraphlessDBException(message, innerException);
 }

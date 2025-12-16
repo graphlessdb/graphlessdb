@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services.InMemory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory.Tests

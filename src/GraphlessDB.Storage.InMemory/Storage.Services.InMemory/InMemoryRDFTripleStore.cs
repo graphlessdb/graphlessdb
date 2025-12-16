@@ -13,21 +13,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Storage.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
     internal sealed class InMemoryRDFTripleStore : IRDFTripleStore<StoreType.Data>
     {
         private readonly Dictionary<string, InMemoryRDFTripleStoreTable> _tables;
         private readonly Dictionary<string, InMemoryRDFTripleStoreIndexTable> _indexes;
-        private readonly GraphlessDB.Threading.Lock _locker;
+        private readonly Threading.Lock _locker;
         private readonly IInMemoryRDFEventReader _rdfEventHandler;
 
         public InMemoryRDFTripleStore(IOptions<GraphOptions> graphOptions, IInMemoryRDFEventReader rdfEventHandler)
         {
-            _locker = new GraphlessDB.Threading.Lock();
+            _locker = new Threading.Lock();
 
             _tables = new Dictionary<string, InMemoryRDFTripleStoreTable>
             {

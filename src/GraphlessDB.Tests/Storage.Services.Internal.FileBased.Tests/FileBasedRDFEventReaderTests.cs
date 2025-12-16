@@ -7,6 +7,7 @@
  */
 
 using GraphlessDB.Domain.Graph;
+using GraphlessDB.Storage.Services.FileBased;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -8,8 +8,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Storage.Services.Internal.FileBased;
-using GraphlessDB.Storage.Services.Internal.InMemory;
+using GraphlessDB.Storage.Services.FileBased;
+using GraphlessDB.Storage.Services.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphlessDB

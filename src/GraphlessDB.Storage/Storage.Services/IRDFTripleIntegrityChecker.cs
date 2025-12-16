@@ -10,7 +10,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GraphlessDB.Storage.Interfaces
+namespace GraphlessDB.Storage.Services
 {
     public interface IRDFTripleIntegrityChecker
     {

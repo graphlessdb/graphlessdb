@@ -5,8 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-namespace GraphlessDB.Storage.Interfaces
+namespace GraphlessDB.Storage.Services
 {
     public interface IRDFTripleStoreConsumedCapacity
     {

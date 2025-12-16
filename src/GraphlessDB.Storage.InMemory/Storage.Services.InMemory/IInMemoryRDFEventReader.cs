@@ -8,7 +8,7 @@
 
 using System.Collections.Immutable;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
     internal interface IInMemoryRDFEventReader
     {

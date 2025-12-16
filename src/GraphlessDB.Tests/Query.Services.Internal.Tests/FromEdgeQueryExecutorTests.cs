@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
+using GraphlessDB.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

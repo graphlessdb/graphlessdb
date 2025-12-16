@@ -21,7 +21,6 @@ using GraphlessDB.DynamoDB.Transactions;
 using GraphlessDB.DynamoDB.Transactions.Storage;
 using GraphlessDB.Linq;
 using GraphlessDB.Logging;
-using GraphlessDB.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

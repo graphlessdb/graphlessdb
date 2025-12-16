@@ -12,9 +12,9 @@ using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Interfaces;
-using GraphlessDB.Storage.Services.Internal.FileBased;
-using GraphlessDB.Storage.Services.Internal.InMemory;
+using GraphlessDB.Storage.Services;
+using GraphlessDB.Storage.Services.FileBased;
+using GraphlessDB.Storage.Services.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphlessDB

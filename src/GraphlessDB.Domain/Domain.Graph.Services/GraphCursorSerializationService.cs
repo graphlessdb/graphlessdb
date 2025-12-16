@@ -9,6 +9,7 @@
 using System;
 using System.Text;
 using System.Text.Json;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Domain.Graph.Services
 {

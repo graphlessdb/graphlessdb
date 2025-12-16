@@ -9,10 +9,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GraphlessDB.Storage.Services.Internal.FileBased
+namespace GraphlessDB.Storage.Services.InMemory
 {
-    internal interface IFileBasedNodeEventProcessor
+    internal interface IInMemoryNodeEventProcessor
     {
-        Task ProcessFileBasedNodeEventsAsync(CancellationToken cancellationToken);
+        Task ProcessInMemoryNodeEventsAsync(CancellationToken cancellationToken);
     }
 }

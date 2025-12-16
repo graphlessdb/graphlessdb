@@ -8,7 +8,7 @@
 
 using System;
 
-namespace GraphlessDB
+namespace GraphlessDB.Storage
 {
     public class GraphlessDBException(string? message = null, Exception? innerException = null) : Exception(message, innerException);
 }

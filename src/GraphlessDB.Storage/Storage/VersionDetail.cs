@@ -5,8 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-namespace GraphlessDB
+namespace GraphlessDB.Storage
 {
     public sealed record VersionDetail(int NodeVersion, int AllEdgesVersion)
     {

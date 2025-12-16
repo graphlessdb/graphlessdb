@@ -5,8 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-namespace GraphlessDB.Storage.Services.Internal.FileBased
+namespace GraphlessDB.Storage.Services.FileBased
 {
     public sealed class FileBasedRDFTripleStoreOptions
     {

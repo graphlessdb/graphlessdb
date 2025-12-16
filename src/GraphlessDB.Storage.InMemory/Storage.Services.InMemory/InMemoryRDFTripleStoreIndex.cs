@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
     internal sealed record InMemoryRDFTripleStoreIndex(
         Dictionary<string, List<string>> SortKeysByPartitionKey,

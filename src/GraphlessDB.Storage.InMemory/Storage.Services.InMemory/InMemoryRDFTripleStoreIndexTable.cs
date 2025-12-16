@@ -10,19 +10,19 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphlessDB.Domain.Graph;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
-    internal sealed record InMemoryRDFTripleStoreTable(
-        string TableName,
-        List<InMemoryRDFTripleStorePartition> Partitions)
+    internal sealed record InMemoryRDFTripleStoreIndexTable(
+        string IndexName,
+        List<InMemoryRDFTripleStoreIndex> Partitions)
     {
-        public static InMemoryRDFTripleStoreTable Create(string name, int partitionCount)
+        public static InMemoryRDFTripleStoreIndexTable Create(string name, int partitionCount)
         {
-            return new InMemoryRDFTripleStoreTable(
+            return new InMemoryRDFTripleStoreIndexTable(
                 name,
                 Enumerable
                     .Range(0, partitionCount)
-                    .Select(i => InMemoryRDFTripleStorePartition.Create())
+                    .Select(i => InMemoryRDFTripleStoreIndex.Create())
                     .ToList());
         }
     }

@@ -8,6 +8,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using GraphlessDB.Storage;
 
 namespace GraphlessDB.Query.Services
 {

@@ -16,16 +16,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Storage.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace GraphlessDB.Storage.Services.Internal.FileBased
+namespace GraphlessDB.Storage.Services.FileBased
 {
     internal sealed class FileBasedRDFTripleStore : IRDFTripleStore<StoreType.Data>
     {
         private readonly string _storagePath;
         private readonly int _partitionCount;
-        private readonly GraphlessDB.Threading.Lock _locker;
+        private readonly Threading.Lock _locker;
         private readonly IFileBasedRDFEventReader _rdfEventHandler;
 
         public FileBasedRDFTripleStore(
@@ -33,7 +32,7 @@ namespace GraphlessDB.Storage.Services.Internal.FileBased
             IOptions<FileBasedRDFTripleStoreOptions> storageOptions,
             IFileBasedRDFEventReader rdfEventHandler)
         {
-            _locker = new GraphlessDB.Threading.Lock();
+            _locker = new Threading.Lock();
             _partitionCount = graphOptions.Value.PartitionCount;
             _storagePath = storageOptions.Value.StoragePath;
             _rdfEventHandler = rdfEventHandler ?? throw new ArgumentNullException(nameof(rdfEventHandler));

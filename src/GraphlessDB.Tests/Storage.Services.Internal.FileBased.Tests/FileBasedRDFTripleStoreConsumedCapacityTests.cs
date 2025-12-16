@@ -7,6 +7,7 @@
  */
 
 using System.Threading.Tasks;
+using GraphlessDB.Storage.Services.FileBased;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Storage.Services.Internal.FileBased.Tests

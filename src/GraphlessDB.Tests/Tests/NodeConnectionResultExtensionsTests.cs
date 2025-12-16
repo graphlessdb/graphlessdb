@@ -8,6 +8,7 @@
 
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
+using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Tests

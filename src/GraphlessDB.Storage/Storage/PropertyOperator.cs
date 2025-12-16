@@ -5,10 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-using System;
-
-namespace GraphlessDB
+namespace GraphlessDB.Storage
 {
-    public class GraphlessDBOperationException(string? message = null, Exception? innerException = null) : GraphlessDBException(message, innerException);
+    public enum PropertyOperator
+    {
+        Equals,
+        StartsWith,
+    }
 }

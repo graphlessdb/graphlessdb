@@ -8,6 +8,7 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using GraphlessDB.Storage.Services.InMemory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GraphlessDB.Storage.Services.Internal.InMemory.Tests

@@ -9,7 +9,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Storage;
-using GraphlessDB.Storage.Interfaces;
+using GraphlessDB.Storage.Services;
 using Microsoft.Extensions.Options;
 
 namespace GraphlessDB.Domain.Graph.Services

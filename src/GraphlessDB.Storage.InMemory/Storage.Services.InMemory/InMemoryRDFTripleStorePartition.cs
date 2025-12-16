@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace GraphlessDB.Storage.Services.Internal.InMemory
+namespace GraphlessDB.Storage.Services.InMemory
 {
     internal sealed record InMemoryRDFTripleStorePartition(
         InMemoryRDFTripleStoreIndex PredicatesBySubject,

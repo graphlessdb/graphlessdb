@@ -12,18 +12,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
-using GraphlessDB.Storage.Interfaces;
 
-namespace GraphlessDB.Storage.Services.Internal.FileBased
+namespace GraphlessDB.Storage.Services.InMemory
 {
-    internal sealed class FileBasedNodeEventProcessor(
+    internal sealed class InMemoryNodeEventProcessor(
         IGraphSettingsService graphOptionsProvider,
         IGraphEventService nodeEventService,
-        IFileBasedRDFEventReader rdfEventHandler,
+        IInMemoryRDFEventReader rdfEventHandler,
         IRDFTripleFactory rdfTripleFactory,
-        IRDFTripleStore rdfTripleStore) : IFileBasedNodeEventProcessor
+        IRDFTripleStore rdfTripleStore) : IInMemoryNodeEventProcessor
     {
-        public async Task ProcessFileBasedNodeEventsAsync(CancellationToken cancellationToken)
+        public async Task ProcessInMemoryNodeEventsAsync(CancellationToken cancellationToken)
         {
             var options = graphOptionsProvider.GetGraphSettings();
             while (true)
