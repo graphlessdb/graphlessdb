@@ -16,6 +16,7 @@
     <InternalsVisibleTo Include="GraphlessDB" />
     <InternalsVisibleTo Include="GraphlessDB.Tests" />
     <InternalsVisibleTo Include="GraphlessDB.Storage.DynamoDB" />
+    <InternalsVisibleTo Include="GraphlessDB.Storage.Tests" />
   </ItemGroup>
 
   <ItemGroup>

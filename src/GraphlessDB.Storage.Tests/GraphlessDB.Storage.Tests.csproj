@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GraphlessDB</RootNamespace>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <Nullable>enable</Nullable>
+    <DebugType>embedded</DebugType>
+    <IsTrimmable>true</IsTrimmable>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-Recommended</AnalysisLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage.InMemory\GraphlessDB.Storage.InMemory.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Storage.FileBased\GraphlessDB.Storage.FileBased.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.7.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.7.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

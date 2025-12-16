@@ -14,7 +14,7 @@ using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
-using GraphlessDB.Query.Services.Internal.Tests;
+using GraphlessDB.Query.Services.Tests;
 using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

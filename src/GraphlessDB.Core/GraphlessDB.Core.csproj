@@ -15,6 +15,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="GraphlessDB" />
     <InternalsVisibleTo Include="GraphlessDB.Tests" />
+    <InternalsVisibleTo Include="GraphlessDB.Core.Tests" />
   </ItemGroup>
 
 </Project>

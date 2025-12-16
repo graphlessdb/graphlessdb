@@ -14,7 +14,7 @@ using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
 using GraphlessDB.Extensions.DependencyInjection;
-using GraphlessDB.Graph.Services.Internal.Tests;
+using GraphlessDB.Graph.Services.Tests;
 using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using Microsoft.Extensions.DependencyInjection;
