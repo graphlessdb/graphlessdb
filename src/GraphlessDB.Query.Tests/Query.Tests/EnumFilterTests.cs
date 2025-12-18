@@ -6,10 +6,9 @@
  *
  */
 
-using GraphlessDB.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Query.Tests
 {
     public enum TestStatus
     {

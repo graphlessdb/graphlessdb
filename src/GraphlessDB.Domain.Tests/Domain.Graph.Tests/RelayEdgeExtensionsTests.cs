@@ -7,10 +7,10 @@
  */
 
 using System.Collections.Generic;
-using GraphlessDB.Domain.Graph;
+using GraphlessDB.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Domain.Graph.Tests
 {
     [TestClass]
     public sealed class RelayEdgeExtensionsTests

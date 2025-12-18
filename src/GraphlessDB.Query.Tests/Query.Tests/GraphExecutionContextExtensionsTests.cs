@@ -12,12 +12,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Query;
 using GraphlessDB.Query.Services;
 using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Query.Tests
 {
     [TestClass]
     public sealed class GraphExecutionContextExtensionsTests

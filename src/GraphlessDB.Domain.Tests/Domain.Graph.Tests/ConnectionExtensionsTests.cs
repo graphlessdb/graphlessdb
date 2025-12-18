@@ -11,9 +11,10 @@ using System.Collections.Immutable;
 using System.Linq;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Storage;
+using GraphlessDB.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Domain.Graph.Tests
 {
     [TestClass]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test method names are more readable with underscores")]

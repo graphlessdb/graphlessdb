@@ -7,19 +7,18 @@
  */
 
 using System;
-using GraphlessDB.Domain.Graph;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Domain.Graph.Tests
 {
     [TestClass]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Test method names are more readable with underscores")]
-    public sealed class GraphlessDBRequestLimitExceededExceptionTests
+    public sealed class GraphlessDBInternalServerErrorExceptionTests
     {
         [TestMethod]
         public void ConstructorWithNoParametersCreatesException()
         {
-            var exception = new GraphlessDBRequestLimitExceededException();
+            var exception = new GraphlessDBInternalServerErrorException();
             Assert.IsNotNull(exception);
             Assert.IsNull(exception.InnerException);
         }
@@ -28,7 +27,7 @@ namespace GraphlessDB.Tests
         public void ConstructorWithMessageSetsMessageProperty()
         {
             var message = "Test message";
-            var exception = new GraphlessDBRequestLimitExceededException(message);
+            var exception = new GraphlessDBInternalServerErrorException(message);
             Assert.AreEqual(message, exception.Message);
             Assert.IsNull(exception.InnerException);
         }
@@ -38,7 +37,7 @@ namespace GraphlessDB.Tests
         {
             var message = "Test message";
             var innerException = new InvalidOperationException("Inner exception");
-            var exception = new GraphlessDBRequestLimitExceededException(message, innerException);
+            var exception = new GraphlessDBInternalServerErrorException(message, innerException);
             Assert.AreEqual(message, exception.Message);
             Assert.AreEqual(innerException, exception.InnerException);
         }

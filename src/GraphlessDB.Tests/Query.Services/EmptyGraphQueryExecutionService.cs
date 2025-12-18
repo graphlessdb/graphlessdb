@@ -11,10 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Query;
-using GraphlessDB.Query.Services;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Query.Services
 {
     public sealed class EmptyGraphQueryExecutionService : IGraphQueryExecutionService
     {

@@ -10,11 +10,11 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Query;
 using GraphlessDB.Storage;
+using GraphlessDB.Tests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Query.Tests
 {
     [TestClass]
     public sealed class GraphResultExtensionsTests

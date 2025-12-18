@@ -8,10 +8,9 @@
 
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Query.Tests
 {
     [TestClass]
     public sealed class GraphQueryExtensionsTests

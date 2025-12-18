@@ -8,10 +8,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Graph.Services;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Domain.Graph.Services
 {
     public sealed class EmptyGraphDBEventService : IGraphEventService
     {

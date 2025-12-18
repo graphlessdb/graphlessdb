@@ -6,10 +6,9 @@
  *
  */
 
-using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Tests
+namespace GraphlessDB.Storage.Tests
 {
     [TestClass]
     public sealed class QueryRDFTriplesByPartitionAndIndexedObjectRequestTests
