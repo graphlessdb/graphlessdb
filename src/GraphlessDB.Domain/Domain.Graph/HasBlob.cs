@@ -9,7 +9,7 @@
 using System;
 using System.Globalization;
 
-namespace GraphlessDB.Storage
+namespace GraphlessDB.Domain.Graph
 {
     public sealed class HasBlob : IPredicate
     {

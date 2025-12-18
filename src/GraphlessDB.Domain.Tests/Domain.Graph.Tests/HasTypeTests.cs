@@ -7,9 +7,10 @@
  */
 
 using System;
+using GraphlessDB.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Storage.Tests
+namespace GraphlessDB.Domain.Graph.Tests
 {
     [TestClass]
     public sealed class HasTypeTests

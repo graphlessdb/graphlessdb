@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using GraphlessDB.Domain.Graph;
 using GraphlessDB.Storage;
 
 namespace GraphlessDB.Domain.Graph.Services
@@ -192,15 +193,15 @@ namespace GraphlessDB.Domain.Graph.Services
 
         private Type GetEdgeType(RDFTriple item)
         {
-            if (Storage.HasInEdge.IsPredicate(item.Predicate))
+            if (Graph.HasInEdge.IsPredicate(item.Predicate))
             {
-                var predicate = Storage.HasInEdge.Parse(item.Predicate);
+                var predicate = Graph.HasInEdge.Parse(item.Predicate);
                 return typeMapper.GetEntityType(predicate.EdgeTypeName);
             }
 
-            if (Storage.HasOutEdge.IsPredicate(item.Predicate))
+            if (Graph.HasOutEdge.IsPredicate(item.Predicate))
             {
-                var predicate = Storage.HasOutEdge.Parse(item.Predicate);
+                var predicate = Graph.HasOutEdge.Parse(item.Predicate);
                 return typeMapper.GetEntityType(predicate.EdgeTypeName);
             }
 

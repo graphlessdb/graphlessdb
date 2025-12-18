@@ -9,7 +9,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GraphlessDB.Storage.Tests
+namespace GraphlessDB.Domain.Graph.Tests
 {
     [TestClass]
     public sealed class HasBlobTests

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace GraphlessDB.Storage
+namespace GraphlessDB.Domain.Graph
 {
     public sealed class HadOutEdge : IPredicate
     {

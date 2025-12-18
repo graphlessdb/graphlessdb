@@ -8,22 +8,22 @@
 
 using System;
 
-namespace GraphlessDB.Storage
+namespace GraphlessDB.Domain.Graph
 {
-    public sealed class HasOutEdge : IPredicate
+    public sealed class HasInEdge : IPredicate
     {
-        public const string Name = "out";
+        public const string Name = "in";
 
-        public HasOutEdge(string graphName, string nodeOutTypeName, string edgeTypeName, string nodeInId, string nodeOutId)
+        public HasInEdge(string graphName, string nodeInTypeName, string edgeTypeName, string nodeInId, string nodeOutId)
         {
             if (string.IsNullOrWhiteSpace(graphName) || graphName.Contains('#'))
             {
                 throw new ArgumentException("Cannot be null, empty, whitespace or contain #", nameof(graphName));
             }
 
-            if (string.IsNullOrWhiteSpace(nodeOutTypeName) || nodeOutTypeName.Contains('#'))
+            if (string.IsNullOrWhiteSpace(nodeInTypeName) || nodeInTypeName.Contains('#'))
             {
-                throw new ArgumentException("Cannot be null, empty, whitespace or contain #", nameof(nodeOutTypeName));
+                throw new ArgumentException("Cannot be null, empty, whitespace or contain #", nameof(nodeInTypeName));
             }
 
             if (string.IsNullOrWhiteSpace(edgeTypeName) || edgeTypeName.Contains('#'))
@@ -42,7 +42,7 @@ namespace GraphlessDB.Storage
             }
 
             GraphName = graphName;
-            NodeOutTypeName = nodeOutTypeName;
+            NodeInTypeName = nodeInTypeName;
             EdgeTypeName = edgeTypeName;
             NodeInId = nodeInId;
             NodeOutId = nodeOutId;
@@ -50,7 +50,7 @@ namespace GraphlessDB.Storage
 
         public string GraphName { get; }
 
-        public string NodeOutTypeName { get; }
+        public string NodeInTypeName { get; }
 
         public string EdgeTypeName { get; }
 
@@ -60,7 +60,7 @@ namespace GraphlessDB.Storage
 
         public override string ToString()
         {
-            return $"{GraphName}#{Name}#{NodeOutTypeName}#{EdgeTypeName}#{NodeInId}#{NodeOutId}";
+            return $"{GraphName}#{Name}#{NodeInTypeName}#{EdgeTypeName}#{NodeInId}#{NodeOutId}";
         }
 
         public static bool IsPredicate(string value)
@@ -69,7 +69,7 @@ namespace GraphlessDB.Storage
             return parts.Length == 6 && parts[1] == Name;
         }
 
-        public static HasOutEdge Parse(string value)
+        public static HasInEdge Parse(string value)
         {
             var parts = value.Split('#');
             if (parts.Length != 6 || parts[1] != Name)
@@ -77,17 +77,17 @@ namespace GraphlessDB.Storage
                 throw new ArgumentException("Failed to parse predicate");
             }
 
-            return new HasOutEdge(parts[0], parts[2], parts[3], parts[4], parts[5]);
+            return new HasInEdge(parts[0], parts[2], parts[3], parts[4], parts[5]);
         }
 
-        public static string EdgesByTypeNodeOutType(string graphName, string nodeOutTypeName)
+        public static string EdgesByTypeNodeInType(string graphName, string nodeInTypeName)
         {
-            return $"{graphName}#{Name}#{nodeOutTypeName}#";
+            return $"{graphName}#{Name}#{nodeInTypeName}#";
         }
 
-        public static string EdgesByTypeNodeOutTypeAndEdgeType(string graphName, string nodeOutTypeName, string edgeTypeName)
+        public static string EdgesByTypeNodeInTypeAndEdgeType(string graphName, string nodeInTypeName, string edgeTypeName)
         {
-            return $"{graphName}#{Name}#{nodeOutTypeName}#{edgeTypeName}#";
+            return $"{graphName}#{Name}#{nodeInTypeName}#{edgeTypeName}#";
         }
     }
 }
