@@ -15,7 +15,7 @@ using GraphlessDB.Linq;
 
 namespace GraphlessDB.Domain.Graph.Services
 {
-    internal static class GraphQueryServiceExtensions
+    public static class GraphQueryServiceExtensions
     {
         public static async Task<GetNodesResponse> GetNodesAsync(
             this IGraphQueryService source,

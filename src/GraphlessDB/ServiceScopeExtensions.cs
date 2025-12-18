@@ -6,10 +6,6 @@
  *
  */
 
-using System.Threading;
-using System.Threading.Tasks;
-using GraphlessDB.Storage.Services.FileBased;
-using GraphlessDB.Storage.Services.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphlessDB
@@ -21,24 +17,24 @@ namespace GraphlessDB
             return source.ServiceProvider.GetRequiredService<IGraphDB>();
         }
 
-        public static async Task ProcessInMemoryNodeEventsAsync(
-            this IServiceScope source,
-            CancellationToken cancellationToken)
-        {
-            await source
-                .ServiceProvider
-                .GetRequiredService<IInMemoryNodeEventProcessor>()
-                .ProcessInMemoryNodeEventsAsync(cancellationToken);
-        }
+        // public static async Task ProcessInMemoryNodeEventsAsync(
+        //     this IServiceScope source,
+        //     CancellationToken cancellationToken)
+        // {
+        //     await source
+        //         .ServiceProvider
+        //         .GetRequiredService<IInMemoryNodeEventProcessor>()
+        //         .ProcessInMemoryNodeEventsAsync(cancellationToken);
+        // }
 
-        public static async Task ProcessFileBasedNodeEventsAsync(
-            this IServiceScope source,
-            CancellationToken cancellationToken)
-        {
-            await source
-                .ServiceProvider
-                .GetRequiredService<IFileBasedNodeEventProcessor>()
-                .ProcessFileBasedNodeEventsAsync(cancellationToken);
-        }
+        // public static async Task ProcessFileBasedNodeEventsAsync(
+        //     this IServiceScope source,
+        //     CancellationToken cancellationToken)
+        // {
+        //     await source
+        //         .ServiceProvider
+        //         .GetRequiredService<IFileBasedNodeEventProcessor>()
+        //         .ProcessFileBasedNodeEventsAsync(cancellationToken);
+        // }
     }
 }

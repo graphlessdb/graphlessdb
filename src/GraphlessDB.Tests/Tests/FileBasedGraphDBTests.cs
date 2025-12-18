@@ -10,8 +10,6 @@ using System;
 using System.IO;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
-using GraphlessDB.Graph.Services.Tests;
-using GraphlessDB.Query.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -80,7 +78,6 @@ namespace GraphlessDB.Tests
                 .AddGraphlessDBWithFileBasedDB()
                 .AddSingleton<IGraphSettingsService, GraphDBSettingsService>()
                 .AddSingleton<IGraphQueryablePropertyService, TestGraphGraphQueryablePropertyService>()
-                .AddSingleton<IGraphNodeFilterDataLayerService, EmptyGraphNodeFilterDataLayerService>()
                 .AddSingleton<IGraphEventService, EmptyGraphDBEventService>();
 
             return services;

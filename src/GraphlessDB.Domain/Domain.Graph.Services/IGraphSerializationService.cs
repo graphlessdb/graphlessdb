@@ -8,7 +8,7 @@
 
 namespace GraphlessDB.Domain.Graph.Services
 {
-    internal interface IGraphSerializationService
+    public interface IGraphSerializationService
     {
         string GetPropertyAsString(object? value);
     }

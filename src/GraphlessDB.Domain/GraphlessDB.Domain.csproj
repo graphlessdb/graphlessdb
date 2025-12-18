@@ -13,10 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="GraphlessDB" />
-    <InternalsVisibleTo Include="GraphlessDB.Query" />
-    <InternalsVisibleTo Include="GraphlessDB.Tests" />
     <InternalsVisibleTo Include="GraphlessDB.Domain.Tests" />
+    <InternalsVisibleTo Include="GraphlessDB.Query.Tests" />
   </ItemGroup>
 
   <ItemGroup>

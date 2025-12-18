@@ -13,10 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="GraphlessDB" />
-    <InternalsVisibleTo Include="GraphlessDB.Tests" />
     <InternalsVisibleTo Include="GraphlessDB.Query.Tests" />
   </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />

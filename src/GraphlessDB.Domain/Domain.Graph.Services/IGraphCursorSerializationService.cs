@@ -8,7 +8,7 @@
 
 namespace GraphlessDB.Domain.Graph.Services
 {
-    internal interface IGraphCursorSerializationService
+    public interface IGraphCursorSerializationService
     {
         string Serialize(Cursor value);
 

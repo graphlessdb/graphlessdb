@@ -17,13 +17,14 @@ namespace GraphlessDB
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddGraphlessDBWithDynamoDB(
+        public static IServiceCollection AddGraphlessDBDynamoDBStorage(
             this IServiceCollection source)
         {
             return source
-                .AddGraphlessDBCore()
                 .AddScoped<IAmazonDynamoDBRDFTripleItemService, AmazonDynamoDBRDFTripleItemService>()
                 .AddScoped<IRDFTripleIntegrityChecker, AmazonDynamoDBRDFTripleIntegrityChecker>()
+                .AddScoped<IRDFTripleStore, RDFTripleStore>()
+                .AddScoped<IRDFTripleStore<StoreType.Cached>, CachedRDFTripleStore>()
                 .AddScoped<IRDFTripleStore<StoreType.Data>, AmazonDynamoDBRDFTripleStore>();
         }
 

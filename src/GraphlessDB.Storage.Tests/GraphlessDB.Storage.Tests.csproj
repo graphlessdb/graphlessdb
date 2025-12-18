@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,10 +13,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GraphlessDB.Core\GraphlessDB.Core.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+    <ProjectReference Include="..\GraphlessDB.Query\GraphlessDB.Query.csproj" />
     <ProjectReference Include="..\GraphlessDB.Storage\GraphlessDB.Storage.csproj" />
     <ProjectReference Include="..\GraphlessDB.Storage.InMemory\GraphlessDB.Storage.InMemory.csproj" />
     <ProjectReference Include="..\GraphlessDB.Storage.FileBased\GraphlessDB.Storage.FileBased.csproj" />
-    <ProjectReference Include="..\GraphlessDB.Domain\GraphlessDB.Domain.csproj" />
+    <ProjectReference Include="..\GraphlessDB\GraphlessDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>

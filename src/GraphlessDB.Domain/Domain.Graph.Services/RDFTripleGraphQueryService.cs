@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphlessDB.Domain.Graph;
-using GraphlessDB.Domain.Logging;
 using GraphlessDB.Linq;
 using GraphlessDB.Storage;
 using GraphlessDB.Storage.Services;

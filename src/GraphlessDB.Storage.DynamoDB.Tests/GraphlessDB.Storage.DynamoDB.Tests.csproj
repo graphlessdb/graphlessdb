@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GraphlessDB.Tests\GraphlessDB.Tests.csproj" />
     <ProjectReference Include="..\GraphlessDB.Storage.DynamoDB\GraphlessDB.Storage.DynamoDB.csproj" />
+    <ProjectReference Include="..\GraphlessDB\GraphlessDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>

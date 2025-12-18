@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GraphlessDB.Domain.Graph.Services
 {
-    internal interface IGraphQueryService
+    public interface IGraphQueryService
     {
         Task ClearAsync(CancellationToken cancellationToken);
 

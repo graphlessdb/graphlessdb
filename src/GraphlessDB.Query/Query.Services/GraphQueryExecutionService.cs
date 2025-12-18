@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using GraphlessDB.Collections;
 using GraphlessDB.Domain.Graph;
 using GraphlessDB.Domain.Graph.Services;
-using GraphlessDB.Domain.Logging;
 using GraphlessDB.Storage;
 using GraphlessDB.Threading;
 using Microsoft.Extensions.Logging;
