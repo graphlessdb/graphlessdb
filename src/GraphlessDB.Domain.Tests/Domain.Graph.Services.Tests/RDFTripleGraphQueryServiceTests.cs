@@ -34,7 +34,12 @@ namespace GraphlessDB.Domain.Graph.Services.Tests
                 })
                 .AddGraphEntityTypeNativeServiceOptions(o =>
                 {
-                    // o.AddTestGraphEntityTypeMappings();
+                    o.TypeMappings.Add(nameof(Car), typeof(Car));
+                    o.TypeMappings.Add(nameof(Manufacturer), typeof(Manufacturer));
+                    o.TypeMappings.Add(nameof(ManufacturerMakesCarEdge), typeof(ManufacturerMakesCarEdge));
+                    o.TypeMappings.Add(nameof(User), typeof(User));
+                    o.TypeMappings.Add(nameof(UserLikesUserEdge), typeof(UserLikesUserEdge));
+                    o.TypeMappings.Add(nameof(UserOwnsCarEdge), typeof(UserOwnsCarEdge));
                 })
                 .AddGraphlessDBEntitySerializerOptions(o =>
                 {
