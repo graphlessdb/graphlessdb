@@ -19,7 +19,7 @@ namespace GraphlessDB
                 .AddScoped<IGraphDB, GraphDB>()
                 .AddGraphlessDBDomainGraph()
                 .AddGraphlessDBQuery()
-                .AddGraphlessDBWithDynamoDB();
+                .AddGraphlessDBDynamoDBStorage();
         }
     }
 }
