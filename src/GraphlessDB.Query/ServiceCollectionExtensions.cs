@@ -7,6 +7,8 @@
  */
 
 using GraphlessDB.Query;
+using GraphlessDB.Query.Datalog.Core;
+using GraphlessDB.Query.Datalog.Execution;
 using GraphlessDB.Query.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -55,6 +57,10 @@ namespace GraphlessDB
                 .AddScoped<IGraphQueryNodeExecutionService<ZipNodeConnectionQuery>, ZipNodeConnectionQueryExecutor>()
                 .AddScoped<IGraphQueryNodeExecutionService<WhereNodeConnectionQuery>, WhereNodeConnectionQueryExecutor>()
                 .AddScoped<IGraphQueryNodeExecutionService<WhereEdgeConnectionQuery>, WhereEdgeConnectionQueryExecutor>()
+                // Datalog query services
+                .AddScoped<IGraphQueryNodeExecutionService<DatalogQuery>, DatalogQueryExecutor>()
+                .AddScoped<DatalogPatternCompiler>()
+                .AddScoped<DatalogRecursiveExecutor>()
                 ;
         }
 

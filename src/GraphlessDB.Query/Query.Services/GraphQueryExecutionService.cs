@@ -52,6 +52,7 @@ namespace GraphlessDB.Query.Services
         IGraphQueryNodeExecutionService<ZipNodeConnectionQuery> zipNodeConnectionQueryExecutor,
         IGraphQueryNodeExecutionService<WhereNodeConnectionQuery> whereNodeConnectionQueryExecutor,
         IGraphQueryNodeExecutionService<WhereEdgeConnectionQuery> whereEdgeConnectionQueryExecutor,
+        IGraphQueryNodeExecutionService<Datalog.Core.DatalogQuery> datalogQueryExecutor,
         IGraphCursorSerializationService cursorSerializer,
         ILogger<GraphQueryExecutionService> logger) : IGraphQueryExecutionService
     {
@@ -310,6 +311,7 @@ namespace GraphlessDB.Query.Services
                 ZipNodeConnectionQuery => zipNodeConnectionQueryExecutor,
                 WhereNodeConnectionQuery => whereNodeConnectionQueryExecutor,
                 WhereEdgeConnectionQuery => whereEdgeConnectionQueryExecutor,
+                Datalog.Core.DatalogQuery => datalogQueryExecutor,
                 _ => throw new NotSupportedException("Query type not supported"),
             };
         }

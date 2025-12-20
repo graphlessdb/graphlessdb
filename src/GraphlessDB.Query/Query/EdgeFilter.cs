@@ -16,5 +16,8 @@ namespace GraphlessDB.Query
         string NodeOutTypeName,
         INodeFilter? NodeInFilter,
         INodeFilter? NodeOutFilter,
-        ImmutableList<ValueFilterItem> ValueFilterItems);
+        ImmutableList<ValueFilterItem> ValueFilterItems) : IEdgeFilter
+    {
+        public EdgeFilter? GetEdgeFilter() => this;
+    }
 }

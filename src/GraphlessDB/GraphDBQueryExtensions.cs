@@ -8,6 +8,7 @@
 
 using GraphlessDB.Collections;
 using GraphlessDB.Query;
+using GraphlessDB.Query.Datalog.Builders;
 
 namespace GraphlessDB
 {
@@ -21,6 +22,11 @@ namespace GraphlessDB
         public static FluentGraphQuery<TGraph> Graph<TGraph>(this IGraphDB source) where TGraph : IGraph
         {
             return new FluentGraphQuery<TGraph>(source.QueryExecutionService, ImmutableTree<string, Query.GraphQueryNode>.Empty, string.Empty);
+        }
+
+        public static FluentDatalogQuery<TGraph> Datalog<TGraph>(this IGraphDB source) where TGraph : IGraph
+        {
+            return new FluentDatalogQuery<TGraph>(source.QueryExecutionService);
         }
     }
 }

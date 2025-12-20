@@ -12,8 +12,11 @@ namespace GraphlessDB.Query
 {
     public sealed record NodeFilter(
         ImmutableList<ValueFilterItem> ValueFilterItems,
-        ImmutableList<EdgeFilter> EdgeFilterItems)
+        ImmutableList<EdgeFilter> EdgeFilterItems,
+        DateTimeFilter? CreatedAt = null) : INodeFilter
     {
-        public static readonly NodeFilter Empty = new([], []);
+        public static readonly NodeFilter Empty = new([], [], null);
+
+        DateTimeFilter? INodeFilter.CreatedAt { get => CreatedAt; set => throw new System.NotSupportedException("NodeFilter is immutable"); }
     }
 }
