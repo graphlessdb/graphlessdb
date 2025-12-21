@@ -23,11 +23,15 @@ namespace GraphlessDB.Query.Datalog.Execution
     internal sealed class DatalogRecursiveExecutor
     {
         private readonly IGraphQueryService _graphQueryService;
+        private readonly IGraphCursorSerializationService _cursorSerializer;
         private const int DefaultMaxDepth = 100;
 
-        public DatalogRecursiveExecutor(IGraphQueryService graphQueryService)
+        public DatalogRecursiveExecutor(
+            IGraphQueryService graphQueryService,
+            IGraphCursorSerializationService cursorSerializer)
         {
             _graphQueryService = graphQueryService;
+            _cursorSerializer = cursorSerializer;
         }
 
         /// <summary>
@@ -252,9 +256,13 @@ namespace GraphlessDB.Query.Datalog.Execution
             bool consistentRead,
             CancellationToken cancellationToken)
         {
+            // Create initial cursor for node
+            var initialCursor = Cursor.Create(CursorNode.Empty);
+            var serializedCursor = _cursorSerializer.Serialize(initialCursor);
+
             // Create a connection with just this node
             var nodeConnection = new Connection<RelayEdge<INode>, INode>(
-                ImmutableList.Create(new RelayEdge<INode>(string.Empty, node)),
+                ImmutableList.Create(new RelayEdge<INode>(serializedCursor, node)),
                 new PageInfo(false, false, string.Empty, string.Empty));
 
             var request = new ToEdgeQueryRequest(

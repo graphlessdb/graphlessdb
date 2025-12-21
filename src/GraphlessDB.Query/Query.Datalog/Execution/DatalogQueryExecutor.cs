@@ -27,15 +27,18 @@ namespace GraphlessDB.Query.Datalog.Execution
         private readonly IGraphQueryService _graphQueryService;
         private readonly DatalogPatternCompiler _patternCompiler;
         private readonly DatalogRecursiveExecutor _recursiveExecutor;
+        private readonly IGraphCursorSerializationService _cursorSerializer;
 
         public DatalogQueryExecutor(
             IGraphQueryService graphQueryService,
             DatalogPatternCompiler patternCompiler,
-            DatalogRecursiveExecutor recursiveExecutor)
+            DatalogRecursiveExecutor recursiveExecutor,
+            IGraphCursorSerializationService cursorSerializer)
         {
             _graphQueryService = graphQueryService;
             _patternCompiler = patternCompiler;
             _recursiveExecutor = recursiveExecutor;
+            _cursorSerializer = cursorSerializer;
         }
 
         public async Task<GraphExecutionContext> ExecuteAsync(
@@ -261,9 +264,13 @@ namespace GraphlessDB.Query.Datalog.Execution
             {
                 var fromNode = (INode)binding.Value;
 
+                // Create initial cursor for node
+                var initialCursor = Cursor.Create(CursorNode.Empty);
+                var serializedCursor = _cursorSerializer.Serialize(initialCursor);
+
                 // Create connection with single node
                 var nodeConnection = new Connection<RelayEdge<INode>, INode>(
-                    ImmutableList.Create(new RelayEdge<INode>(string.Empty, fromNode)),
+                    ImmutableList.Create(new RelayEdge<INode>(serializedCursor, fromNode)),
                     new PageInfo(false, false, string.Empty, string.Empty));
 
                 var request = new ToEdgeQueryRequest(
@@ -312,9 +319,13 @@ namespace GraphlessDB.Query.Datalog.Execution
             {
                 var toNode = (INode)binding.Value;
 
+                // Create initial cursor for node
+                var initialCursor = Cursor.Create(CursorNode.Empty);
+                var serializedCursor = _cursorSerializer.Serialize(initialCursor);
+
                 // Create connection with single node
                 var nodeConnection = new Connection<RelayEdge<INode>, INode>(
-                    ImmutableList.Create(new RelayEdge<INode>(string.Empty, toNode)),
+                    ImmutableList.Create(new RelayEdge<INode>(serializedCursor, toNode)),
                     new PageInfo(false, false, string.Empty, string.Empty));
 
                 var request = new ToEdgeQueryRequest(

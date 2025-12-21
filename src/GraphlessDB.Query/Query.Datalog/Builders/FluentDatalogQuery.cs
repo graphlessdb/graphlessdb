@@ -86,9 +86,11 @@ namespace GraphlessDB.Query.Datalog.Builders
             where TNodeIn : INode
             where TNodeOut : INode
         {
-            var builder = new EdgePatternBuilder<TEdge>(
-                (Variable<INode>)(object)from,
-                (Variable<INode>)(object)to);
+            // Create Variable<INode> instances with the same names as the original variables
+            var fromNode = new Variable<INode>(from.Name);
+            var toNode = new Variable<INode>(to.Name);
+            
+            var builder = new EdgePatternBuilder<TEdge>(fromNode, toNode);
             builder = configure?.Invoke(builder) ?? builder;
             var pattern = builder.Build();
 

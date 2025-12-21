@@ -89,16 +89,18 @@ namespace GraphlessDB.Query.Datalog.Builders
 
         internal RecursivePattern Build()
         {
-            var edgeBuilder = new EdgePatternBuilder<TEdge>(
-                (Variable<INode>)(object)_start,
-                (Variable<INode>)(object)_end);
+            // Create Variable<INode> instances with the same names as the original variables
+            var startNode = new Variable<INode>(_start.Name);
+            var endNode = new Variable<INode>(_end.Name);
+            
+            var edgeBuilder = new EdgePatternBuilder<TEdge>(startNode, endNode);
             edgeBuilder = _edgeConfigure?.Invoke(edgeBuilder) ?? edgeBuilder;
             var edgePattern = edgeBuilder.Build();
 
             return new RecursivePattern(
                 Guid.NewGuid().ToString(),
-                (Variable<INode>)(object)_start,
-                (Variable<INode>)(object)_end,
+                startNode,
+                endNode,
                 edgePattern,
                 _minDepth,
                 _maxDepth,

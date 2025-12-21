@@ -63,9 +63,13 @@ namespace GraphlessDB.Query.Datalog.Builders
 
         internal NodePattern Build()
         {
+            // Create a Variable<INode> with the same name as the original variable
+            // We can't directly cast Variable<TNode> to Variable<INode> due to generic invariance
+            var nodeVariable = new Variable<INode>(_variable.Name);
+            
             return new NodePattern(
                 Guid.NewGuid().ToString(),
-                (Variable<INode>)(object)_variable,
+                nodeVariable,
                 typeof(TNode).Name,
                 _constraints.ToImmutableList());
         }
